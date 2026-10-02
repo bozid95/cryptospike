@@ -360,8 +360,8 @@ export const INITIAL_SIGNALS: SignalItem[] = [
 ];
 
 export const INITIAL_CONFIG: TradingConfig = {
-  apiKey: "vU892nKsm9384729104829ksjdnfak",
-  apiSecret: "••••••••••••••••••••••••••••••••",
+  apiKey: "dhA11NTt2uFViDGybKvJv9g0IQc8PJilepPHV7uqgWH5H2opcwaJjGto1CgWiz13",
+  apiSecret: "wVVzZaysTZ3Pz4XhGDkPPRJAgvwIjw0sYJkxTlAsVHu6Q3tSP9TBpJmhCRdPBlIm",
   environment: "TESTNET",
   leverage: 10,
   marginType: "ISOLATED",

@@ -25,6 +25,7 @@ export function SettingsCrud() {
   const { config, updateConfig } = useCryptoSpike();
   const [apiKey, setApiKey] = useState(config.apiKey);
   const [apiSecret, setApiSecret] = useState(config.apiSecret);
+  const [showSecret, setShowSecret] = useState(false);
   const [environment, setEnvironment] = useState(config.environment);
   const [leverage, setLeverage] = useState(config.leverage.toString());
   const [maxOpenPositions, setMaxOpenPositions] = useState(
@@ -85,12 +86,21 @@ export function SettingsCrud() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="apiSecret" className="text-xs font-semibold">
-              Binance API Secret
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="apiSecret" className="text-xs font-semibold">
+                Binance API Secret
+              </Label>
+              <button
+                type="button"
+                onClick={() => setShowSecret((prev) => !prev)}
+                className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                {showSecret ? "Sembunyikan Secret" : "Tampilkan Secret"}
+              </button>
+            </div>
             <Input
               id="apiSecret"
-              type="password"
+              type={showSecret ? "text" : "password"}
               value={apiSecret}
               onChange={(e) => setApiSecret(e.target.value)}
               placeholder="Masukkan API Secret..."

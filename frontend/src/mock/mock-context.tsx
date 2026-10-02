@@ -49,7 +49,7 @@ const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
 
 const STRATEGIES_KEY = "cryptospike_mock_strategies_v2";
 const SIGNALS_KEY = "cryptospike_mock_signals_v3";
-const CONFIG_KEY = "cryptospike_mock_config_v2";
+const CONFIG_KEY = "cryptospike_mock_config_v3";
 
 export function CryptoSpikeProvider({
   children,

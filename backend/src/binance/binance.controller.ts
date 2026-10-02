@@ -25,7 +25,8 @@ export class BinanceController {
 
     // Margin Balance resmi (USDT + USDC + BTC valuation) = $10,843.97
     const marginBalance =
-      accountDetail?.totalMarginBalance && accountDetail.totalMarginBalance > 5000
+      accountDetail?.totalMarginBalance &&
+      accountDetail.totalMarginBalance > 5000
         ? accountDetail.totalMarginBalance
         : usdtVal + usdcVal + btcEstimatedUsd;
 
