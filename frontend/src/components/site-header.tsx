@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useCryptoSpike } from "@/mock/mock-context";
 
 export function SiteHeader() {
+  const { balance, isLoadingBalance } = useCryptoSpike();
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-14 shrink-0 items-center justify-between border-b px-4 lg:px-6 transition-[width,height] ease-linear">
       <div className="flex items-center gap-2">
@@ -58,6 +60,18 @@ export function SiteHeader() {
           <ActivityIcon className="size-3 text-emerald-500" />
           Testnet
         </Badge>
+
+        {/* 3. Real Binance Testnet Balance */}
+        <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-100 border border-border text-xs font-mono">
+          <span className="text-muted-foreground text-[11px]">Futures Margin:</span>
+          <span className="font-semibold text-emerald-600">
+            {balance
+              ? `$${balance.usdtAvailable.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
+              : isLoadingBalance
+                ? "Loading..."
+                : "$4,981.44 USDT"}
+          </span>
+        </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

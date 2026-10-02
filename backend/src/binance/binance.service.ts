@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import * as crypto from 'crypto';
 
 export interface BinanceKline {
   openTime: number;
@@ -26,6 +27,18 @@ export interface Binance24hTicker {
   quoteVolume: string;
 }
 
+export interface BinanceBalanceItem {
+  accountAlias: string;
+  asset: string;
+  balance: string;
+  crossWalletBalance: string;
+  crossUnPnl: string;
+  availableBalance: string;
+  maxWithdrawAmount: string;
+  marginAvailable: boolean;
+  updateTime: number;
+}
+
 type RawKlineArray = [
   number, // 0: Open time
   string, // 1: Open
@@ -45,6 +58,48 @@ type RawKlineArray = [
 export class BinanceService {
   private readonly logger = new Logger(BinanceService.name);
   private readonly baseUrl = 'https://fapi.binance.com';
+
+  private getFuturesBaseUrl(): string {
+    const isTestnet = process.env.BINANCE_TESTNET === 'true';
+    return isTestnet
+      ? 'https://testnet.binancefuture.com'
+      : 'https://fapi.binance.com';
+  }
+
+  async getAccountBalances(): Promise<BinanceBalanceItem[]> {
+    try {
+      const apiKey = process.env.BINANCE_API_KEY;
+      const apiSecret = process.env.BINANCE_SECRET_KEY;
+
+      if (!apiKey || !apiSecret) {
+        this.logger.warn('Binance API key or secret is not configured.');
+        return [];
+      }
+
+      const baseUrl = this.getFuturesBaseUrl();
+      const timestamp = Date.now();
+      const query = `timestamp=${timestamp}`;
+      const signature = crypto
+        .createHmac('sha256', apiSecret)
+        .update(query)
+        .digest('hex');
+
+      const response = await axios.get<BinanceBalanceItem[]>(
+        `${baseUrl}/fapi/v2/balance?${query}&signature=${signature}`,
+        {
+          headers: { 'X-MBX-APIKEY': apiKey },
+          timeout: 8000,
+        },
+      );
+
+      // Ambil hanya aset yang memiliki saldo > 0
+      return response.data.filter((b) => parseFloat(b.balance) > 0);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Failed to fetch Binance Futures balance: ${message}`);
+      return [];
+    }
+  }
 
   async getTopVolumePairs(limit = 100): Promise<Binance24hTicker[]> {
     try {

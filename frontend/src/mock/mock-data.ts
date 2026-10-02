@@ -28,6 +28,20 @@ export interface StrategyItem {
   updatedAt: string;
 }
 
+export interface BinanceBalanceInfo {
+  environment: string;
+  totalUsdtEquivalent: number;
+  usdtBalance: number;
+  usdtAvailable: number;
+  usdcBalance: number;
+  btcBalance: number;
+  assets: Array<{
+    asset: string;
+    balance: string;
+    availableBalance: string;
+  }>;
+}
+
 export interface TradingConfig {
   apiKey: string;
   apiSecret: string;

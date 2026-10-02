@@ -3,6 +3,7 @@ import {
   INITIAL_CONFIG,
   INITIAL_SIGNALS,
   INITIAL_STRATEGIES,
+  type BinanceBalanceInfo,
   type SignalItem,
   type StrategyItem,
   type TradingConfig,
@@ -35,6 +36,11 @@ interface CryptoSpikeContextType {
   // Config CRUD
   config: TradingConfig;
   updateConfig: (updated: Partial<TradingConfig>) => void;
+
+  // Real Binance Balance
+  balance: BinanceBalanceInfo | null;
+  isLoadingBalance: boolean;
+  refreshBalance: () => Promise<void>;
 }
 
 const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
@@ -90,6 +96,32 @@ export function CryptoSpikeProvider({
       return INITIAL_CONFIG;
     }
   });
+
+  const [balance, setBalance] = useState<BinanceBalanceInfo | null>(null);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+
+  const refreshBalance = async () => {
+    try {
+      setIsLoadingBalance(true);
+      const res = await fetch("http://localhost:3001/api/binance/balance");
+      if (res.ok) {
+        const data = (await res.json()) as BinanceBalanceInfo;
+        setBalance(data);
+      }
+    } catch (err) {
+      console.warn("Could not fetch live Binance balance:", err);
+    } finally {
+      setIsLoadingBalance(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshBalance();
+    const interval = setInterval(() => {
+      void refreshBalance();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STRATEGIES_KEY, JSON.stringify(strategies));
@@ -194,6 +226,9 @@ export function CryptoSpikeProvider({
         deleteSignal,
         config,
         updateConfig,
+        balance,
+        isLoadingBalance,
+        refreshBalance,
       }}
     >
       {children}
