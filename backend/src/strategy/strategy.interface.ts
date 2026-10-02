@@ -1,10 +1,10 @@
 export interface StrategyMeta {
-  id: string;           // e.g. "breakout_1h"
-  displayName: string;  // e.g. "Breakout 1H Candle"
-  description: string;  // e.g. "Mendeteksi candle 1H dengan pergerakan harga signifikan"
-  version: string;      // e.g. "v1", "v2"
+  id: string; // e.g. "breakout_1h"
+  displayName: string; // e.g. "Breakout 1H Candle"
+  description: string; // e.g. "Mendeteksi candle 1H dengan pergerakan harga signifikan"
+  version: string; // e.g. "v1", "v2"
   author: string;
-  timeframe: string;    // e.g. "1h", "15m"
+  timeframe: string; // e.g. "1h", "15m"
   indicators: string[]; // e.g. ["EMA", "RSI", "Volume"]
   defaultEnabled: boolean;
 }
@@ -43,7 +43,7 @@ export interface StrategyResult {
   tp2?: number;
   tp3?: number;
   sl: number;
-  score: number;          // 0-100
+  score: number; // 0-100
   confidence: 'HIGH' | 'MEDIUM' | 'LOW';
   reasons: string[];
 }

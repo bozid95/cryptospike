@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface CreateSignalInput {
@@ -29,7 +30,7 @@ export class SignalService {
     offset?: number;
   }) {
     const { status, strategy, limit = 50, offset = 0 } = params;
-    const where: any = {};
+    const where: Prisma.SignalWhereInput = {};
     if (status && status !== 'ALL') where.status = status;
     if (strategy && strategy !== 'ALL') where.strategy = strategy;
 
@@ -83,7 +84,9 @@ export class SignalService {
       },
     });
 
-    this.logger.log(`Created new signal: [${signal.strategy}] ${signal.symbol} ${signal.side} @ ${signal.entryPrice}`);
+    this.logger.log(
+      `Created new signal: [${signal.strategy ?? 'unknown'}] ${signal.symbol} ${signal.side} @ ${signal.entryPrice}`,
+    );
     return signal;
   }
 
@@ -105,7 +108,10 @@ export class SignalService {
       },
     });
 
-    const strategyMap = new Map<string, { total: number; win: number; profitSum: number }>();
+    const strategyMap = new Map<
+      string,
+      { total: number; win: number; profitSum: number }
+    >();
 
     for (const s of signals) {
       const key = s.strategy || 'unknown';
@@ -119,13 +125,15 @@ export class SignalService {
       item.profitSum += s.profitPct || 0;
     }
 
-    const result = Array.from(strategyMap.entries()).map(([strategy, stat]) => ({
-      strategy,
-      totalSignals: stat.total,
-      winSignals: stat.win,
-      winRate: stat.total > 0 ? (stat.win / stat.total) * 100 : 0,
-      avgProfitPct: stat.total > 0 ? stat.profitSum / stat.total : 0,
-    }));
+    const result = Array.from(strategyMap.entries()).map(
+      ([strategy, stat]) => ({
+        strategy,
+        totalSignals: stat.total,
+        winSignals: stat.win,
+        winRate: stat.total > 0 ? (stat.win / stat.total) * 100 : 0,
+        avgProfitPct: stat.total > 0 ? stat.profitSum / stat.total : 0,
+      }),
+    );
 
     return result;
   }

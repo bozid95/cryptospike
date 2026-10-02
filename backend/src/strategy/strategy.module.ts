@@ -6,11 +6,7 @@ import { PrePump15mV1Strategy } from './strategies/prepump-15m-v1.strategy';
 
 @Module({
   controllers: [StrategyController],
-  providers: [
-    Breakout1hV1Strategy,
-    PrePump15mV1Strategy,
-    StrategyRegistry,
-  ],
+  providers: [Breakout1hV1Strategy, PrePump15mV1Strategy, StrategyRegistry],
   exports: [StrategyRegistry],
 })
 export class StrategyModule {}

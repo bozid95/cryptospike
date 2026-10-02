@@ -183,3 +183,4 @@ model Announcement {
 
   @@map("announcements")
 }
+

@@ -27,7 +27,9 @@ export class StrategyRegistry implements OnModuleInit {
     const key = `${strategy.meta.id}_${strategy.meta.version}`;
     this.strategies.set(key, strategy);
     this.enabledMap.set(key, strategy.meta.defaultEnabled);
-    this.logger.log(`Strategy registered: ${key} (${strategy.meta.displayName})`);
+    this.logger.log(
+      `Strategy registered: ${key} (${strategy.meta.displayName})`,
+    );
   }
 
   async loadStrategyStates() {
@@ -38,8 +40,9 @@ export class StrategyRegistry implements OnModuleInit {
           this.enabledMap.set(conf.strategyId, conf.isEnabled);
         }
       }
-    } catch (err: any) {
-      this.logger.warn(`Could not load strategy configs from DB: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Could not load strategy configs from DB: ${message}`);
     }
   }
 
@@ -61,11 +64,15 @@ export class StrategyRegistry implements OnModuleInit {
       update: { isEnabled: enabled },
       create: { strategyId: key, isEnabled: enabled },
     });
-    this.logger.log(`Strategy ${key} set to ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    this.logger.log(
+      `Strategy ${key} set to ${enabled ? 'ENABLED' : 'DISABLED'}`,
+    );
     return { key, isEnabled: enabled };
   }
 
-  async evaluateAll(marketData: MarketData): Promise<Array<{ strategyKey: string; result: StrategyResult }>> {
+  async evaluateAll(
+    marketData: MarketData,
+  ): Promise<Array<{ strategyKey: string; result: StrategyResult }>> {
     const results: Array<{ strategyKey: string; result: StrategyResult }> = [];
 
     for (const [key, strategy] of this.strategies.entries()) {
@@ -76,8 +83,9 @@ export class StrategyRegistry implements OnModuleInit {
         if (res && res.shouldSignal) {
           results.push({ strategyKey: key, result: res });
         }
-      } catch (err: any) {
-        this.logger.error(`Error evaluating ${key}: ${err.message}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.error(`Error evaluating ${key}: ${message}`);
       }
     }
 

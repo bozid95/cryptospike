@@ -1,24 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { IStrategy, StrategyMeta, MarketData, StrategyResult } from '../strategy.interface';
+import {
+  IStrategy,
+  StrategyMeta,
+  MarketData,
+  StrategyResult,
+} from '../strategy.interface';
 
 @Injectable()
 export class PrePump15mV1Strategy implements IStrategy {
   meta: StrategyMeta = {
     id: 'prepump_15m',
     displayName: 'Pre-Pump & Pre-Dump 15M Detector',
-    description: 'Mendeteksi akumulasi/distribusi awal dan lonjakan volume sebelum impuls besar.',
+    description:
+      'Mendeteksi akumulasi/distribusi awal dan lonjakan volume sebelum impuls besar.',
     version: 'v1',
     author: 'CryptoSpike Engine',
     timeframe: '15m',
-    indicators: ['Taker Buy Ratio', 'Volume Anomaly', 'Consolidation Compression'],
+    indicators: [
+      'Taker Buy Ratio',
+      'Volume Anomaly',
+      'Consolidation Compression',
+    ],
     defaultEnabled: true,
   };
 
-  async evaluate(data: MarketData): Promise<StrategyResult | null> {
-    const { symbol, lastPrice, takerBuyVolume, volume, priceChangePct } = data;
+  evaluate(data: MarketData): Promise<StrategyResult | null> {
+    const { symbol, lastPrice, takerBuyVolume, volume } = data;
 
     // Filter taker volume anomaly
-    if (!takerBuyVolume || !volume || volume === 0) return null;
+    if (!takerBuyVolume || !volume || volume === 0)
+      return Promise.resolve(null);
 
     const takerRatio = takerBuyVolume / volume;
 
@@ -30,7 +41,7 @@ export class PrePump15mV1Strategy implements IStrategy {
       const sl = entryPrice * 0.988;
       const score = Math.round(takerRatio * 100);
 
-      return {
+      return Promise.resolve({
         shouldSignal: true,
         signal: 'STRONG BUY',
         signalType: 'LONG',
@@ -44,7 +55,7 @@ export class PrePump15mV1Strategy implements IStrategy {
           `Taker Buy Ratio: ${(takerRatio * 100).toFixed(1)}% (Agresif akumulasi)`,
           `Pre-Pump compression terdeteksi pada ${symbol}`,
         ],
-      };
+      });
     }
 
     // Seller agresif dominan (Pre-Dump)
@@ -55,7 +66,7 @@ export class PrePump15mV1Strategy implements IStrategy {
       const sl = entryPrice * 1.012;
       const score = Math.round((1 - takerRatio) * 100);
 
-      return {
+      return Promise.resolve({
         shouldSignal: true,
         signal: 'STRONG SELL',
         signalType: 'SHORT',
@@ -69,9 +80,9 @@ export class PrePump15mV1Strategy implements IStrategy {
           `Taker Sell Ratio: ${((1 - takerRatio) * 100).toFixed(1)}% (Agresif distribusi)`,
           `Pre-Dump breakdown terdeteksi pada ${symbol}`,
         ],
-      };
+      });
     }
 
-    return null;
+    return Promise.resolve(null);
   }
 }

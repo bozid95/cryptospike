@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import WebSocket from 'ws';
 import { Subject } from 'rxjs';
 
@@ -43,22 +48,39 @@ export class BinanceWsService implements OnModuleInit, OnModuleDestroy {
       this.logger.log('Connected to Binance Futures WebSocket stream.');
     });
 
-    this.ws.on('message', (data: WebSocket.Data) => {
+    this.ws.on('message', (data: WebSocket.RawData) => {
       try {
-        const tickers: BinanceWsTicker[] = JSON.parse(data.toString());
-        if (Array.isArray(tickers)) {
-          for (const t of tickers) {
-            if (t.s && t.s.endsWith('USDT')) {
-              this.ticker$.next(t);
+        let text = '';
+        if (typeof data === 'string') {
+          text = data;
+        } else if (Buffer.isBuffer(data)) {
+          text = data.toString('utf-8');
+        } else if (Array.isArray(data)) {
+          text = Buffer.concat(data).toString('utf-8');
+        } else {
+          text = Buffer.from(data).toString('utf-8');
+        }
+        const parsed: unknown = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            const t = item as Partial<BinanceWsTicker>;
+            if (
+              t.s &&
+              typeof t.s === 'string' &&
+              t.s.endsWith('USDT') &&
+              t.c &&
+              t.P
+            ) {
+              this.ticker$.next(t as BinanceWsTicker);
             }
           }
         }
-      } catch (err: any) {
+      } catch {
         // ignore parse error
       }
     });
 
-    this.ws.on('error', (err) => {
+    this.ws.on('error', (err: Error) => {
       this.logger.error(`Binance WS error: ${err.message}`);
     });
 

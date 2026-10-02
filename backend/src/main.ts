@@ -15,6 +15,9 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
-  logger.log(`CryptoSpike NestJS Backend is running on: http://localhost:${port}`);
+  logger.log(
+    `CryptoSpike NestJS Backend is running on: http://localhost:${port}`,
+  );
 }
-bootstrap();
+
+void bootstrap();
