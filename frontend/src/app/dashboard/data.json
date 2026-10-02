@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "header": "BTCUSDT",
+    "type": "LONG (breakout_1h_v1)",
+    "status": "Done",
+    "target": "66,200",
+    "limit": "64,500",
+    "reviewer": "TP1 HIT (+2.6%)"
+  },
+  {
+    "id": 2,
+    "header": "SOLUSDT",
+    "type": "SHORT (breakout_1h_v2)",
+    "status": "In Process",
+    "target": "145.00",
+    "limit": "154.50",
+    "reviewer": "Trailing SL"
+  },
+  {
+    "id": 3,
+    "header": "ETHUSDT",
+    "type": "LONG (prepump_15m_v1)",
+    "status": "Done",
+    "target": "3,350",
+    "limit": "3,180",
+    "reviewer": "TP2 HIT (+5.1%)"
+  },
+  {
+    "id": 4,
+    "header": "DOGEUSDT",
+    "type": "LONG (prepump_15m_v1)",
+    "status": "In Process",
+    "target": "0.1450",
+    "limit": "0.1320",
+    "reviewer": "Open Entry: 0.1365"
+  },
+  {
+    "id": 5,
+    "header": "BNBUSDT",
+    "type": "SHORT (btc_session_v1)",
+    "status": "Done",
+    "target": "580.0",
+    "limit": "602.0",
+    "reviewer": "TP1 HIT (+3.2%)"
+  },
+  {
+    "id": 6,
+    "header": "AVAXUSDT",
+    "type": "LONG (breakout_1h_v1)",
+    "status": "Done",
+    "target": "28.50",
+    "limit": "25.80",
+    "reviewer": "SL HIT (-1.8%)"
+  },
+  {
+    "id": 7,
+    "header": "SUIUSDT",
+    "type": "LONG (breakout_1h_v2)",
+    "status": "In Process",
+    "target": "2.10",
+    "limit": "1.89",
+    "reviewer": "Open Entry: 1.94"
+  }
+]
