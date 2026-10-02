@@ -30,7 +30,9 @@ export interface StrategyItem {
 
 export interface BinanceBalanceInfo {
   environment: string;
-  totalUsdtEquivalent: number;
+  marginBalance?: number;
+  walletBalanceUsd?: number;
+  totalUsdtEquivalent?: number;
   usdtBalance: number;
   usdtAvailable: number;
   usdcBalance: number;

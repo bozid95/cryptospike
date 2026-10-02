@@ -101,6 +101,48 @@ export class BinanceService {
     }
   }
 
+  async getAccountDetail(): Promise<{
+    totalMarginBalance: number;
+    totalWalletBalance: number;
+    totalAvailableBalance: number;
+    assets: Array<{ asset: string; walletBalance: string; marginBalance: string }>;
+  } | null> {
+    try {
+      const apiKey = process.env.BINANCE_API_KEY;
+      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      if (!apiKey || !apiSecret) return null;
+
+      const baseUrl = this.getFuturesBaseUrl();
+      const timestamp = Date.now();
+      const query = `timestamp=${timestamp}`;
+      const signature = crypto
+        .createHmac('sha256', apiSecret)
+        .update(query)
+        .digest('hex');
+
+      const response = await axios.get<{
+        totalMarginBalance: string;
+        totalWalletBalance: string;
+        availableBalance: string;
+        assets: Array<{ asset: string; walletBalance: string; marginBalance: string }>;
+      }>(`${baseUrl}/fapi/v2/account?${query}&signature=${signature}`, {
+        headers: { 'X-MBX-APIKEY': apiKey },
+        timeout: 8000,
+      });
+
+      return {
+        totalMarginBalance: parseFloat(response.data.totalMarginBalance),
+        totalWalletBalance: parseFloat(response.data.totalWalletBalance),
+        totalAvailableBalance: parseFloat(response.data.availableBalance),
+        assets: response.data.assets.filter((a) => parseFloat(a.walletBalance) > 0),
+      };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Failed to fetch Binance Futures account detail: ${message}`);
+      return null;
+    }
+  }
+
   async getTopVolumePairs(limit = 100): Promise<Binance24hTicker[]> {
     try {
       const response = await axios.get<Binance24hTicker[]>(

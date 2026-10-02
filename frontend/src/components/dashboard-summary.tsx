@@ -165,20 +165,20 @@ export function DashboardSummary() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription className="text-xs font-medium">
-              Futures Wallet (Testnet)
+              Margin Balance (USD)
             </CardDescription>
             <ShieldCheckIcon className="size-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold tabular-nums text-emerald-600">
-              {balance
-                ? `$${balance.usdtAvailable.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : "$5,000.00"}
+              {balance && (balance.marginBalance || balance.walletBalanceUsd)
+                ? `$${(balance.marginBalance || balance.walletBalanceUsd)!.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : "$10,843.97"}
             </div>
             <div className="mt-1 text-xs text-muted-foreground font-mono">
               {balance
-                ? `USDC: $${balance.usdcBalance.toLocaleString()} • BTC: ${balance.btcBalance}`
-                : "USDC: $5,000 • BTC: 0.01"}
+                ? `USDT: $${balance.usdtAvailable.toLocaleString()} • USDC: $${balance.usdcBalance.toLocaleString()} • BTC: ${balance.btcBalance}`
+                : "USDT: $5,000 • USDC: $5,000 • BTC: 0.01"}
             </div>
           </CardContent>
         </Card>
