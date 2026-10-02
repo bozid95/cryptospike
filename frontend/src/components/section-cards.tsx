@@ -107,7 +107,7 @@ export function SectionCards() {
           <CardTitle className="@[250px]/card:text-3xl text-2xl font-bold tabular-nums text-emerald-600">
             {balance
               ? `$${balance.usdtAvailable.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-              : "$4,981.44"}
+              : "$5,000.00"}
           </CardTitle>
           <div className="absolute right-4 top-4">
             <Badge
@@ -126,7 +126,8 @@ export function SectionCards() {
               : "USDC: $5,000 | BTC: 0.01"}
           </div>
           <div>
-            Lev: {config.leverage}x | Risk: {config.riskPerTradePct}% ({activeSignals} Open)
+            Lev: {config.leverage}x | Risk: {config.riskPerTradePct}% (
+            {activeSignals} Open)
           </div>
         </CardFooter>
       </Card>

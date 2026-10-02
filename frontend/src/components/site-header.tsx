@@ -63,13 +63,15 @@ export function SiteHeader() {
 
         {/* 3. Real Binance Testnet Balance */}
         <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-100 border border-border text-xs font-mono">
-          <span className="text-muted-foreground text-[11px]">Futures Margin:</span>
+          <span className="text-muted-foreground text-[11px]">
+            Futures Margin:
+          </span>
           <span className="font-semibold text-emerald-600">
             {balance
               ? `$${balance.usdtAvailable.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
               : isLoadingBalance
                 ? "Loading..."
-                : "$4,981.44 USDT"}
+                : "$5,000.00 USDT"}
           </span>
         </div>
 
