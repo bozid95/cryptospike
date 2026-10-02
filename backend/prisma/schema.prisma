@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// 1. USER & AUTH
+// ═══════════════════════════════════════════
+
+model User {
+  id           String   @id @default(uuid()) @db.VarChar(50)
+  username     String   @unique @db.VarChar(100)
+  passwordSalt String   @map("password_salt")
+  passwordHash String   @map("password_hash")
+  role         String   @default("user") @db.VarChar(20)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  sessions      UserSession[]
+  tradingConfig UserTradingConfig?
+  positionLocks UserPositionLock[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id        String   @id @db.VarChar(50)
+  userId    String   @map("user_id") @db.VarChar(50)
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "idx_user_sessions_user_id")
+  @@index([expiresAt], name: "idx_user_sessions_expires_at")
+  @@map("user_sessions")
+}
+
+// ═══════════════════════════════════════════
+// 2. TRADING CONFIG
+// ═══════════════════════════════════════════
+
+model UserTradingConfig {
+  userId    String   @id @map("user_id") @db.VarChar(50)
+  config    Json                                             
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_trading_configs")
+}
+
+// ═══════════════════════════════════════════
+// 3. SIGNAL (Optimized & Strategy Multi-Versioning)
+// ═══════════════════════════════════════════
+
+model Signal {
+  id              String    @id @default(uuid())
+  symbol          String
+  side            String                              // "LONG" atau "SHORT"
+  strength        String    @default("NORMAL")        // "STRONG" atau "NORMAL"
+  entryPrice      Float     @map("entry_price")
+  tp1             Float
+  tp2             Float?
+  tp3             Float?
+  sl              Float
+  score           Float?
+  strategy        String?                             // Nama strategy: "breakout_1h_v1", "prepump_15m_v2"
+  reasons         String?
+  triggerSource   String?   @map("trigger_source")    // "ticker_filter", "candle_1h", "pre_pump_scanner"
+  status          String    @default("ACTIVE")        // ACTIVE, TP1_HIT, TP2_HIT, TP3_HIT, TSL_HIT, SL_HIT, CANCELLED
+  profitPct       Float?    @map("profit_pct")
+  sentAt          DateTime  @default(now()) @map("sent_at")
+  hitTime         DateTime? @map("hit_time")
+
+  @@index([status], name: "idx_signals_status")
+  @@index([strategy], name: "idx_signals_strategy")
+  @@index([sentAt], name: "idx_signals_sent_at")
+  @@index([symbol, status], name: "idx_signals_symbol_status")
+  @@map("signals")
+}
+
+// ═══════════════════════════════════════════
+// 4. STRATEGY CONFIG
+// ═══════════════════════════════════════════
+
+model StrategyConfig {
+  strategyId String   @id @map("strategy_id")
+  isEnabled  Boolean  @default(false) @map("is_enabled")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("strategy_configs")
+}
+
+// ═══════════════════════════════════════════
+// 5. NOTIFICATION
+// ═══════════════════════════════════════════
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String?                          
+  symbol    String?
+  side      String?
+  price     Float?
+  profitPct Float?   @map("profit_pct")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+// ═══════════════════════════════════════════
+// 6. DONATION (Saweria)
+// ═══════════════════════════════════════════
+
+model Donation {
+  id           String   @id @default(uuid()) @db.Uuid
+  donatorName  String?  @map("donator_name")
+  donatorEmail String?  @map("donator_email")
+  amount       Decimal  @db.Decimal(18, 2)
+  message      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("donations")
+}
+
+// ═══════════════════════════════════════════
+// 7. USER POSITION LOCK (Anti-duplicate)
+// ═══════════════════════════════════════════
+
+model UserPositionLock {
+  userId          String    @map("user_id") @db.VarChar(50)
+  symbol          String    @db.VarChar(32)
+  status          String    @db.VarChar(16)               
+  exchange        String    @default("") @db.VarChar(32)  
+  environment     String    @default("") @db.VarChar(32)  
+  direction       String    @default("") @db.VarChar(16)  
+  signal          String    @default("")                   
+  entryPrice      Decimal   @default(0) @map("entry_price") @db.Decimal(20, 8)
+  externalOrderId String    @default("") @map("external_order_id")
+  lockToken       String    @default("") @map("lock_token") @db.VarChar(100)
+  reservedUntil   DateTime? @map("reserved_until")
+  openedAt        DateTime? @map("opened_at")
+  releasedAt      DateTime? @map("released_at")
+  releaseReason   String    @default("") @map("release_reason")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, symbol])
+  @@index([status, symbol], name: "idx_user_position_locks_status_symbol")
+  @@map("user_position_locks")
+}
+
+// ═══════════════════════════════════════════
+// 8. USER PRESENCE (Online tracking)
+// ═══════════════════════════════════════════
+
+model UserPresence {
+  sessionId String   @id @map("session_id")
+  lastSeen  DateTime @map("last_seen")
+
+  @@map("user_presence")
+}
+
+// ═══════════════════════════════════════════
+// 9. ANNOUNCEMENT
+// ═══════════════════════════════════════════
+
+model Announcement {
+  id       String  @id @default(uuid())
+  title    String?
+  message  String?
+  icon     String?
+  linkText String? @map("link_text")
+  linkUrl  String? @map("link_url")
+  isActive Boolean @default(true) @map("is_active")
+
+  @@map("announcements")
+}
