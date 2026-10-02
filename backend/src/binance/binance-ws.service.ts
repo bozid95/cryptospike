@@ -4,7 +4,7 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import WebSocket from 'ws';
+import * as WebSocket from 'ws';
 import { Subject } from 'rxjs';
 
 export interface BinanceWsTicker {
