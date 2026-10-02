@@ -35,7 +35,8 @@ import {
 } from "@/components/ui/table";
 
 export function DashboardSummary() {
-  const { signals, strategies, config, setActiveTab } = useCryptoSpike();
+  const { signals, strategies, config, setActiveTab, balance } =
+    useCryptoSpike();
 
   const totalSignals = signals.length;
   const longSignals = signals.filter((s) => s.side === "LONG");
@@ -160,23 +161,24 @@ export function DashboardSummary() {
           </CardContent>
         </Card>
 
-        {/* Execution Engine */}
+        {/* Futures Wallet (Testnet) */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription className="text-xs font-medium">
-              Futures Bot Position
+              Futures Wallet (Testnet)
             </CardDescription>
-            <ShieldCheckIcon className="size-4 text-primary" />
+            <ShieldCheckIcon className="size-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tabular-nums">
-              {activeSignals.length}{" "}
-              <span className="text-xs text-muted-foreground font-normal">
-                / {config.maxOpenPositions} Slots
-              </span>
+            <div className="text-2xl font-bold tabular-nums text-emerald-600">
+              {balance
+                ? `$${balance.usdtAvailable.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : "$5,000.00"}
             </div>
             <div className="mt-1 text-xs text-muted-foreground font-mono">
-              {config.environment} • Lev {config.leverage}x
+              {balance
+                ? `USDC: $${balance.usdcBalance.toLocaleString()} • BTC: ${balance.btcBalance}`
+                : "USDC: $5,000 • BTC: 0.01"}
             </div>
           </CardContent>
         </Card>
