@@ -68,17 +68,42 @@ export class ConfigService implements OnModuleInit {
       });
 
       if (!userConfig) {
-        // Simpan default config ke DB pertama kali
-        await this.prisma.userTradingConfig.create({
+        // Simpan default config ke DB pertama kali dengan kolom eksplisit
+        const created = await this.prisma.userTradingConfig.create({
           data: {
             userId: user.id,
-            config: DEFAULT_CONFIG as unknown as Prisma.InputJsonValue,
+            apiKey: DEFAULT_CONFIG.apiKey,
+            apiSecret: DEFAULT_CONFIG.apiSecret,
+            environment: DEFAULT_CONFIG.environment,
+            leverage: DEFAULT_CONFIG.leverage,
+            marginType: DEFAULT_CONFIG.marginType,
+            maxOpenPositions: DEFAULT_CONFIG.maxOpenPositions,
+            riskPerTradePct: DEFAULT_CONFIG.riskPerTradePct,
+            autoExecute: DEFAULT_CONFIG.autoExecute,
           },
         });
-        return DEFAULT_CONFIG;
+        return {
+          apiKey: created.apiKey,
+          apiSecret: created.apiSecret,
+          environment: (created.environment as any) || 'TESTNET',
+          leverage: created.leverage,
+          marginType: (created.marginType as any) || 'ISOLATED',
+          maxOpenPositions: created.maxOpenPositions,
+          riskPerTradePct: created.riskPerTradePct,
+          autoExecute: created.autoExecute,
+        };
       }
 
-      return userConfig.config as unknown as TradingConfigDto;
+      return {
+        apiKey: userConfig.apiKey || DEFAULT_CONFIG.apiKey,
+        apiSecret: userConfig.apiSecret || DEFAULT_CONFIG.apiSecret,
+        environment: (userConfig.environment as any) || DEFAULT_CONFIG.environment,
+        leverage: userConfig.leverage ?? DEFAULT_CONFIG.leverage,
+        marginType: (userConfig.marginType as any) || DEFAULT_CONFIG.marginType,
+        maxOpenPositions: userConfig.maxOpenPositions ?? DEFAULT_CONFIG.maxOpenPositions,
+        riskPerTradePct: userConfig.riskPerTradePct ?? DEFAULT_CONFIG.riskPerTradePct,
+        autoExecute: userConfig.autoExecute ?? DEFAULT_CONFIG.autoExecute,
+      };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.warn(
@@ -102,31 +127,54 @@ export class ConfigService implements OnModuleInit {
       });
     }
 
-    await this.prisma.userTradingConfig.upsert({
+    const saved = await this.prisma.userTradingConfig.upsert({
       where: { userId: user.id },
       update: {
-        config: newConfig as unknown as Prisma.InputJsonValue,
+        apiKey: newConfig.apiKey ?? '',
+        apiSecret: newConfig.apiSecret ?? '',
+        environment: newConfig.environment ?? 'TESTNET',
+        leverage: Number(newConfig.leverage) || 10,
+        marginType: newConfig.marginType ?? 'ISOLATED',
+        maxOpenPositions: Number(newConfig.maxOpenPositions) || 3,
+        riskPerTradePct: Number(newConfig.riskPerTradePct) || 2.0,
+        autoExecute: Boolean(newConfig.autoExecute),
         updatedAt: new Date(),
       },
       create: {
         userId: user.id,
-        config: newConfig as unknown as Prisma.InputJsonValue,
+        apiKey: newConfig.apiKey ?? '',
+        apiSecret: newConfig.apiSecret ?? '',
+        environment: newConfig.environment ?? 'TESTNET',
+        leverage: Number(newConfig.leverage) || 10,
+        marginType: newConfig.marginType ?? 'ISOLATED',
+        maxOpenPositions: Number(newConfig.maxOpenPositions) || 3,
+        riskPerTradePct: Number(newConfig.riskPerTradePct) || 2.0,
+        autoExecute: Boolean(newConfig.autoExecute),
       },
     });
 
     // Update in-memory process environment agar BinanceService langsung memakai key baru ini
-    if (newConfig.apiKey) {
-      process.env.BINANCE_API_KEY = newConfig.apiKey;
+    if (saved.apiKey) {
+      process.env.BINANCE_API_KEY = saved.apiKey;
     }
-    if (newConfig.apiSecret) {
-      process.env.BINANCE_SECRET_KEY = newConfig.apiSecret;
+    if (saved.apiSecret) {
+      process.env.BINANCE_SECRET_KEY = saved.apiSecret;
     }
     process.env.BINANCE_TESTNET =
-      newConfig.environment === 'TESTNET' ? 'true' : 'false';
+      saved.environment === 'TESTNET' ? 'true' : 'false';
 
     this.logger.log(
-      `Trading config saved to PostgreSQL database for user ${user.id}`,
+      `Trading config saved to explicit PostgreSQL database columns for user ${user.id}`,
     );
-    return newConfig;
+    return {
+      apiKey: saved.apiKey,
+      apiSecret: saved.apiSecret,
+      environment: saved.environment as any,
+      leverage: saved.leverage,
+      marginType: saved.marginType as any,
+      maxOpenPositions: saved.maxOpenPositions,
+      riskPerTradePct: saved.riskPerTradePct,
+      autoExecute: saved.autoExecute,
+    };
   }
 }

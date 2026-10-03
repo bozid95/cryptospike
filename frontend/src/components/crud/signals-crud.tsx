@@ -719,7 +719,11 @@ export function SignalsCrud() {
                                   // Tutup mengikuti floating PnL riil (jika profit dicatat TP_HIT, jika loss dicatat SL_HIT)
                                   const status =
                                     currentPnL >= 0 ? "TP1_HIT" : "SL_HIT";
-                                  handleStatusUpdate(sig.id, status, currentPnL);
+                                  handleStatusUpdate(
+                                    sig.id,
+                                    status,
+                                    currentPnL,
+                                  );
                                 }}
                                 title={`Close signal at current PnL (${(sig.profitPct ?? 0) >= 0 ? "+" : ""}${(sig.profitPct ?? 0).toFixed(2)}%)`}
                               >
