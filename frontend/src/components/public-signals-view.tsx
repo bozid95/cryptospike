@@ -412,6 +412,81 @@ export function PublicSignalsView() {
         </div>
       </header>
 
+      {/* Dynamic Running Text / Ticker Marquee Notice Bar (Directly below Header Navbar) */}
+      <div className="w-full border-b border-border/80 bg-amber-500/10 dark:bg-amber-500/10 py-1.5 px-3 sm:px-6">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
+          {/* Fixed Left Badge: LIVE NOTICE */}
+          <div className="shrink-0 flex items-center gap-1.5 bg-amber-500/20 dark:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-lg border border-amber-500/30">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <span>NOTICE</span>
+          </div>
+
+          {/* Infinite Scrolling Ticker (Pauses on Hover) */}
+          <div className="overflow-hidden flex-1 relative select-none">
+            <div className="animate-marquee gap-8 items-center cursor-pointer">
+              {/* Loop 1 */}
+              {tickerAnnouncements.map((item, idx) => (
+                <div
+                  key={`pub-t1-${item.id}-${idx}`}
+                  className="flex items-center gap-2 text-xs font-sans text-amber-700 dark:text-amber-300 shrink-0"
+                >
+                  {getAnnouncementIcon(item.icon)}
+                  {item.title && (
+                    <span className="font-bold tracking-tight uppercase text-[11px] bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
+                      {item.title}:
+                    </span>
+                  )}
+                  <span className="opacity-95">{item.message}</span>
+                  {item.linkUrl && (
+                    <a
+                      href={item.linkUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] underline font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80 ml-1"
+                    >
+                      {item.linkText || "Learn More"}
+                      <ExternalLinkIcon className="size-3" />
+                    </a>
+                  )}
+                  <span className="text-muted-foreground/40 mx-3">•</span>
+                </div>
+              ))}
+
+              {/* Loop 2 for seamless infinite ticker */}
+              {tickerAnnouncements.map((item, idx) => (
+                <div
+                  key={`pub-t2-${item.id}-${idx}`}
+                  className="flex items-center gap-2 text-xs font-sans text-amber-700 dark:text-amber-300 shrink-0"
+                >
+                  {getAnnouncementIcon(item.icon)}
+                  {item.title && (
+                    <span className="font-bold tracking-tight uppercase text-[11px] bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
+                      {item.title}:
+                    </span>
+                  )}
+                  <span className="opacity-95">{item.message}</span>
+                  {item.linkUrl && (
+                    <a
+                      href={item.linkUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] underline font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80 ml-1"
+                    >
+                      {item.linkText || "Learn More"}
+                      <ExternalLinkIcon className="size-3" />
+                    </a>
+                  )}
+                  <span className="text-muted-foreground/40 mx-3">•</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 2. Hero Section: Headline & Summary Cards */}
       <section className="border-b border-border/60 bg-muted/20 py-6 sm:py-10 px-3.5 sm:px-6">
         <div className="max-w-7xl mx-auto space-y-5">
@@ -423,81 +498,6 @@ export function PublicSignalsView() {
               Automated high-probability futures signals with dynamic
               multi-target TP and Trailing Stop.
             </p>
-          </div>
-
-          {/* Dynamic Running Text / Ticker Marquee Notice */}
-          <div className="max-w-4xl mx-auto w-full">
-            <div className="relative overflow-hidden bg-amber-500/10 dark:bg-amber-500/10 border border-slate-300 dark:border-zinc-700 rounded-2xl px-3 py-2 flex items-center shadow-xs">
-              {/* Fixed Left Badge: LIVE NOTICE */}
-              <div className="shrink-0 flex items-center gap-1.5 bg-amber-500/20 dark:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-xl mr-3 border border-amber-500/30">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                </span>
-                <span>NOTICE</span>
-              </div>
-
-              {/* Infinite Scrolling Ticker (Pauses on Hover) */}
-              <div className="overflow-hidden flex-1 relative select-none">
-                <div className="animate-marquee gap-8 items-center cursor-pointer">
-                  {/* Loop 1 */}
-                  {tickerAnnouncements.map((item, idx) => (
-                    <div
-                      key={`pub-t1-${item.id}-${idx}`}
-                      className="flex items-center gap-2 text-xs font-sans text-amber-700 dark:text-amber-300 shrink-0"
-                    >
-                      {getAnnouncementIcon(item.icon)}
-                      {item.title && (
-                        <span className="font-bold tracking-tight uppercase text-[11px] bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
-                          {item.title}:
-                        </span>
-                      )}
-                      <span className="opacity-95">{item.message}</span>
-                      {item.linkUrl && (
-                        <a
-                          href={item.linkUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] underline font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80 ml-1"
-                        >
-                          {item.linkText || "Learn More"}
-                          <ExternalLinkIcon className="size-3" />
-                        </a>
-                      )}
-                      <span className="text-muted-foreground/40 mx-3">•</span>
-                    </div>
-                  ))}
-
-                  {/* Loop 2 for seamless infinite ticker */}
-                  {tickerAnnouncements.map((item, idx) => (
-                    <div
-                      key={`pub-t2-${item.id}-${idx}`}
-                      className="flex items-center gap-2 text-xs font-sans text-amber-700 dark:text-amber-300 shrink-0"
-                    >
-                      {getAnnouncementIcon(item.icon)}
-                      {item.title && (
-                        <span className="font-bold tracking-tight uppercase text-[11px] bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
-                          {item.title}:
-                        </span>
-                      )}
-                      <span className="opacity-95">{item.message}</span>
-                      {item.linkUrl && (
-                        <a
-                          href={item.linkUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] underline font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80 ml-1"
-                        >
-                          {item.linkText || "Learn More"}
-                          <ExternalLinkIcon className="size-3" />
-                        </a>
-                      )}
-                      <span className="text-muted-foreground/40 mx-3">•</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* 4 Cards Stat Grid */}

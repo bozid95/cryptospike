@@ -222,15 +222,15 @@ export function AnnouncementsCrud() {
             </Badge>
           </div>
           <CardDescription className="text-[11px]">
-            Hover to pause. This ticker displays automatically on the public live
-            signals screen.
+            Hover to pause. This ticker displays automatically on the public
+            live signals screen.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-3 bg-muted/15">
           {activeAnnouncements.length === 0 ? (
             <div className="py-4 text-center text-xs text-muted-foreground">
-              No active announcements. Create or activate one below to display on
-              the public ticker.
+              No active announcements. Create or activate one below to display
+              on the public ticker.
             </div>
           ) : (
             <div className="relative overflow-hidden w-full rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2">
@@ -305,7 +305,8 @@ export function AnnouncementsCrud() {
                 Announcement Records ({announcements.length})
               </CardTitle>
               <CardDescription className="text-xs">
-                Manage titles, messages, icons, external links, and display status.
+                Manage titles, messages, icons, external links, and display
+                status.
               </CardDescription>
             </div>
             <div className="w-full sm:w-72">
@@ -330,7 +331,9 @@ export function AnnouncementsCrud() {
                     Icon
                   </TableHead>
                   <TableHead className="text-xs font-semibold">Title</TableHead>
-                  <TableHead className="text-xs font-semibold">Message</TableHead>
+                  <TableHead className="text-xs font-semibold">
+                    Message
+                  </TableHead>
                   <TableHead className="text-xs font-semibold">Link</TableHead>
                   <TableHead className="text-center text-xs font-semibold">
                     Status
@@ -392,7 +395,9 @@ export function AnnouncementsCrud() {
                         <div className="flex items-center justify-center gap-2">
                           <Switch
                             checked={item.isActive}
-                            onCheckedChange={() => void handleToggleActive(item)}
+                            onCheckedChange={() =>
+                              void handleToggleActive(item)
+                            }
                           />
                           <span
                             className={`text-[11px] font-mono font-medium ${
@@ -462,7 +467,8 @@ export function AnnouncementsCrud() {
                 {editingItem ? "Edit Announcement" : "Create New Announcement"}
               </DialogTitle>
               <DialogDescription className="text-xs">
-                Configure announcement banner and running text ticker information.
+                Configure announcement banner and running text ticker
+                information.
               </DialogDescription>
             </DialogHeader>
 
@@ -512,7 +518,9 @@ export function AnnouncementsCrud() {
                     }
                     className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
-                    <option value="AlertTriangle">⚠️ Warning / Disclaimer</option>
+                    <option value="AlertTriangle">
+                      ⚠️ Warning / Disclaimer
+                    </option>
                     <option value="Megaphone">📢 Megaphone / General</option>
                     <option value="Rocket">🚀 Rocket / New Feature</option>
                     <option value="Lightbulb">💡 Tip / Advisory</option>
