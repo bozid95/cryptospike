@@ -1041,11 +1041,19 @@ export function PublicSignalsView() {
                       {typeof displayProfitPct === "number" &&
                         (() => {
                           const margin = sig.simulatedMargin ?? 10.0;
+                          // Jika sinyal sudah selesai (CLOSED/TP/SL), gunakan nilai riil dari DB (sig.realizedPnlUsd)
+                          // Jika masih RUNNING/ACTIVE, selalu hitung floating PnL dinamis dari displayProfitPct live
                           const pnlUsd =
-                            typeof sig.realizedPnlUsd === "number"
+                            !isRunning && typeof sig.realizedPnlUsd === "number" && sig.realizedPnlUsd !== 0
                               ? sig.realizedPnlUsd
                               : (margin * displayProfitPct) / 100;
                           const isUsdPositive = pnlUsd >= 0;
+
+                          // Tampilkan 2 desimal jika >= $0.01, atau 3 desimal jika sangat kecil agar tidak tampak $0.00
+                          const formattedPnlUsd =
+                            Math.abs(pnlUsd) > 0 && Math.abs(pnlUsd) < 0.01
+                              ? pnlUsd.toFixed(3)
+                              : pnlUsd.toFixed(2);
 
                           return (
                             <span
@@ -1054,14 +1062,14 @@ export function PublicSignalsView() {
                                   ? "text-emerald-500"
                                   : "text-rose-500"
                               }`}
-                              title={`Simulated from $${margin.toFixed(2)} margin (1% risk on $1,000 capital): ${isUsdPositive ? "+" : ""}$${pnlUsd.toFixed(2)}`}
+                              title={`Simulated from $${margin.toFixed(2)} margin (1% risk on $1,000 capital): ${isUsdPositive ? "+" : ""}$${formattedPnlUsd}`}
                             >
                               <span>
                                 {isProfitPositive ? "+" : ""}
                                 {displayProfitPct.toFixed(2)}%
                               </span>
                               <span className="text-[10px] font-semibold opacity-90">
-                                ({isUsdPositive ? "+" : ""}${pnlUsd.toFixed(2)})
+                                ({isUsdPositive ? "+" : ""}${formattedPnlUsd})
                               </span>
                             </span>
                           );

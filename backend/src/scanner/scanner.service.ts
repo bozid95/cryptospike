@@ -140,7 +140,6 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         triggerSource: 'ws_ticker',
         simulatedMargin,
         positionAmount: parseFloat(positionAmount.toFixed(6)),
-        realizedPnlUsd: 0.0,
       });
 
       if (signal) {
