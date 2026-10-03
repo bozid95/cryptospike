@@ -12,6 +12,7 @@ import {
   INITIAL_SIGNALS,
   INITIAL_STRATEGIES,
   type AppNotification,
+  type AnnouncementItem,
   type AuthUser,
   type BinanceBalanceInfo,
   type PositionItem,
@@ -83,6 +84,19 @@ interface CryptoSpikeContextType {
   unreadCount: number;
   markAllNotificationsAsRead: () => void;
   clearNotifications: () => void;
+
+  // Announcements CRUD & Ticker
+  announcements: AnnouncementItem[];
+  activeAnnouncements: AnnouncementItem[];
+  isLoadingAnnouncements: boolean;
+  fetchAnnouncements: () => Promise<void>;
+  fetchActiveAnnouncements: () => Promise<void>;
+  createAnnouncement: (data: Partial<AnnouncementItem>) => Promise<boolean>;
+  updateAnnouncement: (
+    id: string,
+    data: Partial<AnnouncementItem>,
+  ) => Promise<boolean>;
+  deleteAnnouncement: (id: string) => Promise<boolean>;
 }
 
 const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
@@ -193,13 +207,18 @@ export function CryptoSpikeProvider({
   };
 
   const [activeTab, setActiveTabState] = useState<string>(() => {
-    // 1. Cek URL Hash terlebih dahulu (misal: #positions, #signals, #config)
+    // 1. Cek URL Hash terlebih dahulu (misal: #positions, #signals, #config, #announcements)
     const hash = window.location.hash.replace("#", "").trim();
     if (
       hash &&
-      ["overview", "positions", "signals", "strategies", "config"].includes(
-        hash,
-      )
+      [
+        "overview",
+        "positions",
+        "signals",
+        "strategies",
+        "config",
+        "announcements",
+      ].includes(hash)
     ) {
       return hash;
     }
@@ -208,9 +227,14 @@ export function CryptoSpikeProvider({
       const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
       if (
         savedTab &&
-        ["overview", "positions", "signals", "strategies", "config"].includes(
-          savedTab,
-        )
+        [
+          "overview",
+          "positions",
+          "signals",
+          "strategies",
+          "config",
+          "announcements",
+        ].includes(savedTab)
       ) {
         return savedTab;
       }
@@ -451,7 +475,119 @@ export function CryptoSpikeProvider({
     }
   };
 
-  // Load initial config & strategies dari DB backend (Hanya jika admin login)
+  // Announcements CRUD & Ticker
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+  const [activeAnnouncements, setActiveAnnouncements] = useState<
+    AnnouncementItem[]
+  >([]);
+  const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(false);
+
+  const fetchActiveAnnouncements = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/announcements/active`, {
+        headers: {
+          "x-cryptospike-client": "cspk-client-app-v1-pub",
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setActiveAnnouncements(data);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load active announcements:", err);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    if (!isAuthenticated) return;
+    try {
+      setIsLoadingAnnouncements(true);
+      const res = await authFetch(`${API_BASE_URL}/api/announcements`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setAnnouncements(data);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load all announcements:", err);
+    } finally {
+      setIsLoadingAnnouncements(false);
+    }
+  };
+
+  const createAnnouncement = async (
+    data: Partial<AnnouncementItem>,
+  ): Promise<boolean> => {
+    try {
+      const res = await authFetch(`${API_BASE_URL}/api/announcements`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        await fetchAnnouncements();
+        await fetchActiveAnnouncements();
+        toast.success("Announcement created successfully");
+        return true;
+      }
+      toast.error("Failed to create announcement");
+      return false;
+    } catch (err) {
+      console.error("Failed to create announcement:", err);
+      toast.error("Error creating announcement");
+      return false;
+    }
+  };
+
+  const updateAnnouncement = async (
+    id: string,
+    data: Partial<AnnouncementItem>,
+  ): Promise<boolean> => {
+    try {
+      const res = await authFetch(`${API_BASE_URL}/api/announcements/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        await fetchAnnouncements();
+        await fetchActiveAnnouncements();
+        toast.success("Announcement updated successfully");
+        return true;
+      }
+      toast.error("Failed to update announcement");
+      return false;
+    } catch (err) {
+      console.error("Failed to update announcement:", err);
+      toast.error("Error updating announcement");
+      return false;
+    }
+  };
+
+  const deleteAnnouncement = async (id: string): Promise<boolean> => {
+    try {
+      const res = await authFetch(`${API_BASE_URL}/api/announcements/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        await fetchAnnouncements();
+        await fetchActiveAnnouncements();
+        toast.success("Announcement deleted successfully");
+        return true;
+      }
+      toast.error("Failed to delete announcement");
+      return false;
+    } catch (err) {
+      console.error("Failed to delete announcement:", err);
+      toast.error("Error deleting announcement");
+      return false;
+    }
+  };
+
+  // Load initial config & strategies & announcements dari DB backend (Hanya jika admin login)
   useEffect(() => {
     if (!isAuthenticated) return;
     const fetchDbConfig = async () => {
@@ -467,6 +603,7 @@ export function CryptoSpikeProvider({
     };
     void fetchDbConfig();
     void fetchDbStrategies();
+    void fetchAnnouncements();
   }, [isAuthenticated]);
 
   // Load strategies dari backend Registry (DB PostgreSQL) (Hanya jika admin login)
@@ -703,6 +840,7 @@ export function CryptoSpikeProvider({
 
   useEffect(() => {
     void fetchDbSignals();
+    void fetchActiveAnnouncements();
 
     // Koneksi Realtime WebSocket ke Backend NestJS
     const socket = io(API_BASE_URL || window.location.origin, {
@@ -1051,6 +1189,14 @@ export function CryptoSpikeProvider({
         unreadCount,
         markAllNotificationsAsRead,
         clearNotifications,
+        announcements,
+        activeAnnouncements,
+        isLoadingAnnouncements,
+        fetchAnnouncements,
+        fetchActiveAnnouncements,
+        createAnnouncement,
+        updateAnnouncement,
+        deleteAnnouncement,
       }}
     >
       {children}

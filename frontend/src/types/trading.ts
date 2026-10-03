@@ -13,6 +13,16 @@ export interface AppNotification {
   read: boolean;
 }
 
+export interface AnnouncementItem {
+  id: string;
+  title?: string | null;
+  message?: string | null;
+  icon?: string | null;
+  linkText?: string | null;
+  linkUrl?: string | null;
+  isActive: boolean;
+}
+
 export interface SignalItem {
   id: string;
   symbol: string;

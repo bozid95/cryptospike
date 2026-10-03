@@ -15,10 +15,12 @@ import {
   TrophyIcon,
   LayersIcon,
   AlertTriangleIcon,
+  ExternalLinkIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/context/trading-context";
 import { NotificationBell } from "@/components/notification-bell";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { getAnnouncementIcon } from "@/components/crud/announcements-crud";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,7 +61,7 @@ function formatCryptoPrice(val: number): string {
 }
 
 export function PublicSignalsView() {
-  const { signals } = useCryptoSpike();
+  const { signals, activeAnnouncements } = useCryptoSpike();
   const [filter, setFilter] = useState<"ALL" | "RUNNING" | "CLOSED">("ALL");
   const [selectedStrategy, setSelectedStrategy] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
@@ -336,6 +338,24 @@ export function PublicSignalsView() {
     startIndex + pageSize,
   );
 
+  const tickerAnnouncements = useMemo(() => {
+    if (activeAnnouncements && activeAnnouncements.length > 0) {
+      return activeAnnouncements;
+    }
+    return [
+      {
+        id: "default-disclaimer",
+        title: "Development Phase & Sample Data Testing",
+        message:
+          "The system is currently in development & collecting sample signals for algorithm strategy testing. These signals are purely for technical evaluation, not financial advice, and do not follow them.",
+        icon: "AlertTriangle",
+        linkText: null,
+        linkUrl: null,
+        isActive: true,
+      },
+    ];
+  }, [activeAnnouncements]);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-emerald-500/20 selection:text-emerald-500">
       {/* 1. Clean Responsive Header */}
@@ -405,20 +425,78 @@ export function PublicSignalsView() {
             </p>
           </div>
 
-          {/* Development & Sample Data Disclaimer Notice */}
-          <div className="max-w-2xl mx-auto bg-amber-500/10 border border-amber-500/40 dark:border-amber-500/30 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5 text-left text-amber-600 dark:text-amber-400 shadow-xs">
-            <AlertTriangleIcon className="size-4 shrink-0 stroke-[2.2] text-amber-500" />
-            <div className="text-xs space-y-0.5">
-              <span className="font-bold uppercase tracking-wider text-[11px] block">
-                Development Phase & Sample Data Testing
-              </span>
-              <p className="text-[11px] opacity-90 leading-relaxed font-sans">
-                The system is currently in{" "}
-                <strong>development & collecting sample signals</strong> for
-                algorithm strategy testing. These signals are purely for
-                technical evaluation,{" "}
-                <strong>not financial advice, and do not follow them</strong>.
-              </p>
+          {/* Dynamic Running Text / Ticker Marquee Notice */}
+          <div className="max-w-4xl mx-auto w-full">
+            <div className="relative overflow-hidden bg-amber-500/10 dark:bg-amber-500/10 border border-slate-300 dark:border-zinc-700 rounded-2xl px-3 py-2 flex items-center shadow-xs">
+              {/* Fixed Left Badge: LIVE NOTICE */}
+              <div className="shrink-0 flex items-center gap-1.5 bg-amber-500/20 dark:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-xl mr-3 border border-amber-500/30">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                <span>NOTICE</span>
+              </div>
+
+              {/* Infinite Scrolling Ticker (Pauses on Hover) */}
+              <div className="overflow-hidden flex-1 relative select-none">
+                <div className="animate-marquee gap-8 items-center cursor-pointer">
+                  {/* Loop 1 */}
+                  {tickerAnnouncements.map((item, idx) => (
+                    <div
+                      key={`pub-t1-${item.id}-${idx}`}
+                      className="flex items-center gap-2 text-xs font-sans text-amber-700 dark:text-amber-300 shrink-0"
+                    >
+                      {getAnnouncementIcon(item.icon)}
+                      {item.title && (
+                        <span className="font-bold tracking-tight uppercase text-[11px] bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
+                          {item.title}:
+                        </span>
+                      )}
+                      <span className="opacity-95">{item.message}</span>
+                      {item.linkUrl && (
+                        <a
+                          href={item.linkUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] underline font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80 ml-1"
+                        >
+                          {item.linkText || "Learn More"}
+                          <ExternalLinkIcon className="size-3" />
+                        </a>
+                      )}
+                      <span className="text-muted-foreground/40 mx-3">•</span>
+                    </div>
+                  ))}
+
+                  {/* Loop 2 for seamless infinite ticker */}
+                  {tickerAnnouncements.map((item, idx) => (
+                    <div
+                      key={`pub-t2-${item.id}-${idx}`}
+                      className="flex items-center gap-2 text-xs font-sans text-amber-700 dark:text-amber-300 shrink-0"
+                    >
+                      {getAnnouncementIcon(item.icon)}
+                      {item.title && (
+                        <span className="font-bold tracking-tight uppercase text-[11px] bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
+                          {item.title}:
+                        </span>
+                      )}
+                      <span className="opacity-95">{item.message}</span>
+                      {item.linkUrl && (
+                        <a
+                          href={item.linkUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] underline font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80 ml-1"
+                        >
+                          {item.linkText || "Learn More"}
+                          <ExternalLinkIcon className="size-3" />
+                        </a>
+                      )}
+                      <span className="text-muted-foreground/40 mx-3">•</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

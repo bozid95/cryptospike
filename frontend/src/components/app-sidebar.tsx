@@ -6,6 +6,7 @@ import {
   BriefcaseIcon,
   CpuIcon,
   LayoutDashboardIcon,
+  MegaphoneIcon,
   RadioIcon,
   SlidersIcon,
 } from "lucide-react";
@@ -32,6 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     strategies,
     config,
     positions,
+    announcements,
     setActiveTab,
     isAuthenticated,
   } = useCryptoSpike();
@@ -41,6 +43,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   ).length;
   const activeStrategiesCount = strategies.filter((s) => s.isEnabled).length;
   const activePositionsCount = positions.length;
+  const activeAnnouncementsCount = announcements.filter(
+    (a) => a.isActive,
+  ).length;
 
   // Navigasi Utama: Bebas Redundansi (Jika publik, hanya tampilkan Scanner)
   const mainNavItems = isAuthenticated
@@ -78,6 +83,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "#strategies",
           icon: CpuIcon,
           badge: `${activeStrategiesCount}/${strategies.length}`,
+          badgeVariant: "outline" as const,
+        },
+        {
+          id: "announcements",
+          title: "Announcements & Ticker",
+          url: "#announcements",
+          icon: MegaphoneIcon,
+          badge:
+            activeAnnouncementsCount > 0
+              ? `${activeAnnouncementsCount} Active`
+              : undefined,
           badgeVariant: "outline" as const,
         },
         {

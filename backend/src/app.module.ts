@@ -9,6 +9,7 @@ import { GatewayModule } from './gateway/gateway.module';
 import { AppConfigModule } from './config/config.module';
 import { ExecutionModule } from './execution/execution.module';
 import { AuthModule } from './auth/auth.module';
+import { AnnouncementModule } from './announcement/announcement.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -24,6 +25,7 @@ import { AppService } from './app.service';
     AppConfigModule,
     ExecutionModule,
     AuthModule,
+    AnnouncementModule,
   ],
   controllers: [AppController],
   providers: [AppService],

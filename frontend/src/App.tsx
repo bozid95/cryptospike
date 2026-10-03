@@ -5,6 +5,7 @@ import { PositionsCrud } from "@/components/crud/positions-crud";
 import { SettingsCrud } from "@/components/crud/settings-crud";
 import { SignalsCrud } from "@/components/crud/signals-crud";
 import { StrategyManagerCrud } from "@/components/crud/strategy-manager-crud";
+import { AnnouncementsCrud } from "@/components/crud/announcements-crud";
 import { DashboardSummary } from "@/components/dashboard-summary";
 import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
@@ -28,6 +29,7 @@ function DashboardContent() {
       {activeTab === "positions" && <PositionsCrud />}
       {activeTab === "signals" && <SignalsCrud />}
       {activeTab === "strategies" && <StrategyManagerCrud />}
+      {activeTab === "announcements" && <AnnouncementsCrud />}
       {activeTab === "config" && <SettingsCrud />}
     </div>
   );
