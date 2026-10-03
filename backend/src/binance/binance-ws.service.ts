@@ -38,8 +38,11 @@ export class BinanceWsService implements OnModuleInit, OnModuleDestroy {
   private connect() {
     if (this.isDestroyed) return;
 
-    // Stream all ticker mini/full dari Binance Futures
-    const url = 'wss://fstream.binance.com/ws/!ticker@arr';
+    // Stream all ticker mini/full dari Binance Futures (Domain resmi aktif & bebas blokir)
+    const isTestnet = process.env.BINANCE_TESTNET === 'true';
+    const url = isTestnet
+      ? 'wss://stream.binancefuture.com/ws/!ticker@arr'
+      : 'wss://fstream.binancefuture.com/ws/!ticker@arr';
     this.logger.log(`Connecting to Binance Futures WS: ${url}`);
 
     this.ws = new WebSocket(url);
