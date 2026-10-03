@@ -16,17 +16,10 @@ import { Toaster } from "@/components/ui/sonner";
 
 import { useEffect, useState } from "react";
 
-function DashboardContent() {
-  const { activeTab, isAuthenticated } = useCryptoSpike();
+import { PublicSignalsView } from "@/components/public-signals-view";
 
-  // Jika pengunjung publik (belum login), selalu tampilkan halaman Signals
-  if (!isAuthenticated) {
-    return (
-      <div className="flex flex-1 flex-col gap-4 p-3.5 sm:p-4 lg:gap-6 lg:p-6 pb-20 sm:pb-6">
-        <SignalsCrud />
-      </div>
-    );
-  }
+function DashboardContent() {
+  const { activeTab } = useCryptoSpike();
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-3.5 sm:p-4 lg:gap-6 lg:p-6 pb-20 sm:pb-6">
@@ -61,18 +54,22 @@ function MainLayout() {
 
   const isLoginRoute = pathname.includes("/login") || hash === "#login";
 
-  // Jika route adalah /login dan belum login, tampilkan halaman LoginView
+  // 1. Jika rute adalah /login dan belum login, tampilkan LoginView
   if (isLoginRoute && !isAuthenticated) {
     return <LoginView />;
   }
 
-  // Jika sudah login dan masih di /login, otomatis bersihkan path/hash kembali ke dashboard
+  // 2. Jika user baru saja login dari /login, otomatis alihkan ke /dashboard
   if (isLoginRoute && isAuthenticated) {
-    if (window.location.pathname.includes("/login")) {
-      window.history.replaceState(null, "", "/");
-    }
+    window.history.replaceState(null, "", "/dashboard");
   }
 
+  // 3. Jika user belum login: Tampilkan PublicSignalsView (UI Publik Khusus Pengunjung, bukan Dashboard!)
+  if (!isAuthenticated) {
+    return <PublicSignalsView />;
+  }
+
+  // 4. Jika user telah login (Admin Mode): Tampilkan Dashboard Layout Lengkap
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SidebarProvider>
