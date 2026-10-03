@@ -340,7 +340,8 @@ export function SignalsCrud() {
 
                         {/* 5. Realized / Floating PnL */}
                         <TableCell className="align-middle py-3.5">
-                          {sig.profitPct !== undefined ? (
+                          {typeof sig.profitPct === "number" &&
+                          sig.profitPct !== null ? (
                             <div className="flex flex-col gap-0.5">
                               <div
                                 className={`inline-flex items-center gap-1 font-mono font-bold text-xs tabular-nums ${

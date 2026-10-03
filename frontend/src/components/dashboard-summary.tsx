@@ -433,7 +433,8 @@ export function DashboardSummary() {
                         )}
                       </TableCell>
                       <TableCell className="align-middle text-right font-mono text-xs font-bold tabular-nums">
-                        {sig.profitPct !== undefined ? (
+                        {typeof sig.profitPct === "number" &&
+                        sig.profitPct !== null ? (
                           <span
                             className={
                               isProfit ? "text-emerald-600" : "text-destructive"
