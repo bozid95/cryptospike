@@ -11,7 +11,9 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('--- RECALCULATING TSL SIGNALS (50% PARTIAL TAKE PROFIT AT TP1) ---');
+  console.log(
+    '--- RECALCULATING TSL SIGNALS (50% PARTIAL TAKE PROFIT AT TP1) ---',
+  );
   const tslSignals = await prisma.signal.findMany({
     where: {
       status: 'TSL_HIT',
@@ -31,7 +33,7 @@ async function main() {
     // Sisa 50% di Breakeven, floor ke 0% agar slippage tidak minus
     const beProfitPct = Math.max(0, sig.profitPct ?? 0);
     const finalProfitPct = parseFloat(
-      ((tp1ProfitPct * 0.5) + (beProfitPct * 0.5)).toFixed(2),
+      (tp1ProfitPct * 0.5 + beProfitPct * 0.5).toFixed(2),
     );
 
     const margin = sig.simulatedMargin ?? 10.0;

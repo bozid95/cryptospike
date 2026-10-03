@@ -810,10 +810,14 @@ export function PublicSignalsView() {
               return (
                 <div
                   key={sig.id}
-                  className={`rounded-2xl border bg-card p-3.5 sm:p-4 space-y-3 transition-all shadow-xs hover:shadow-md hover:border-emerald-500/30 ${
+                  className={`rounded-2xl border-2 bg-card p-3.5 sm:p-4 space-y-3 transition-all shadow-xs hover:shadow-md ${
                     isRunning
-                      ? "border-emerald-500/30 ring-1 ring-emerald-500/10"
-                      : "border-border/80"
+                      ? "border-emerald-500/80 dark:border-emerald-500/70 ring-2 ring-emerald-500/20 shadow-emerald-500/5"
+                      : isProfitPositive
+                        ? "border-emerald-500/40 dark:border-emerald-500/35 hover:border-emerald-500/70"
+                        : sig.status === "SL_HIT" || !isProfitPositive
+                          ? "border-rose-500/40 dark:border-rose-500/35 hover:border-rose-500/70"
+                          : "border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-600"
                   }`}
                 >
                   {/* Card Header: Pair, Side Badge & Status */}
@@ -875,7 +879,7 @@ export function PublicSignalsView() {
                   </div>
 
                   {/* Price & Position Size Grid */}
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-muted/40 border border-border/50 text-xs font-mono">
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-muted/40 border border-slate-200 dark:border-zinc-800 text-xs font-mono">
                     <div>
                       <span className="text-[10px] text-muted-foreground block font-sans">
                         Entry Price
@@ -937,7 +941,7 @@ export function PublicSignalsView() {
                   </div>
 
                   {/* Target Levels: TP1, TP2, TP3 & SL (Structured 2x2 Grid) */}
-                  <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-2 text-xs font-mono">
+                  <div className="p-2.5 rounded-xl bg-muted/30 border border-slate-200 dark:border-zinc-800 space-y-2 text-xs font-mono">
                     <span className="text-[10px] text-muted-foreground block font-sans font-medium uppercase tracking-wider">
                       Targets (TP & SL)
                     </span>
@@ -1129,7 +1133,7 @@ export function PublicSignalsView() {
                   </div>
 
                   {/* Card Footer: Strategy, PnL & Time */}
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200 dark:border-zinc-800">
                     <span className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono text-muted-foreground truncate max-w-[140px]">
                       {sig.strategy}
                     </span>

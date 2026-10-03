@@ -239,7 +239,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             const margin = sig.simulatedMargin ?? 10.0;
             // 50% posisi terealisasi profitnya saat TP1 tersentuh
             const partialRealizedPnlUsd = parseFloat(
-              (((margin * 0.5) * profitPct) / 100).toFixed(4),
+              ((margin * 0.5 * profitPct) / 100).toFixed(4),
             );
 
             // Update database
@@ -370,14 +370,14 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
 
             const margin = sig.simulatedMargin ?? 10.0;
             const tp1ProfitPct = sig.tp1
-              ? (isLong
-                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
-                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
-              : (profitPct * 0.5);
+              ? isLong
+                ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100
+              : profitPct * 0.5;
 
             // Realized so far: 50% di TP1
             const realizedPnlUsd = parseFloat(
-              (((margin * 0.5) * tp1ProfitPct) / 100).toFixed(4),
+              ((margin * 0.5 * tp1ProfitPct) / 100).toFixed(4),
             );
 
             await this.prisma.signal.update({
@@ -409,13 +409,13 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
 
             const tp1ProfitPct = sig.tp1
-              ? (isLong
-                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
-                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
-              : (tp3ProfitPct * 0.5);
+              ? isLong
+                ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100
+              : tp3ProfitPct * 0.5;
 
             // Blended: 50% di TP1 + 50% di TP3
-            const finalProfitPct = (tp1ProfitPct * 0.5) + (tp3ProfitPct * 0.5);
+            const finalProfitPct = tp1ProfitPct * 0.5 + tp3ProfitPct * 0.5;
 
             this.logger.log(
               `[TARGET HIT] ${sig.symbol} HIT TP3 (${sig.tp3})! Full target reached. Blended Profit: ${finalProfitPct.toFixed(2)}% | Status: TP3_HIT | Strategy: ${sig.strategy}`,
@@ -518,23 +518,24 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
           if (sig.status === 'TP1_HIT') {
             // 50% posisi sudah terkunci cuan di TP1!
             const tp1ProfitPct = sig.tp1
-              ? (isLong
-                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
-                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
+              ? isLong
+                ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100
               : (sig.profitPct ?? 0);
 
             // Sisa 50% keluar di Breakeven. Floor ke 0% agar slippage tipis tidak menyebabkan kerugian
             const beProfitPct = Math.max(0, exitProfitPct);
-            finalProfitPct = (tp1ProfitPct * 0.5) + (beProfitPct * 0.5);
+            finalProfitPct = tp1ProfitPct * 0.5 + beProfitPct * 0.5;
           } else if (sig.status === 'TP2_HIT') {
             // 50% pertama cuan di TP1, dan 50% kedua terkunci di level TP1
             const tp1ProfitPct = sig.tp1
-              ? (isLong
-                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
-                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
+              ? isLong
+                ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100
               : (sig.profitPct ?? 0);
 
-            finalProfitPct = (tp1ProfitPct * 0.5) + (Math.max(tp1ProfitPct, exitProfitPct) * 0.5);
+            finalProfitPct =
+              tp1ProfitPct * 0.5 + Math.max(tp1ProfitPct, exitProfitPct) * 0.5;
           }
 
           this.logger.log(
