@@ -43,7 +43,6 @@ export function StrategyManagerCrud() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const filteredStrategies = useMemo(() => {
     if (!searchTerm.trim()) return strategies;
@@ -53,7 +52,8 @@ export function StrategyManagerCrud() {
         s.name.toLowerCase().includes(q) ||
         s.strategyId.toLowerCase().includes(q) ||
         s.timeframe.toLowerCase().includes(q) ||
-        (s.indicators && s.indicators.some((ind) => ind.toLowerCase().includes(q))),
+        (s.indicators &&
+          s.indicators.some((ind) => ind.toLowerCase().includes(q))),
     );
   }, [strategies, searchTerm]);
 
@@ -69,12 +69,6 @@ export function StrategyManagerCrud() {
     toggleStrategy(stratId);
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    // Reload window or re-fetch via context
-    window.location.reload();
-  };
-
   return (
     <div className="space-y-4">
       <Card className="border-border shadow-xs">
@@ -85,21 +79,9 @@ export function StrategyManagerCrud() {
               Strategy Engine Registry
             </CardTitle>
             <CardDescription className="text-xs">
-              Algoritma terdeteksi langsung dari source code backend NestJS. Status ON/OFF otomatis tersimpan di PostgreSQL.
+              Algoritma terdeteksi langsung dari source code backend NestJS.
+              Status ON/OFF otomatis tersimpan di PostgreSQL.
             </CardDescription>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
-              <RefreshCwIcon className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-              Sinkronkan Engine
-            </Button>
           </div>
         </CardHeader>
 
@@ -171,7 +153,10 @@ export function StrategyManagerCrud() {
                           {strat.name}
                         </div>
                         <div className="font-mono text-[11px] text-muted-foreground mt-0.5 tracking-tight pl-6">
-                          ID: <span className="text-foreground/90 font-medium">{strat.strategyId}</span>
+                          ID:{" "}
+                          <span className="text-foreground/90 font-medium">
+                            {strat.strategyId}
+                          </span>
                         </div>
                         <div className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed pl-6">
                           {strat.description}
@@ -200,7 +185,9 @@ export function StrategyManagerCrud() {
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-xs text-muted-foreground">-</span>
+                            <span className="text-xs text-muted-foreground">
+                              -
+                            </span>
                           )}
                         </div>
                       </TableCell>
