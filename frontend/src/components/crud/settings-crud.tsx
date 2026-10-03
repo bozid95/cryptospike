@@ -27,6 +27,9 @@ export function SettingsCrud() {
   const [apiSecret, setApiSecret] = useState(config.apiSecret);
   const [showSecret, setShowSecret] = useState(false);
   const [environment, setEnvironment] = useState(config.environment);
+  const [marginType, setMarginType] = useState<"ISOLATED" | "CROSSED">(
+    config.marginType || "ISOLATED",
+  );
   const [leverage, setLeverage] = useState(config.leverage.toString());
   const [maxOpenPositions, setMaxOpenPositions] = useState(
     config.maxOpenPositions.toString(),
@@ -38,12 +41,25 @@ export function SettingsCrud() {
   const [saved, setSaved] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
 
+  // Sync state if config is loaded asynchronously from backend API
+  React.useEffect(() => {
+    setApiKey(config.apiKey || "");
+    setApiSecret(config.apiSecret || "");
+    setEnvironment(config.environment || "TESTNET");
+    setMarginType(config.marginType || "ISOLATED");
+    setLeverage((config.leverage ?? 10).toString());
+    setMaxOpenPositions((config.maxOpenPositions ?? 3).toString());
+    setRiskPerTradePct((config.riskPerTradePct ?? 2).toString());
+    setAutoExecute(Boolean(config.autoExecute));
+  }, [config]);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     updateConfig({
       apiKey,
       apiSecret,
       environment,
+      marginType,
       leverage: parseInt(leverage, 10) || 10,
       maxOpenPositions: parseInt(maxOpenPositions, 10) || 3,
       riskPerTradePct: parseFloat(riskPerTradePct) || 2,
@@ -165,7 +181,28 @@ export function SettingsCrud() {
             exposure per trade.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6 pt-0 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="p-6 pt-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="marginType" className="text-xs font-semibold">
+              Margin Type
+            </Label>
+            <select
+              id="marginType"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-medium"
+              value={marginType}
+              onChange={(e) =>
+                setMarginType(e.target.value as "ISOLATED" | "CROSSED")
+              }
+            >
+              <option value="ISOLATED" className="bg-popover text-foreground">
+                ISOLATED
+              </option>
+              <option value="CROSSED" className="bg-popover text-foreground">
+                CROSSED
+              </option>
+            </select>
+          </div>
+
           <div className="grid gap-2">
             <Label htmlFor="lev" className="text-xs font-semibold">
               Default Leverage (x)

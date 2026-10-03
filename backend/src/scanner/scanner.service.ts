@@ -68,7 +68,10 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     this.latestPrices.set(ticker.s, lastPrice);
 
     // 1. Streaming harga terfokus: Broadcast jika koin sedang ada di posisi aktif Binance atau sinyal yang sedang ACTIVE
-    if (this.openSymbols.has(ticker.s) || this.activeSignalSymbols.has(ticker.s)) {
+    if (
+      this.openSymbols.has(ticker.s) ||
+      this.activeSignalSymbols.has(ticker.s)
+    ) {
       this.gateway.broadcastPositionPrice({
         symbol: ticker.s,
         markPrice: lastPrice,
