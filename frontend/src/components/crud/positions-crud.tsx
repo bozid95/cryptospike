@@ -526,6 +526,79 @@ export function PositionsCrud() {
                         </div>
                       </div>
 
+                      {/* Target Orders TP & SL Info */}
+                      {(pos.orders && pos.orders.length > 0) || pos.sl || pos.tp1 ? (
+                        <div className="p-2.5 rounded-lg bg-muted/30 border border-border/40 space-y-1.5 text-xs font-mono">
+                          <span className="text-[10px] text-muted-foreground block font-sans font-medium">
+                            Target Orders (TP & SL)
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {pos.orders && pos.orders.length > 0
+                              ? pos.orders.map((ord, idx) => {
+                                  const diffPct =
+                                    pos.entryPrice > 0
+                                      ? (isLong
+                                          ? (ord.price - pos.entryPrice) /
+                                            pos.entryPrice
+                                          : (pos.entryPrice - ord.price) /
+                                            pos.entryPrice) * 100
+                                      : 0;
+                                  return (
+                                    <div
+                                      key={ord.orderId}
+                                      className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]"
+                                    >
+                                      <span className="text-[10px] font-bold text-emerald-600">
+                                        TP{idx + 1}
+                                      </span>
+                                      <span className="font-semibold text-foreground">
+                                        ${formatCryptoPrice(ord.price)}
+                                      </span>
+                                      <span className="text-[10px] text-emerald-600">
+                                        ({diffPct >= 0 ? `+${diffPct.toFixed(1)}%` : `${diffPct.toFixed(1)}%`})
+                                      </span>
+                                    </div>
+                                  );
+                                })
+                              : (
+                                <>
+                                  {pos.tp1 && (
+                                    <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">
+                                      <span className="text-[10px] font-bold text-emerald-600">TP1</span>
+                                      <span className="font-semibold text-foreground">${formatCryptoPrice(pos.tp1)}</span>
+                                    </div>
+                                  )}
+                                  {pos.tp2 && (
+                                    <div className="flex items-center gap-1 bg-teal-500/10 border border-teal-500/20 px-1.5 py-0.5 rounded text-[11px]">
+                                      <span className="text-[10px] font-bold text-teal-600">TP2</span>
+                                      <span className="font-semibold text-foreground">${formatCryptoPrice(pos.tp2)}</span>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            {pos.sl && (
+                              <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-1.5 py-0.5 rounded text-[11px]">
+                                <span className="text-[10px] font-bold text-destructive">
+                                  SL
+                                </span>
+                                <span className="font-semibold text-destructive">
+                                  ${formatCryptoPrice(pos.sl)}
+                                </span>
+                                <span className="text-[10px] text-destructive">
+                                  ({pos.entryPrice > 0
+                                    ? `-${Math.abs(((pos.entryPrice - pos.sl) / pos.entryPrice) * 100).toFixed(1)}%`
+                                    : "0%"})
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-0.5">
+                            <span className="text-amber-500 font-bold">●</span>
+                            <span>Engine TSL Realtime Active</span>
+                          </div>
+                        </div>
+                      ) : null}
+
                       {/* PnL & Liq Price Bar */}
                       <div className="flex items-center justify-between text-xs pt-0.5">
                         <div className="text-[11px] font-mono text-muted-foreground">
@@ -858,6 +931,24 @@ export function PositionsCrud() {
                                     </div>
                                   );
                                 })}
+                                {pos.sl && (
+                                  <div className="flex items-center gap-1.5 text-[11px] text-destructive">
+                                    <Badge
+                                      variant="outline"
+                                      className="px-1 py-0 h-4 text-[9px] font-bold border-destructive/40 text-destructive bg-destructive/5"
+                                    >
+                                      SL
+                                    </Badge>
+                                    <span className="font-semibold tabular-nums">
+                                      ${formatCryptoPrice(pos.sl)}
+                                    </span>
+                                    <span className="font-bold text-[10px] bg-destructive/10 text-destructive px-1 py-0.5 rounded border border-destructive/20 leading-none">
+                                      {pos.entryPrice > 0
+                                        ? `-${Math.abs(((pos.entryPrice - pos.sl) / pos.entryPrice) * 100).toFixed(2)}%`
+                                        : "-0.00%"}
+                                    </span>
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
                                   <span className="text-amber-500 font-bold">
                                     ●
