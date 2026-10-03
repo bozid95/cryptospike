@@ -32,6 +32,7 @@ COPY --from=backend-builder /app/backend/package*.json ./backend/
 COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules/
 COPY --from=backend-builder /app/backend/dist ./backend/dist/
 COPY --from=backend-builder /app/backend/prisma ./backend/prisma/
+COPY backend/prisma.config.ts ./backend/
 
 # Verifikasi file dist/main.js ada di runner stage
 RUN ls -la /app/backend/dist/ && test -f /app/backend/dist/main.js
