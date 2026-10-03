@@ -24,6 +24,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
   private monitorTimer?: NodeJS.Timeout;
 
   private openSymbols = new Set<string>();
+  private latestPrices = new Map<string, number>();
 
   constructor(
     private readonly binanceWs: BinanceWsService,
@@ -61,6 +62,9 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
 
   private async handleIncomingTicker(ticker: BinanceWsTicker) {
     const lastPrice = parseFloat(ticker.c);
+
+    // Simpan harga real-time untuk keperluan evaluasi Lifecycle TP/SL semua sinyal (RnD & virtual)
+    this.latestPrices.set(ticker.s, lastPrice);
 
     // 1. Streaming harga terfokus: Hanya broadcast jika koin tersebut sedang ada di posisi aktif pengguna
     if (this.openSymbols.has(ticker.s)) {
@@ -165,13 +169,16 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
       for (const sig of activeSignals) {
         const livePos: any = posMap.get(sig.symbol);
 
-        // Jika posisi sudah ditutup di Binance, update status
-        if (!livePos) {
-          // Posisi sudah di-close atau kena SL penuh
+        // Ambil harga terkini: utamakan markPrice live dari posisi Binance, atau fallback ke WebSocket ticker scanner
+        const markPrice = livePos
+          ? parseFloat(livePos.markPrice)
+          : this.latestPrices.get(sig.symbol);
+
+        // Jika harga saat ini belum tersedia sama sekali di memory, lewati ke sinyal berikutnya
+        if (!markPrice || isNaN(markPrice)) {
           continue;
         }
 
-        const markPrice = parseFloat(livePos.markPrice);
         const isLong = sig.side === 'LONG';
 
         // 1. Cek TP1 HIT -> Geser Stop Loss ke Breakeven (Entry Price) [Risk-Free]
@@ -184,7 +191,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
 
             this.logger.log(
-              `[TSL TRIGGER] ${sig.symbol} HIT TP1 (${sig.tp1})! Moving SL to Breakeven (${sig.entryPrice})`,
+              `[TSL TRIGGER] ${sig.symbol} HIT TP1 (${sig.tp1})! Moving SL to Breakeven (${sig.entryPrice}) | Strategy: ${sig.strategy}`,
             );
 
             // Update database
@@ -197,31 +204,33 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               },
             });
 
-            // Geser SL di Binance ke harga Entry
-            const filters = await this.binanceService.getSymbolFilters(
-              sig.symbol,
-            );
-            const breakevenSL = this.binanceService.roundTick(
-              sig.entryPrice,
-              filters.tickSize,
-            );
-            const exitSide = isLong ? 'SELL' : 'BUY';
+            // Geser SL di Binance ke harga Entry (jika posisi nyata ada di exchange)
+            if (livePos) {
+              const filters = await this.binanceService.getSymbolFilters(
+                sig.symbol,
+              );
+              const breakevenSL = this.binanceService.roundTick(
+                sig.entryPrice,
+                filters.tickSize,
+              );
+              const exitSide = isLong ? 'SELL' : 'BUY';
 
-            try {
-              await this.binanceService.placeOrder({
-                symbol: sig.symbol,
-                side: exitSide,
-                type: 'STOP_MARKET',
-                stopPrice: breakevenSL,
-                reduceOnly: true,
-              });
-              this.logger.log(
-                `[TSL MOVED] SL moved to Breakeven ${breakevenSL} for ${sig.symbol}`,
-              );
-            } catch (err: any) {
-              this.logger.warn(
-                `Failed moving SL to BE for ${sig.symbol}: ${err.message}`,
-              );
+              try {
+                await this.binanceService.placeOrder({
+                  symbol: sig.symbol,
+                  side: exitSide,
+                  type: 'STOP_MARKET',
+                  stopPrice: breakevenSL,
+                  reduceOnly: true,
+                });
+                this.logger.log(
+                  `[TSL MOVED] SL moved to Breakeven ${breakevenSL} for ${sig.symbol}`,
+                );
+              } catch (err: any) {
+                this.logger.warn(
+                  `Failed moving SL to BE for ${sig.symbol}: ${err.message}`,
+                );
+              }
             }
 
             // Broadcast ke frontend websocket
@@ -243,7 +252,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
 
             this.logger.log(
-              `[TSL TRIGGER] ${sig.symbol} HIT TP2 (${sig.tp2})! Trailing SL locked at TP1 (${sig.tp1})`,
+              `[TSL TRIGGER] ${sig.symbol} HIT TP2 (${sig.tp2})! Trailing SL locked at TP1 (${sig.tp1}) | Strategy: ${sig.strategy}`,
             );
 
             await this.prisma.signal.update({
@@ -263,7 +272,46 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
           }
         }
 
-        // 3. Cek SL HIT (Stop Loss Trigger) -> Otomatis Close Posisi di Market
+        // 3. Cek TP3 HIT -> Target Maksimal (Full Target Take Profit)
+        if (sig.status === 'TP2_HIT' && sig.tp3) {
+          const hitTP3 = isLong ? markPrice >= sig.tp3 : markPrice <= sig.tp3;
+
+          if (hitTP3) {
+            const profitPct = isLong
+              ? ((markPrice - sig.entryPrice) / sig.entryPrice) * 100
+              : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
+
+            this.logger.log(
+              `[TARGET HIT] ${sig.symbol} HIT TP3 (${sig.tp3})! Full target reached. Status: TP3_HIT | Strategy: ${sig.strategy}`,
+            );
+
+            // Jika ada posisi riil di Binance, tutup posisi
+            if (livePos) {
+              const positionAmt = parseFloat(livePos.positionAmt);
+              if (positionAmt !== 0) {
+                await this.binanceService.closePosition(sig.symbol, positionAmt);
+              }
+            }
+
+            await this.prisma.signal.update({
+              where: { id: sig.id },
+              data: {
+                status: 'TP3_HIT',
+                profitPct: parseFloat(profitPct.toFixed(2)),
+                hitTime: new Date(),
+              },
+            });
+
+            this.gateway.broadcastSignalUpdate({
+              id: sig.id,
+              status: 'TP3_HIT',
+              profitPct: parseFloat(profitPct.toFixed(2)),
+            });
+            continue;
+          }
+        }
+
+        // 4. Cek SL HIT (Stop Loss Trigger) -> Otomatis Close Posisi / Sinyal
         let slThreshold = sig.sl;
         if (sig.status === 'TP1_HIT') {
           // Breakeven SL
@@ -287,13 +335,15 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
           const newStatus = isBreakevenOrProfit ? 'TSL_HIT' : 'SL_HIT';
 
           this.logger.log(
-            `[STOP LOSS HIT] ${sig.symbol} hit threshold ${slThreshold} (Mark: ${markPrice}). Closing position via Market Order. Status: ${newStatus}`,
+            `[STOP LOSS HIT] ${sig.symbol} hit threshold ${slThreshold} (Mark: ${markPrice}). Status: ${newStatus} | Strategy: ${sig.strategy}`,
           );
 
-          // Tutup posisi riil di Binance
-          const positionAmt = parseFloat(livePos.positionAmt);
-          if (positionAmt !== 0) {
-            await this.binanceService.closePosition(sig.symbol, positionAmt);
+          // Tutup posisi riil di Binance hanya jika posisi nyata ada
+          if (livePos) {
+            const positionAmt = parseFloat(livePos.positionAmt);
+            if (positionAmt !== 0) {
+              await this.binanceService.closePosition(sig.symbol, positionAmt);
+            }
           }
 
           // Update database
