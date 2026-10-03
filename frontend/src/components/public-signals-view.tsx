@@ -413,10 +413,10 @@ export function PublicSignalsView() {
       </header>
 
       {/* Dynamic Running Text / Ticker Marquee Notice Bar (Directly below Header Navbar) */}
-      <div className="max-w-7xl mx-auto w-full px-3.5 sm:px-6 pt-3 sm:pt-4">
-        <div className="relative overflow-hidden bg-amber-500/10 dark:bg-amber-500/10 border border-slate-300 dark:border-zinc-700 rounded-2xl px-3 py-1.5 sm:py-2 flex items-center shadow-xs">
+      <div className="max-w-7xl mx-auto w-full px-3.5 sm:px-6 pt-2 sm:pt-2.5 pb-0.5">
+        <div className="relative overflow-hidden bg-amber-500/5 dark:bg-amber-500/10 py-1.5 px-1 sm:px-2 flex items-center">
           {/* Fixed Left Badge: LIVE NOTICE */}
-          <div className="shrink-0 flex items-center gap-1.5 bg-amber-500/20 dark:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-lg border border-amber-500/30 mr-2 sm:mr-3">
+          <div className="shrink-0 flex items-center gap-1.5 bg-amber-500/20 dark:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-md mr-2 sm:mr-3">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -424,8 +424,12 @@ export function PublicSignalsView() {
             <span>NOTICE</span>
           </div>
 
-          {/* Infinite Scrolling Ticker (Pauses on Hover) */}
-          <div className="overflow-hidden flex-1 relative select-none">
+          {/* Infinite Scrolling Ticker (Pauses on Hover) with Left & Right Blur / Fade */}
+          <div className="overflow-hidden flex-1 relative select-none [mask-image:linear-gradient(to_right,transparent,black_28px,black_calc(100%-28px),transparent)]">
+            {/* Left and Right blur fade gradient fallback */}
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-background/70 to-transparent z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-l from-background/70 to-transparent z-10" />
+
             <div className="animate-marquee gap-8 items-center cursor-pointer">
               {/* Loop 1 */}
               {tickerAnnouncements.map((item, idx) => (

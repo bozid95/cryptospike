@@ -233,7 +233,10 @@ export function AnnouncementsCrud() {
               on the public ticker.
             </div>
           ) : (
-            <div className="relative overflow-hidden w-full rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2">
+            <div className="relative overflow-hidden w-full bg-amber-500/10 py-2 px-2 [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)]">
+              {/* Left and Right blur fade gradient fallback */}
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-card to-transparent z-10" />
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent z-10" />
               <div className="animate-marquee gap-8 items-center cursor-pointer">
                 {/* Loop 1 */}
                 {activeAnnouncements.map((item) => (
