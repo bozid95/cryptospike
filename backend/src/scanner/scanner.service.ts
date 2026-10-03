@@ -112,7 +112,9 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
       }
 
       const volFormatted = `$${(quoteVolume / 1000000).toFixed(1)}M`;
-      const enrichedReasons = [`Vol: ${volFormatted}`, ...result.reasons].join('; ');
+      const enrichedReasons = [`Vol: ${volFormatted}`, ...result.reasons].join(
+        '; ',
+      );
 
       const signal = await this.signalService.createSignal({
         symbol: marketData.symbol,

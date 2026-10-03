@@ -435,13 +435,16 @@ export function PublicSignalsView() {
                           STRONG
                         </Badge>
                       )}
-                      {(sig.volume24h || (sig.reasons?.match(/Vol:\s*(\$[\d.]+M)/)?.[1])) && (
+                      {(sig.volume24h ||
+                        sig.reasons?.match(/Vol:\s*(\$[\d.]+M)/)?.[1]) && (
                         <Badge
                           variant="outline"
                           className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-500 bg-sky-500/5 font-mono"
                           title="24h Trading Volume"
                         >
-                          {sig.volume24h || sig.reasons?.match(/Vol:\s*(\$[\d.]+M)/)?.[1]} Vol
+                          {sig.volume24h ||
+                            sig.reasons?.match(/Vol:\s*(\$[\d.]+M)/)?.[1]}{" "}
+                          Vol
                         </Badge>
                       )}
                     </div>
