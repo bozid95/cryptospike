@@ -111,8 +111,8 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     const results = await this.strategyRegistry.evaluateAll(marketData);
 
     for (const { strategyKey, result } of results) {
-      // Filter Kualitas Super Strong & Anti-Spam: Confidence HIGH dan score >= 85 (Validasi 4H + 1H Penuh)
-      if (result.confidence !== 'HIGH' || (result.score && result.score < 85)) {
+      // Filter Kualitas Super Strong & Anti-Spam: Confidence HIGH dan score >= 90 (Hanya Golden Setup yang sangat valid)
+      if (result.confidence !== 'HIGH' || (result.score && result.score < 90)) {
         continue;
       }
 

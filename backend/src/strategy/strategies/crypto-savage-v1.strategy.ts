@@ -430,14 +430,14 @@ export class CryptoSavageV1Strategy implements IStrategy {
         lastEma20_4h <= lastEma50_4h * 1.005;
 
       // --- A. EVALUASI SETUP LONG (BULLISH) ---
-      // 1. Support Zone Interaction (Wajib dekat zona S/R 4H yang kuat)
+      // 1. Support Zone Interaction (Wajib zona S/R 4H teruji: minimal 2 touches)
       const nearSupport = supports.find(
-        (s) => Math.abs(lastPrice - s.level) / lastPrice <= 0.025,
+        (s) => Math.abs(lastPrice - s.level) / lastPrice <= 0.02 && s.touches >= 2,
       );
       if (nearSupport) {
         longScore += 30;
         longReasons.push(
-          `Near 4H Dynamic Support ($${nearSupport.level.toFixed(4)}) with ${nearSupport.touches} touches`,
+          `Near Validated 4H Dynamic Support ($${nearSupport.level.toFixed(4)}) with ${nearSupport.touches} touches`,
         );
       }
 
@@ -495,31 +495,32 @@ export class CryptoSavageV1Strategy implements IStrategy {
         longReasons.push('Counter-trendline resistance breakout confirmed');
       }
 
-      // Filter Pembatalan LONG (Anti-Spam Filter):
+      // Filter Pembatalan LONG (Super Valid Rules):
       // - Wajib didukung 4H bullish structure
-      // - Wajib ada interaksi dengan 4H support zone
-      // - Wajib ada rejection wick atau engulfing follow-through
-      // - Hindari long jika RSI 1H overbought (> 72)
+      // - Wajib ada interaksi dengan zona Support 4H (minimal 2 touches)
+      // - Wajib ada Rejection Wick ATAU Engulfing Follow-Through
+      // - Hindari long jika RSI 1H overbought (> 68) atau oversold ekstrem (< 30)
       if (
         !is4hBullishStructure ||
         !nearSupport ||
         (!rejection1.isBullishRejection &&
           !rejection2.isBullishRejection &&
           !followThrough.isBullishFollowThrough) ||
-        currentRsi1h > 72
+        currentRsi1h > 68 ||
+        currentRsi1h < 30
       ) {
         longScore = 0;
       }
 
       // --- B. EVALUASI SETUP SHORT (BEARISH) ---
-      // 1. Resistance Zone Interaction
+      // 1. Resistance Zone Interaction (Wajib zona S/R 4H teruji: minimal 2 touches)
       const nearResistance = resistances.find(
-        (r) => Math.abs(r.level - lastPrice) / lastPrice <= 0.025,
+        (r) => Math.abs(r.level - lastPrice) / lastPrice <= 0.02 && r.touches >= 2,
       );
       if (nearResistance) {
         shortScore += 30;
         shortReasons.push(
-          `Near 4H Dynamic Resistance ($${nearResistance.level.toFixed(4)}) with ${nearResistance.touches} touches`,
+          `Near Validated 4H Dynamic Resistance ($${nearResistance.level.toFixed(4)}) with ${nearResistance.touches} touches`,
         );
       }
 
@@ -574,18 +575,19 @@ export class CryptoSavageV1Strategy implements IStrategy {
         shortReasons.push('Counter-trendline support breakdown confirmed');
       }
 
-      // Filter Pembatalan SHORT (Anti-Spam Filter):
+      // Filter Pembatalan SHORT (Super Valid Rules):
       // - Wajib didukung 4H bearish structure
-      // - Wajib ada interaksi dengan 4H resistance zone
-      // - Wajib ada rejection wick atau engulfing follow-through
-      // - Hindari short jika RSI 1H oversold (< 28)
+      // - Wajib ada interaksi dengan zona Resistance 4H (minimal 2 touches)
+      // - Wajib ada Rejection Wick ATAU Engulfing Follow-Through
+      // - Hindari short jika RSI 1H oversold (< 32) atau overbought ekstrem (> 70)
       if (
         !is4hBearishStructure ||
         !nearResistance ||
         (!rejection1.isBearishRejection &&
           !rejection2.isBearishRejection &&
           !followThrough.isBearishFollowThrough) ||
-        currentRsi1h < 28
+        currentRsi1h < 32 ||
+        currentRsi1h > 70
       ) {
         shortScore = 0;
       }
@@ -593,9 +595,9 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // ==========================================
       // 7. DECISION & RISK MANAGEMENT (1:2+ RRR)
       // ==========================================
-      // Standar Super Strong: minimal 85 poin confluence dengan validasi HTF 4H penuh
-      const isLongValid = longScore >= 85;
-      const isShortValid = shortScore >= 85;
+      // Standar Golden Setup: minimal 90 poin confluence murni
+      const isLongValid = longScore >= 90;
+      const isShortValid = shortScore >= 90;
 
       if (!isLongValid && !isShortValid) {
         return null;
