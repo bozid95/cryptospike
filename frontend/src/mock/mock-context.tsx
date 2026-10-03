@@ -17,7 +17,10 @@ interface CryptoSpikeContextType {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  login: (
+    username: string,
+    password: string,
+  ) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
 
   // Navigation active tab
@@ -102,7 +105,10 @@ export function CryptoSpikeProvider({
     }
   });
 
-  const login = async (username: string, password: string): Promise<{ success: boolean; message?: string }> => {
+  const login = async (
+    username: string,
+    password: string,
+  ): Promise<{ success: boolean; message?: string }> => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
@@ -112,7 +118,10 @@ export function CryptoSpikeProvider({
 
       const data = await res.json();
       if (!res.ok || !data.accessToken) {
-        return { success: false, message: data.message || "Login gagal. Cek username dan password." };
+        return {
+          success: false,
+          message: data.message || "Login gagal. Cek username dan password.",
+        };
       }
 
       setToken(data.accessToken);
@@ -121,7 +130,10 @@ export function CryptoSpikeProvider({
       localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       return { success: true };
     } catch (err: any) {
-      return { success: false, message: err.message || "Gagal menghubungi server auth." };
+      return {
+        success: false,
+        message: err.message || "Gagal menghubungi server auth.",
+      };
     }
   };
 
