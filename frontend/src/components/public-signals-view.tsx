@@ -400,87 +400,42 @@ export function PublicSignalsView() {
             </Card>
           </div>
 
-          {/* Strategy Winrate Leaderboard Cards (Panduan Memilih Strategi Terbaik) */}
+          {/* Strategy Winrate Info Bar (Compact Inline Pills - Just Info) */}
           {strategyStats.length > 0 && (
-            <div className="max-w-5xl mx-auto space-y-2 pt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
-                  <TrophyIcon className="size-3.5 text-amber-500" />
-                  Strategy Winrate Guide
-                </span>
-                <span className="text-[11px] text-muted-foreground font-sans">
-                  Click a strategy to filter signals
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
-                {strategyStats.map((st, idx) => {
-                  const isSelected = selectedStrategy === st.strategy;
-                  const isHighWinrate = st.winrate >= 65;
-
-                  return (
-                    <button
-                      key={st.strategy}
-                      type="button"
-                      onClick={() => {
-                        setSelectedStrategy(isSelected ? "ALL" : st.strategy);
-                        setCurrentPage(1);
-                      }}
-                      className={`text-left p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer relative overflow-hidden group ${
-                        isSelected
-                          ? "bg-emerald-500/10 border-emerald-500/60 shadow-xs ring-1 ring-emerald-500/30"
-                          : "bg-card hover:bg-muted/40 border-border/80 hover:border-emerald-500/30"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className="text-[10px] font-mono text-muted-foreground font-bold">
-                            #{idx + 1}
-                          </span>
-                          <span className="font-bold text-xs font-mono text-foreground truncate">
-                            {st.strategy}
-                          </span>
-                        </div>
-                        {isHighWinrate && (
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] px-1 py-0 border-amber-500/40 text-amber-500 font-mono shrink-0"
-                          >
-                            TOP
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="flex items-baseline justify-between mt-1">
-                        <div>
-                          <div className="text-base sm:text-lg font-bold font-mono text-emerald-600">
-                            {st.winrate}%
-                          </div>
-                          <div className="text-[10px] font-mono text-muted-foreground">
-                            {st.hits}W / {st.losses}L ({st.total} Total)
-                          </div>
-                        </div>
-
-                        <div className="text-right">
-                          <div
-                            className={`text-xs font-mono font-bold ${
-                              st.totalPnl >= 0
-                                ? "text-emerald-500"
-                                : "text-rose-500"
-                            }`}
-                          >
-                            {st.totalPnl >= 0 ? "+" : ""}
-                            {st.totalPnl.toFixed(1)}%
-                          </div>
-                          <div className="text-[10px] text-muted-foreground font-sans">
-                            {st.running} Running
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-1 text-[11px]">
+              <span className="text-muted-foreground flex items-center gap-1 font-medium mr-0.5">
+                <TrophyIcon className="size-3 text-amber-500" />
+                Winrate by Strategy:
+              </span>
+              {strategyStats.map((st) => {
+                const isSelected = selectedStrategy === st.strategy;
+                return (
+                  <button
+                    key={st.strategy}
+                    type="button"
+                    onClick={() => {
+                      setSelectedStrategy(isSelected ? "ALL" : st.strategy);
+                      setCurrentPage(1);
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-mono transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-emerald-500/15 border-emerald-500/60 text-emerald-600 font-bold shadow-2xs"
+                        : "bg-background/80 hover:bg-muted/80 border-border/80 text-foreground"
+                    }`}
+                    title={`Click to filter: ${st.hits}W / ${st.losses}L (${st.total} Total)`}
+                  >
+                    <span className="font-sans font-medium text-muted-foreground">
+                      {st.strategy}:
+                    </span>
+                    <span className="text-emerald-600 font-bold">
+                      {st.winrate}%
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-sans">
+                      ({st.hits}W/{st.losses}L)
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
