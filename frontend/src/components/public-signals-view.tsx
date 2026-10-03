@@ -58,46 +58,59 @@ export function PublicSignalsView() {
     let longCount = 0;
     let shortCount = 0;
     let runningCount = 0;
+    let closedCountOnly = 0;
     let hitCount = 0;
     let lossCount = 0;
     let totalRealizedProfitPct = 0;
-
     for (const sig of signals) {
       if (sig.side === "LONG") longCount++;
       else shortCount++;
 
-      // Sinyal masih RUNNING jika ACTIVE, TP1_HIT, atau TP2_HIT (masih berlanjut mengejar TP2/TP3)
-      const isSignalRunning =
-        sig.status === "ACTIVE" ||
-        sig.status === "TP1_HIT" ||
-        sig.status === "TP2_HIT";
+      const isClosed =
+        sig.status === "TP3_HIT" ||
+        sig.status === "SL_HIT" ||
+        sig.status === "TSL_HIT" ||
+        (sig.status as string) === "CLOSED" ||
+        sig.status === "CANCELLED";
 
-      if (isSignalRunning) {
+      if (!isClosed) {
         runningCount++;
-      } else if (
+      } else {
+        closedCountOnly++;
+      }
+
+      // Hitung Win & PnL: jika sudah pernah menyentuh TP1, TP2, TP3, atau profitPct > 0 (walaupun masih running)
+      const hasHitTp =
+        sig.status === "TP1_HIT" ||
+        sig.status === "TP2_HIT" ||
         sig.status === "TP3_HIT" ||
         sig.status === "TSL_HIT" ||
-        (typeof sig.profitPct === "number" && sig.profitPct > 0)
-      ) {
+        (typeof sig.profitPct === "number" && sig.profitPct > 0);
+
+      const isLoss =
+        sig.status === "SL_HIT" ||
+        (isClosed && typeof sig.profitPct === "number" && sig.profitPct < 0);
+
+      if (hasHitTp) {
         hitCount++;
         totalRealizedProfitPct += sig.profitPct || 0;
-      } else if (
-        sig.status === "SL_HIT" ||
-        (typeof sig.profitPct === "number" && sig.profitPct < 0)
-      ) {
+      } else if (isLoss) {
         lossCount++;
         totalRealizedProfitPct += sig.profitPct || 0;
       }
     }
 
-    const closedCount = hitCount + lossCount;
+    // Evaluated Signals: sinyal yang sudah punya outcome (kena TP atau kena SL)
+    const evaluatedCount = hitCount + lossCount;
     const winrate =
-      closedCount > 0 ? ((hitCount / closedCount) * 100).toFixed(1) : "0.0";
+      evaluatedCount > 0
+        ? ((hitCount / evaluatedCount) * 100).toFixed(1)
+        : "0.0";
 
     return {
       totalSignals: signals.length,
       runningCount,
-      closedCount,
+      closedCount: closedCountOnly,
       hitCount,
       lossCount,
       winrate,

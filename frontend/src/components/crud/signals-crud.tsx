@@ -110,6 +110,7 @@ export function SignalsCrud() {
     let longCount = 0;
     let shortCount = 0;
     let runningCount = 0;
+    let closedCount = 0;
     let tp1Count = 0;
     let tp2Count = 0;
     let tp3Count = 0;
@@ -120,13 +121,26 @@ export function SignalsCrud() {
       if (sig.side === "LONG") longCount++;
       else shortCount++;
 
-      const isSignalRunning =
-        sig.status === "ACTIVE" ||
-        sig.status === "TP1_HIT" ||
-        sig.status === "TP2_HIT";
+      const isClosed =
+        sig.status === "TP3_HIT" ||
+        sig.status === "SL_HIT" ||
+        sig.status === "TSL_HIT" ||
+        (sig.status as string) === "CLOSED" ||
+        sig.status === "CANCELLED";
 
-      if (isSignalRunning) {
+      if (!isClosed) {
         runningCount++;
+      } else {
+        closedCount++;
+      }
+
+      // Hitung TP hits & Winrate (termasuk yang masih running tapi sudah menyentuh TP1/TP2)
+      if (sig.status === "TP1_HIT") {
+        tp1Count++;
+        totalRealizedProfitPct += sig.profitPct ?? 0;
+      } else if (sig.status === "TP2_HIT") {
+        tp2Count++;
+        totalRealizedProfitPct += sig.profitPct ?? 0;
       } else if (sig.status === "TP3_HIT") {
         tp3Count++;
         totalRealizedProfitPct += sig.profitPct ?? 0;
@@ -140,9 +154,11 @@ export function SignalsCrud() {
     }
 
     const totalTpHits = tp1Count + tp2Count + tp3Count;
-    const closedCount = totalTpHits + slCount;
+    const evaluatedCount = totalTpHits + slCount;
     const winrate =
-      closedCount > 0 ? ((totalTpHits / closedCount) * 100).toFixed(1) : "0.0";
+      evaluatedCount > 0
+        ? ((totalTpHits / evaluatedCount) * 100).toFixed(1)
+        : "0.0";
 
     return {
       totalSignals: signals.length,
@@ -157,8 +173,8 @@ export function SignalsCrud() {
       slCount,
       winrate,
       avgProfitPct:
-        closedCount > 0
-          ? (totalRealizedProfitPct / closedCount).toFixed(2)
+        evaluatedCount > 0
+          ? (totalRealizedProfitPct / evaluatedCount).toFixed(2)
           : "0.00",
     };
   }, [signals]);
