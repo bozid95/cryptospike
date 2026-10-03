@@ -3,15 +3,12 @@ set -e
 
 echo "=== Starting CryptoSpike Stack ==="
 
-# 1. Jalankan Prisma Migration & Generate Client jika DATABASE_URL tersedia
+# 1. Jalankan Prisma Migration resmi untuk Production (prisma migrate deploy)
 if [ -n "$DATABASE_URL" ]; then
-  echo "Applying database schema migrations safely..."
+  echo "Applying database schema migrations safely (prisma migrate deploy)..."
   cd /app/backend
   npx prisma generate
-  
-  # Pastikan schema tabel dibuat di database
-  echo "Running prisma db push / migrate deploy..."
-  npx prisma db push --schema=./prisma/schema.prisma || npx prisma migrate deploy || true
+  npx prisma migrate deploy
   cd /app
 fi
 
