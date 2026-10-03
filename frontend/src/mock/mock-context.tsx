@@ -59,6 +59,7 @@ const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
   undefined,
 );
 
+const ACTIVE_TAB_KEY = "cryptospike_active_tab";
 const STRATEGIES_KEY = "cryptospike_mock_strategies_v2";
 const SIGNALS_KEY = "cryptospike_mock_signals_v3";
 const CONFIG_KEY = "cryptospike_mock_config_v3";
@@ -68,7 +69,33 @@ export function CryptoSpikeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTabState] = useState<string>(() => {
+    // 1. Cek URL Hash terlebih dahulu (misal: #positions, #signals, #config)
+    const hash = window.location.hash.replace("#", "").trim();
+    if (hash && ["overview", "positions", "signals", "strategies", "config"].includes(hash)) {
+      return hash;
+    }
+    // 2. Cek localStorage
+    try {
+      const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
+      if (savedTab && ["overview", "positions", "signals", "strategies", "config"].includes(savedTab)) {
+        return savedTab;
+      }
+    } catch {
+      // ignore
+    }
+    return "overview";
+  });
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem(ACTIVE_TAB_KEY, tab);
+      window.location.hash = tab;
+    } catch {
+      // ignore
+    }
+  };
 
   const [strategies, setStrategies] = useState<StrategyItem[]>(() => {
     try {
