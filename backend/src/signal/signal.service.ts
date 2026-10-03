@@ -52,15 +52,28 @@ export class SignalService {
   }
 
   async createSignal(input: CreateSignalInput) {
-    // Cek cooldown/duplikasi signal yang masih ACTIVE pada symbol yang sama
-    const active = await this.prisma.signal.findFirst({
+    // 1. Cek jika masih ada sinyal ACTIVE / TP1_HIT / TP2_HIT pada koin yang sama (mencegah sinyal ganda)
+    const activeOrRunning = await this.prisma.signal.findFirst({
       where: {
         symbol: input.symbol,
-        status: 'ACTIVE',
+        status: { in: ['ACTIVE', 'TP1_HIT', 'TP2_HIT'] },
       },
     });
 
-    if (active) {
+    if (activeOrRunning) {
+      return null;
+    }
+
+    // 2. Cooldown 30 Menit per Symbol: Jangan generate sinyal bertubi-tubi untuk koin yang sama dalam waktu singkat
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const recentSignal = await this.prisma.signal.findFirst({
+      where: {
+        symbol: input.symbol,
+        sentAt: { gte: thirtyMinutesAgo },
+      },
+    });
+
+    if (recentSignal) {
       return null;
     }
 

@@ -117,7 +117,9 @@ export class Breakout1hV2Strategy implements IStrategy {
             // Belum terjadi breakout struktur resistance 1H
             return null;
           }
-          reasons.push(`1H Structural Breakout Above Resistance ($${prevHigh1h.toFixed(4)})`);
+          reasons.push(
+            `1H Structural Breakout Above Resistance ($${prevHigh1h.toFixed(4)})`,
+          );
         }
 
         // 3. Cek RSI 1H agar tidak membeli di pucuk overbought ekstrem (> 75)
@@ -161,7 +163,9 @@ export class Breakout1hV2Strategy implements IStrategy {
             // Belum terjadi breakdown struktur support 1H
             return null;
           }
-          reasons.push(`1H Structural Breakdown Below Support ($${prevLow1h.toFixed(4)})`);
+          reasons.push(
+            `1H Structural Breakdown Below Support ($${prevLow1h.toFixed(4)})`,
+          );
         }
 
         // 3. Proteksi SHORT: Hindari short koin yang oversold (RSI 1H < 35) atau overbought (> 55)

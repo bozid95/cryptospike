@@ -86,8 +86,8 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     const priceChangePct = parseFloat(ticker.P);
     const quoteVolume = parseFloat(ticker.q);
 
-    // Filter dasar trigger: pergerakan signifikan
-    if (Math.abs(priceChangePct) < 2.0) return;
+    // Filter dasar trigger: hanya pergerakan momentum signifikan (>= 2.8% atau <= -2.8%) dan likuiditas minimal $30M
+    if (Math.abs(priceChangePct) < 2.8 || quoteVolume < 30000000) return;
 
     this.lastEvaluated.set(ticker.s, now);
 
