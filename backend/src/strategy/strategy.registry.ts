@@ -41,9 +41,29 @@ export class StrategyRegistry implements OnModuleInit {
   async loadStrategyStates() {
     try {
       const configs = await this.prisma.strategyConfig.findMany();
+      const existingDbKeys = new Set(configs.map((c) => c.strategyId));
+
+      // 1. Terapkan state yang sudah disimpan user di DB
       for (const conf of configs) {
         if (this.strategies.has(conf.strategyId)) {
           this.enabledMap.set(conf.strategyId, conf.isEnabled);
+        }
+      }
+
+      // 2. Otomatis simpan strategi yang baru terdaftar ke DB agar langsung tersinkronisasi
+      for (const [key, strategy] of this.strategies.entries()) {
+        if (!existingDbKeys.has(key)) {
+          const defaultState = strategy.meta.defaultEnabled ?? false;
+          await this.prisma.strategyConfig.create({
+            data: {
+              strategyId: key,
+              isEnabled: defaultState,
+            },
+          });
+          this.enabledMap.set(key, defaultState);
+          this.logger.log(
+            `[STRATEGY SYNC] Auto-persisted new strategy into DB: ${key} (defaultEnabled=${defaultState})`,
+          );
         }
       }
     } catch (err: unknown) {
