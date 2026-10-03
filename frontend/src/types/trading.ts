@@ -141,7 +141,7 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     name: "1H Breakout Momentum",
     timeframe: "1h",
     description:
-      "Deteksi breakout level resisten/support dengan konfirmasi volume spike 1 jam.",
+      "Detects resistance/support breakouts with 1-hour volume spike confirmation.",
     isEnabled: true,
     winrate: "66.7%",
     totalSignals: 54,
@@ -156,7 +156,7 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     name: "1H Breakout Dynamic Trailing",
     timeframe: "1h",
     description:
-      "Breakout 1 jam dengan trailing stop loss otomatis dan dynamic ATR exit.",
+      "1-hour breakout with automated trailing stop loss and dynamic ATR exits.",
     isEnabled: false,
     winrate: "72.4%",
     totalSignals: 38,
@@ -171,7 +171,7 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     name: "Pre-Pump Accumulation Scanner",
     timeframe: "15m",
     description:
-      "Scan akumulasi anomali volume & CVD mendadak di TF 15 menit sebelum impulsive pump.",
+      "Scans sudden volume & CVD accumulation anomalies on 15m TF prior to impulsive pumps.",
     isEnabled: true,
     winrate: "68.2%",
     totalSignals: 88,
@@ -186,7 +186,7 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     name: "BTC London/NY Session Drop",
     timeframe: "15m",
     description:
-      "Sinyal reaksi pergerakan drastis BTC terhadap altcoins saat pergantian sesi market.",
+      "Reacts to sudden BTC price moves relative to altcoins during session transitions.",
     isEnabled: true,
     winrate: "77.5%",
     totalSignals: 29,

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Query, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { SignalService, CreateSignalInput } from './signal.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Query, Logger, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import { BinanceService } from '../binance/binance.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

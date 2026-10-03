@@ -42,7 +42,7 @@ export function TablePagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-lg border bg-muted/50 mt-2">
       {/* Page Size Selector */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">Baris per halaman:</span>
+        <span className="font-medium text-foreground">Rows per page:</span>
         <Select
           value={`${pageSize}`}
           onValueChange={(val) => {
@@ -66,11 +66,11 @@ export function TablePagination({
       {/* Page Navigation & Item Count */}
       <div className="flex items-center gap-4">
         <span className="text-xs text-muted-foreground font-medium">
-          Halaman{" "}
+          Page{" "}
           <span className="text-foreground font-semibold font-mono">
             {safeCurrentPage}
           </span>{" "}
-          dari{" "}
+          of{" "}
           <span className="text-foreground font-semibold font-mono">
             {safeTotalPages}
           </span>
@@ -86,7 +86,7 @@ export function TablePagination({
             className="size-8 bg-background hover:bg-muted"
             onClick={() => onPageChange(1)}
             disabled={safeCurrentPage <= 1}
-            title="Halaman Pertama"
+            title="First Page"
           >
             <ChevronsLeftIcon className="size-4" />
           </Button>
@@ -96,7 +96,7 @@ export function TablePagination({
             className="size-8 bg-background hover:bg-muted"
             onClick={() => onPageChange(safeCurrentPage - 1)}
             disabled={safeCurrentPage <= 1}
-            title="Halaman Sebelumnya"
+            title="Previous Page"
           >
             <ChevronLeftIcon className="size-4" />
           </Button>
@@ -106,7 +106,7 @@ export function TablePagination({
             className="size-8 bg-background hover:bg-muted"
             onClick={() => onPageChange(safeCurrentPage + 1)}
             disabled={safeCurrentPage >= safeTotalPages}
-            title="Halaman Berikutnya"
+            title="Next Page"
           >
             <ChevronRightIcon className="size-4" />
           </Button>
@@ -116,7 +116,7 @@ export function TablePagination({
             className="size-8 bg-background hover:bg-muted"
             onClick={() => onPageChange(safeTotalPages)}
             disabled={safeCurrentPage >= safeTotalPages}
-            title="Halaman Terakhir"
+            title="Last Page"
           >
             <ChevronsRightIcon className="size-4" />
           </Button>

@@ -59,7 +59,7 @@ export function AdminDashboard() {
             Admin Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Kelola konfigurasi sistem, module strategy, dan jalankan analytics.
+            Manage system configuration, strategy modules, and run analytics.
           </p>
         </div>
       </div>
@@ -87,8 +87,8 @@ export function AdminDashboard() {
             <CardHeader>
               <CardTitle>Strategy Manager</CardTitle>
               <CardDescription>
-                Aktifkan atau matikan modul strategy secara mandiri. Strategy
-                yang mati tidak akan memproses market data.
+                Enable or disable strategy modules independently. Disabled strategies
+                will not process market data.
               </CardDescription>
             </CardHeader>
             <CardContent>

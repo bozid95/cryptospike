@@ -54,7 +54,7 @@ export function Dashboard() {
             Live Signals
           </h1>
           <p className="text-muted-foreground">
-            Sinyal trading realtime dari algoritma CryptoSpike.
+            Real-time algorithmic trading signals by CryptoSpike.
           </p>
         </div>
 

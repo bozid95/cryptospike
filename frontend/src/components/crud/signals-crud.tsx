@@ -197,12 +197,12 @@ export function SignalsCrud() {
     <div className="space-y-4">
       {/* 4 Standalone Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Card 1: Total Sinyal & Scanner Output */}
+        {/* Card 1: Total Signals & Scanner Output */}
         <Card className="border-border shadow-xs bg-card">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs text-muted-foreground font-medium">
-                Total Sinyal Terdeteksi
+                Total Signals Detected
               </span>
               <div className="text-xl font-bold font-mono text-foreground">
                 {summary.totalSignals}
@@ -228,7 +228,7 @@ export function SignalsCrud() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs text-muted-foreground font-medium">
-                Winrate Target (TP1+)
+                Target Winrate (TP1+)
               </span>
               <div className="text-xl font-bold font-mono text-emerald-500">
                 {summary.winrate}%
@@ -254,12 +254,12 @@ export function SignalsCrud() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs text-muted-foreground font-medium">
-                Distribusi Target TP
+                TP Target Breakdown
               </span>
               <div className="text-xl font-bold font-mono text-foreground flex items-center gap-1.5">
                 <span>{summary.totalTpHits}</span>
                 <span className="text-xs text-muted-foreground font-normal">
-                  Target Hit
+                  Targets Hit
                 </span>
               </div>
               <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1 pt-0.5">
@@ -287,7 +287,7 @@ export function SignalsCrud() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs text-muted-foreground font-medium">
-                Rasio Arah Sinyal
+                Signal Direction Ratio
               </span>
               <div className="text-xl font-bold font-mono text-foreground flex items-center gap-2">
                 <span className="text-emerald-500">{summary.longCount}L</span>

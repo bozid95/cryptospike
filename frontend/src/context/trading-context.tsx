@@ -160,8 +160,13 @@ export function CryptoSpikeProvider({
   };
 
   // Helper untuk authenticated fetch yang otomatis melampirkan Bearer JWT token
-  const authFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const currentToken = token || (typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null);
+  const authFetch = async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const currentToken =
+      token ||
+      (typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null);
     const headers = new Headers(init?.headers || {});
     if (currentToken && !headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${currentToken}`);

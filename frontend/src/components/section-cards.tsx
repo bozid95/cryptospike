@@ -49,7 +49,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-1 font-medium text-foreground">
             {longCount} Long / {shortCount} Short
           </div>
-          <div>Berdasarkan sinyal tersimpan di database</div>
+          <div>Based on signals recorded in database</div>
         </CardFooter>
       </Card>
 
@@ -73,7 +73,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-1 font-medium text-foreground">
             {hitSignals} Win / {closedSignals - hitSignals} Loss
           </div>
-          <div>Dari {closedSignals} closed signals</div>
+          <div>From {closedSignals} closed signals</div>
         </CardFooter>
       </Card>
 
@@ -95,9 +95,9 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-xs text-muted-foreground">
           <div className="line-clamp-1 flex gap-1 font-medium text-foreground">
-            {activeStrategies} engine running
+            {activeStrategies} engines running
           </div>
-          <div>Dapat di-toggle realtime dari Strategy Manager</div>
+          <div>Can be toggled realtime from Strategy Manager</div>
         </CardFooter>
       </Card>
 
