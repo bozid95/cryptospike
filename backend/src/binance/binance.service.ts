@@ -235,20 +235,6 @@ export class BinanceService {
   >();
 
   async getTopVolumePairs(limit = 100): Promise<Binance24hTicker[]> {
-    try {
-      const baseUrl = this.getFuturesBaseUrl();
-      const response = await axios.get<Binance24hTicker[]>(
-        `${baseUrl}/fapi/v1/ticker/24hr`,
-      );
-      const tickers = response.data
-        .filter((t) => t.symbol.endsWith('USDT'))
-        .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-        .slice(0, limit);
-      return tickers;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Failed to fetch 24hr tickers: ${message}`);
-      return [];
     const candidateUrls = Array.from(
       new Set([
         this.getFuturesBaseUrl(),
@@ -285,31 +271,6 @@ export class BinanceService {
     interval = '1h',
     limit = 24,
   ): Promise<BinanceKline[]> {
-    try {
-      const baseUrl = this.getFuturesBaseUrl();
-      const response = await axios.get<RawKlineArray[]>(
-        `${baseUrl}/fapi/v1/klines`,
-        {
-          params: { symbol, interval, limit },
-        },
-      );
-      return response.data.map((c: RawKlineArray) => ({
-        openTime: c[0],
-        open: parseFloat(c[1]),
-        high: parseFloat(c[2]),
-        low: parseFloat(c[3]),
-        close: parseFloat(c[4]),
-        volume: parseFloat(c[5]),
-        closeTime: c[6],
-        quoteVolume: parseFloat(c[7]),
-        trades: c[8],
-        takerBuyBaseVolume: parseFloat(c[9]),
-        takerBuyQuoteVolume: parseFloat(c[10]),
-      }));
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Failed to fetch klines for ${symbol}: ${message}`);
-      return [];
     // 1. Cek memory cache (TTL 8 detik untuk mereduksi connection flood ke server)
     const cacheKey = `${symbol}_${interval}_${limit}`;
     const cached = this.klineCache.get(cacheKey);

@@ -375,8 +375,8 @@ export class CryptoSavageV1Strategy implements IStrategy {
         return null;
       }
 
-      const closes4h = klines4h.map((k) => k.close);
-      const closes1h = klines1h.map((k) => k.close);
+      const closes4h = klines4h.map((k: BinanceKline) => k.close);
+      const closes1h = klines1h.map((k: BinanceKline) => k.close);
 
       // Hitung EMA 50 (Dynamic S/R)
       const ema50_4h = this.calcEMA(closes4h, 50);
