@@ -24,7 +24,7 @@ export function LoginView() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
-      setErrorMessage("Silakan masukkan username dan password.");
+      setErrorMessage("Please enter both username and password.");
       return;
     }
 
@@ -33,10 +33,12 @@ export function LoginView() {
       setErrorMessage(null);
       const res = await login(username.trim(), password.trim());
       if (!res.success) {
-        setErrorMessage(res.message || "Username atau password salah.");
+        setErrorMessage(res.message || "Invalid username or password.");
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "Terjadi kesalahan saat otentikasi.");
+      setErrorMessage(
+        err.message || "An error occurred during authentication.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +63,7 @@ export function LoginView() {
             </Badge>
           </div>
           <CardDescription className="text-xs text-muted-foreground">
-            Masuk untuk mengakses Trading Control Panel
+            Sign in to access Trading Control Panel
           </CardDescription>
         </CardHeader>
 
@@ -117,11 +119,11 @@ export function LoginView() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  Mengotentikasi...
+                  Authenticating...
                 </>
               ) : (
                 <>
-                  Masuk
+                  Sign In
                   <ArrowRight className="ml-2 size-4" />
                 </>
               )}

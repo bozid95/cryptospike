@@ -331,8 +331,8 @@ export function SignalsCrud() {
               Live Signals & Realized PnL Tracker
             </CardTitle>
             <CardDescription className="text-xs">
-              Pantau posisi aktif (Running/Open) vs riwayat sinyal selesai
-              (Closed) beserta perolehan Profit/Loss.
+              Monitor active running signals vs closed signal history with
+              realized Profit/Loss tracking.
             </CardDescription>
           </div>
         </CardHeader>
@@ -342,7 +342,7 @@ export function SignalsCrud() {
           tabs={[
             {
               id: "ALL",
-              label: "Semua",
+              label: "All",
               count: signals.length,
             },
             {
@@ -358,7 +358,7 @@ export function SignalsCrud() {
             },
             {
               id: "CLOSED",
-              label: "Closed / Selesai",
+              label: "Closed / Completed",
               count: closedSignals.length,
             },
           ]}
@@ -372,18 +372,18 @@ export function SignalsCrud() {
             setSearchTerm(val);
             setCurrentPage(1);
           }}
-          searchPlaceholder="Cari pair, strategi, atau arah..."
+          searchPlaceholder="Search pair, strategy, or side..."
           rightActions={
             <>
-              <span>Menampilkan</span>
+              <span>Showing</span>
               <span className="font-semibold text-foreground">
                 {totalItems > 0 ? startIndex + 1 : 0}-{endIndex}
               </span>
-              <span>dari</span>
+              <span>of</span>
               <span className="font-semibold text-foreground">
                 {totalItems}
               </span>
-              <span>sinyal</span>
+              <span>signals</span>
             </>
           }
         />
@@ -394,7 +394,7 @@ export function SignalsCrud() {
               <TableHeader>
                 <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
                   <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
-                    Pair & Arah
+                    Pair & Side
                   </TableHead>
                   <TableHead className="w-[160px] px-4 py-3 font-semibold text-xs">
                     Entry / Current Price
@@ -403,19 +403,19 @@ export function SignalsCrud() {
                     Targets (TP & SL)
                   </TableHead>
                   <TableHead className="w-[130px] px-4 py-3 font-semibold text-xs">
-                    Status Posisi
+                    Position Status
                   </TableHead>
                   <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
                     Profit / Loss (PnL)
                   </TableHead>
                   <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
-                    Strategi Source
+                    Strategy Source
                   </TableHead>
                   <TableHead className="w-[165px] px-4 py-3 font-semibold text-xs">
-                    Waktu (Dibuat & Update)
+                    Time (Created & Updated)
                   </TableHead>
                   <TableHead className="w-[140px] px-4 py-3 text-right font-semibold text-xs">
-                    Aksi Monitor
+                    Monitor Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -426,7 +426,7 @@ export function SignalsCrud() {
                       colSpan={8}
                       className="h-32 text-center text-muted-foreground text-sm"
                     >
-                      Tidak ada sinyal yang sesuai kriteria filter.
+                      No signals matching current filter criteria.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -636,13 +636,13 @@ export function SignalsCrud() {
                             {/* Created At */}
                             <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
                               <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
-                                Buat:
+                                Set:
                               </span>
                               <ClockIcon className="size-3 text-muted-foreground/60 shrink-0" />
                               <span className="text-foreground text-[11px] font-medium">
                                 {new Date(
                                   sig.createdAt || sig.sentAt,
-                                ).toLocaleTimeString("id-ID", {
+                                ).toLocaleTimeString("en-US", {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   second: "2-digit",
@@ -651,14 +651,14 @@ export function SignalsCrud() {
                               <span className="text-[10px] text-muted-foreground/70">
                                 {new Date(
                                   sig.createdAt || sig.sentAt,
-                                ).toLocaleDateString("id-ID")}
+                                ).toLocaleDateString("en-US")}
                               </span>
                             </div>
 
                             {/* Updated At */}
                             <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
                               <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
-                                Ubah:
+                                Mod:
                               </span>
                               <RefreshCwIcon className="size-2.5 text-primary/70 shrink-0" />
                               <span className="text-foreground text-[11px] font-medium">
@@ -667,7 +667,7 @@ export function SignalsCrud() {
                                     sig.hitTime ||
                                     sig.closedAt ||
                                     sig.sentAt,
-                                ).toLocaleTimeString("id-ID", {
+                                ).toLocaleTimeString("en-US", {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   second: "2-digit",
@@ -679,7 +679,7 @@ export function SignalsCrud() {
                                     sig.hitTime ||
                                     sig.closedAt ||
                                     sig.sentAt,
-                                ).toLocaleDateString("id-ID")}
+                                ).toLocaleDateString("en-US")}
                               </span>
                             </div>
                           </div>
@@ -707,7 +707,7 @@ export function SignalsCrud() {
                                       ),
                                     )
                                   }
-                                  title="Simulasi Hit TP1"
+                                  title="Simulate Hit TP1"
                                 >
                                   Hit TP1
                                 </Button>
@@ -728,7 +728,7 @@ export function SignalsCrud() {
                                       ),
                                     )
                                   }
-                                  title="Simulasi Hit SL"
+                                  title="Simulate Hit SL"
                                 >
                                   Hit SL
                                 </Button>
@@ -741,7 +741,7 @@ export function SignalsCrud() {
                                   variant="ghost"
                                   size="icon"
                                   className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                  title="Hapus Sinyal"
+                                  title="Delete Signal"
                                 >
                                   <Trash2Icon className="size-3.5" />
                                 </Button>
@@ -749,23 +749,23 @@ export function SignalsCrud() {
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    Hapus Sinyal Ini?
+                                    Delete This Signal?
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Apakah Anda yakin ingin menghapus sinyal{" "}
+                                    Are you sure you want to delete signal{" "}
                                     <span className="font-semibold text-foreground">
                                       {sig.symbol} ({sig.side})
                                     </span>{" "}
-                                    dari log database?
+                                    from the database logs?
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     onClick={() => handleDelete(sig.id)}
                                   >
-                                    Ya, Hapus Sinyal
+                                    Yes, Delete Signal
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -788,7 +788,7 @@ export function SignalsCrud() {
             totalItems={totalItems}
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
-            itemLabel="sinyal"
+            itemLabel="signals"
           />
         </CardContent>
       </Card>

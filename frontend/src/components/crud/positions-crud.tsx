@@ -286,7 +286,7 @@ export function PositionsCrud() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs text-muted-foreground font-medium">
-                Total Margin Dipakai
+                Total Margin Used
               </span>
               <div className="text-xl font-bold font-mono text-foreground">
                 $
@@ -296,7 +296,7 @@ export function PositionsCrud() {
                 })}
               </div>
               <span className="text-[11px] text-muted-foreground">
-                Alokasi margin aktif Binance
+                Active Binance margin allocation
               </span>
             </div>
             <div className="p-2.5 rounded-full bg-blue-500/10 text-blue-500">
@@ -310,7 +310,7 @@ export function PositionsCrud() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs text-muted-foreground font-medium">
-                Total Nilai Notional
+                Total Notional Value
               </span>
               <div className="text-xl font-bold font-mono text-foreground">
                 $
@@ -320,7 +320,7 @@ export function PositionsCrud() {
                 })}
               </div>
               <span className="text-[11px] text-muted-foreground">
-                Total eksposur pasar terbuka
+                Total open market exposure
               </span>
             </div>
             <div className="p-2.5 rounded-full bg-indigo-500/10 text-indigo-500">
@@ -334,10 +334,10 @@ export function PositionsCrud() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-xs text-muted-foreground font-medium">
-                Distribusi Posisi
+                Position Distribution
               </span>
               <div className="text-xl font-bold font-mono text-foreground flex items-center gap-2">
-                <span>{summary.totalPositions} Posisi</span>
+                <span>{summary.totalPositions} Positions</span>
               </div>
               <div className="flex items-center gap-2 text-[11px] font-mono pt-0.5">
                 <span className="text-emerald-500 font-semibold flex items-center gap-0.5">
@@ -365,8 +365,8 @@ export function PositionsCrud() {
               Live Binance Futures Positions
             </CardTitle>
             <CardDescription className="text-xs">
-              Posisi aktif riil di akun Binance Futures. Eksekusi posisi
-              otomatis menggunakan saldo margin akun.
+              Live active positions from your Binance Futures account. Real-time
+              margin allocation and PnL monitoring.
             </CardDescription>
           </div>
 
@@ -381,12 +381,11 @@ export function PositionsCrud() {
               <RefreshCwIcon
                 className={`size-3.5 ${isLoadingPositions ? "animate-spin" : ""}`}
               />
-              Refresh Posisi
+              Refresh Positions
             </Button>
           </div>
         </CardHeader>
 
-        {/* Sub-Navigation & Filter Bar */}
         {/* Sub-Navigation & Filter Bar via TableToolbar */}
         <TableToolbar<"ACTIVE" | "CLOSED">
           tabs={[
@@ -410,18 +409,18 @@ export function PositionsCrud() {
             setSearchTerm(val);
             setCurrentPage(1);
           }}
-          searchPlaceholder="Cari simbol pair atau side..."
+          searchPlaceholder="Search symbol or side..."
           rightActions={
             activeTabFilter === "ACTIVE" ? (
               <>
-                <span>Total Posisi Terbuka:</span>
+                <span>Total Open Positions:</span>
                 <span className="font-semibold text-foreground text-sm">
                   {filteredPositions.length}
                 </span>
               </>
             ) : (
               <>
-                <span>Winrate History:</span>
+                <span>History Winrate:</span>
                 <span className="font-semibold text-emerald-600 text-sm">
                   {closedSummary.winrate}%
                 </span>
@@ -432,7 +431,9 @@ export function PositionsCrud() {
                     className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
                     onClick={() => {
                       if (
-                        window.confirm("Hapus seluruh catatan history posisi?")
+                        window.confirm(
+                          "Clear all closed position history records?",
+                        )
                       ) {
                         clearClosedPositions();
                       }
@@ -454,10 +455,10 @@ export function PositionsCrud() {
                 <TableHeader>
                   <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
                     <TableHead className="w-[180px] px-4 py-3 font-semibold text-xs">
-                      Simbol & Arah
+                      Symbol & Side
                     </TableHead>
                     <TableHead className="w-[120px] px-4 py-3 font-semibold text-xs">
-                      Ukuran (Size)
+                      Size (Amount)
                     </TableHead>
                     <TableHead className="w-[130px] px-4 py-3 font-semibold text-xs">
                       Entry Price
@@ -475,10 +476,10 @@ export function PositionsCrud() {
                       Target Orders (TP/SL)
                     </TableHead>
                     <TableHead className="w-[160px] px-4 py-3 font-semibold text-xs">
-                      Waktu (Dibuat & Update)
+                      Time (Created & Updated)
                     </TableHead>
                     <TableHead className="w-[100px] px-4 py-3 text-right font-semibold text-xs">
-                      Tindakan
+                      Actions
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -486,11 +487,10 @@ export function PositionsCrud() {
                   {filteredPositions.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
+                        colSpan={9}
                         className="h-28 text-center text-muted-foreground text-sm"
                       >
-                        Tidak ada posisi terbuka saat ini di akun Binance
-                        Futures.
+                        No active positions on Binance Futures account.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -722,7 +722,7 @@ export function PositionsCrud() {
                               {/* Created At */}
                               <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
                                 <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
-                                  Buat:
+                                  Set:
                                 </span>
                                 <ClockIcon className="size-3 text-muted-foreground/60 shrink-0" />
                                 <span className="text-foreground text-[11px] font-medium">
@@ -731,7 +731,7 @@ export function PositionsCrud() {
                                       (pos.updateTime
                                         ? pos.updateTime
                                         : Date.now()),
-                                  ).toLocaleTimeString("id-ID", {
+                                  ).toLocaleTimeString("en-US", {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                     second: "2-digit",
@@ -743,14 +743,14 @@ export function PositionsCrud() {
                                       (pos.updateTime
                                         ? pos.updateTime
                                         : Date.now()),
-                                  ).toLocaleDateString("id-ID")}
+                                  ).toLocaleDateString("en-US")}
                                 </span>
                               </div>
 
                               {/* Updated At */}
                               <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
                                 <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
-                                  Ubah:
+                                  Mod:
                                 </span>
                                 <RefreshCwIcon className="size-2.5 text-primary/70 shrink-0" />
                                 <span className="text-foreground text-[11px] font-medium">
@@ -759,7 +759,7 @@ export function PositionsCrud() {
                                       (pos.updateTime
                                         ? pos.updateTime
                                         : Date.now()),
-                                  ).toLocaleTimeString("id-ID", {
+                                  ).toLocaleTimeString("en-US", {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                     second: "2-digit",
@@ -771,7 +771,7 @@ export function PositionsCrud() {
                                       (pos.updateTime
                                         ? pos.updateTime
                                         : Date.now()),
-                                  ).toLocaleDateString("id-ID")}
+                                  ).toLocaleDateString("en-US")}
                                 </span>
                               </div>
                             </div>
@@ -787,25 +787,26 @@ export function PositionsCrud() {
                                   disabled={closingSymbol === pos.symbol}
                                 >
                                   <XCircleIcon className="size-3.5 mr-1" />
-                                  Tutup
+                                  Close
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    Tutup Posisi Pasar Sekarang?
+                                    Close Market Position Now?
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Anda akan menutup seluruh posisi{" "}
+                                    You are about to close your entire position
+                                    on{" "}
                                     <span className="font-semibold text-foreground">
                                       {pos.symbol} ({pos.side})
                                     </span>{" "}
-                                    dengan order Pasar (MARKET) di Binance
+                                    with an instant MARKET order on Binance
                                     Futures.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     onClick={() =>
@@ -816,7 +817,7 @@ export function PositionsCrud() {
                                       )
                                     }
                                   >
-                                    Ya, Tutup Posisi
+                                    Yes, Close Position
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -834,10 +835,10 @@ export function PositionsCrud() {
                 <TableHeader>
                   <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
                     <TableHead className="w-[180px] px-4 py-3 font-semibold text-xs">
-                      Simbol & Arah
+                      Symbol & Side
                     </TableHead>
                     <TableHead className="w-[120px] px-4 py-3 font-semibold text-xs">
-                      Ukuran (Size)
+                      Size (Amount)
                     </TableHead>
                     <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
                       Entry Price
@@ -849,10 +850,10 @@ export function PositionsCrud() {
                       Realized PnL (ROE)
                     </TableHead>
                     <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
-                      Strategi Source
+                      Strategy Source
                     </TableHead>
                     <TableHead className="w-[170px] px-4 py-3 text-right font-semibold text-xs">
-                      Waktu Ditutup
+                      Closed Time
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -863,7 +864,7 @@ export function PositionsCrud() {
                         colSpan={7}
                         className="h-28 text-center text-muted-foreground text-sm"
                       >
-                        Belum ada riwayat posisi yang ditutup.
+                        No closed position history records found.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -944,7 +945,7 @@ export function PositionsCrud() {
                               <ClockIcon className="size-3 text-muted-foreground/70" />
                               <span>
                                 {new Date(cp.closedAt).toLocaleTimeString(
-                                  "id-ID",
+                                  "en-US",
                                   {
                                     hour: "2-digit",
                                     minute: "2-digit",
@@ -955,7 +956,7 @@ export function PositionsCrud() {
                             </div>
                             <div className="text-[10px] text-muted-foreground/70">
                               {new Date(cp.closedAt).toLocaleDateString(
-                                "id-ID",
+                                "en-US",
                               )}
                             </div>
                           </TableCell>
@@ -977,7 +978,9 @@ export function PositionsCrud() {
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
             itemLabel={
-              activeTabFilter === "ACTIVE" ? "posisi aktif" : "riwayat posisi"
+              activeTabFilter === "ACTIVE"
+                ? "active positions"
+                : "closed history"
             }
           />
         </CardContent>

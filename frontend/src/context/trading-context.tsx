@@ -134,7 +134,8 @@ export function CryptoSpikeProvider({
       if (!res.ok || !data.accessToken) {
         return {
           success: false,
-          message: data.message || "Login gagal. Cek username dan password.",
+          message:
+            data.message || "Login failed. Check your username and password.",
         };
       }
 
@@ -146,7 +147,7 @@ export function CryptoSpikeProvider({
     } catch (err: any) {
       return {
         success: false,
-        message: err.message || "Gagal menghubungi server auth.",
+        message: err.message || "Failed to reach authentication server.",
       };
     }
   };
@@ -156,6 +157,20 @@ export function CryptoSpikeProvider({
     setUser(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+  };
+
+  // Helper untuk authenticated fetch yang otomatis melampirkan Bearer JWT token
+  const authFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const currentToken = token || (typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null);
+    const headers = new Headers(init?.headers || {});
+    if (currentToken && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${currentToken}`);
+    }
+    const res = await fetch(input, { ...init, headers });
+    if (res.status === 401) {
+      logout();
+    }
+    return res;
   };
 
   const [activeTab, setActiveTabState] = useState<string>(() => {
@@ -287,7 +302,7 @@ export function CryptoSpikeProvider({
 
   const fetchClosedPositions = async () => {
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `${API_BASE_URL}/api/positions/history?limit=300`,
       );
       if (res.ok) {
@@ -309,7 +324,7 @@ export function CryptoSpikeProvider({
     setClosedPositions([]);
     try {
       localStorage.removeItem(CLOSED_POSITIONS_KEY);
-      await fetch(`${API_BASE_URL}/api/positions/history/clear`, {
+      await authFetch(`${API_BASE_URL}/api/positions/history/clear`, {
         method: "POST",
       });
     } catch {
@@ -320,7 +335,7 @@ export function CryptoSpikeProvider({
   const refreshBalance = async () => {
     try {
       setIsLoadingBalance(true);
-      const res = await fetch(`${API_BASE_URL}/api/binance/balance`);
+      const res = await authFetch(`${API_BASE_URL}/api/binance/balance`);
       if (res.ok) {
         const data = (await res.json()) as BinanceBalanceInfo;
         setBalance(data);
@@ -335,7 +350,7 @@ export function CryptoSpikeProvider({
   const refreshPositions = async () => {
     try {
       setIsLoadingPositions(true);
-      const res = await fetch(`${API_BASE_URL}/api/positions`);
+      const res = await authFetch(`${API_BASE_URL}/api/positions`);
       if (res.ok) {
         const data = (await res.json()) as PositionItem[];
         setPositions(data);
@@ -356,7 +371,7 @@ export function CryptoSpikeProvider({
       // Temukan data posisi sebelum di-close untuk history lokal instan
       const existingPos = positions.find((p) => p.symbol === symbol);
 
-      const res = await fetch(`${API_BASE_URL}/api/positions/close`, {
+      const res = await authFetch(`${API_BASE_URL}/api/positions/close`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symbol, positionAmt, side }),
@@ -392,18 +407,18 @@ export function CryptoSpikeProvider({
         await refreshPositions();
         await refreshBalance();
         void fetchClosedPositions();
-        toast.success(`Posisi ${symbol} berhasil ditutup`, {
+        toast.success(`Position ${symbol} closed successfully`, {
           description: existingPos
             ? `PnL: $${existingPos.unRealizedProfit} (${existingPos.roe}%)`
-            : "Market order close terkirim ke Binance.",
+            : "Market close order sent to Binance.",
         });
         return true;
       }
-      toast.error(`Gagal menutup posisi ${symbol}`);
+      toast.error(`Failed to close position ${symbol}`);
       return false;
     } catch (err) {
       console.error("Failed to close position:", err);
-      toast.error(`Gagal menutup posisi ${symbol}`);
+      toast.error(`Failed to close position ${symbol}`);
       return false;
     }
   };
@@ -412,7 +427,7 @@ export function CryptoSpikeProvider({
   useEffect(() => {
     const fetchDbConfig = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/config`);
+        const res = await authFetch(`${API_BASE_URL}/api/config`);
         if (res.ok) {
           const dbConfig = (await res.json()) as TradingConfig;
           setConfig(dbConfig);
@@ -427,7 +442,7 @@ export function CryptoSpikeProvider({
   // Load strategies dari backend Registry (DB PostgreSQL)
   const fetchDbStrategies = async (signalsData?: SignalItem[]) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/strategies`);
+      const res = await authFetch(`${API_BASE_URL}/api/strategies`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -498,7 +513,7 @@ export function CryptoSpikeProvider({
   // Load signals dari database PostgreSQL backend
   const fetchDbSignals = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/signals?limit=500`);
+      const res = await authFetch(`${API_BASE_URL}/api/signals?limit=500`);
       if (res.ok) {
         const json = await res.json();
         if (json.items && Array.isArray(json.items) && json.items.length > 0) {
@@ -652,7 +667,7 @@ export function CryptoSpikeProvider({
       const sideText = (newSig as any).side || (newSig as any).type || "LONG";
       const icon = sideText === "LONG" ? "🟢" : "🔴";
       sendPushNotification(
-        `${icon} Sinyal Baru: ${newSig.symbol} (${sideText})`,
+        `${icon} New Signal: ${newSig.symbol} (${sideText})`,
         `Entry: ${newSig.entryPrice.toLocaleString()} | TP1: ${newSig.tp1.toLocaleString()} | SL: ${newSig.sl.toLocaleString()} [${newSig.strategy}]`,
         "new_signal",
       );
@@ -678,31 +693,31 @@ export function CryptoSpikeProvider({
             if (update.status === "TP1_HIT") {
               sendPushNotification(
                 `🎯 Take Profit 1 Hit: ${sym}!`,
-                `Target TP1 tersentuh. Keuntungan ${pPct}. Strategi: ${matched.strategy}`,
+                `TP1 target reached. Profit ${pPct}. Strategy: ${matched.strategy}`,
                 "tp",
               );
             } else if (update.status === "TP2_HIT") {
               sendPushNotification(
                 `🎯🎯 Take Profit 2 Hit: ${sym}!`,
-                `Target TP2 tersentuh! Keuntungan ${pPct}.`,
+                `TP2 target reached! Profit ${pPct}.`,
                 "tp",
               );
             } else if (update.status === "TP3_HIT") {
               sendPushNotification(
                 `🚀🚀 Take Profit 3 (MAX) Hit: ${sym}!`,
-                `Target TP3 maksimal tercapai! Keuntungan ${pPct}.`,
+                `Maximum TP3 target reached! Profit ${pPct}.`,
                 "tp",
               );
             } else if (update.status === "TSL_HIT") {
               sendPushNotification(
                 `🛡️ Trailing Stop Hit: ${sym}`,
-                `Trailing Stop tersentuh untuk mengunci profit ${pPct}.`,
+                `Trailing stop triggered to lock in profit ${pPct}.`,
                 "tp",
               );
             } else if (update.status === "SL_HIT") {
               sendPushNotification(
                 `🛑 Stop Loss Hit: ${sym}`,
-                `Sinyal menyentuh batas risiko SL (${pPct || "Loss"}).`,
+                `Signal hit stop loss threshold (${pPct || "Loss"}).`,
                 "sl",
               );
             } else if (
@@ -710,8 +725,8 @@ export function CryptoSpikeProvider({
               update.status === "CANCELLED"
             ) {
               sendPushNotification(
-                `ℹ️ Posisi Ditutup: ${sym}`,
-                `Sinyal telah selesai / ditutup. PnL: ${pPct}.`,
+                `ℹ️ Position Closed: ${sym}`,
+                `Signal position concluded. PnL: ${pPct}.`,
                 "info",
               );
             }
@@ -802,7 +817,7 @@ export function CryptoSpikeProvider({
         if (s.strategyId === strategyId) {
           const nextState = !s.isEnabled;
           // Kirim ke backend untuk di-update di memory & DB
-          fetch(`${API_BASE_URL}/api/strategies/${strategyId}/toggle`, {
+          authFetch(`${API_BASE_URL}/api/strategies/${strategyId}/toggle`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ isEnabled: nextState }),
@@ -893,7 +908,7 @@ export function CryptoSpikeProvider({
     setConfig((prev) => {
       const merged = { ...prev, ...updated };
       // Kirim ke backend NestJS untuk di-persist ke PostgreSQL
-      fetch(`${API_BASE_URL}/api/config`, {
+      authFetch(`${API_BASE_URL}/api/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(merged),

@@ -67,8 +67,8 @@ export function DashboardSummary() {
               CryptoSpike System Overview
             </h2>
             <p className="text-xs text-muted-foreground">
-              Pemantauan performa otomatis, sinyal terkini, dan status bot
-              execution Binance.
+              Automated performance tracking, real-time signals, and Binance
+              execution bot status.
             </p>
           </div>
         </div>
@@ -154,13 +154,13 @@ export function DashboardSummary() {
                     {isPositive ? "+" : ""}${totalUnrealized.toFixed(2)}
                   </div>
                   <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground font-mono">
-                    <span>{positions.length} Posisi Terbuka</span>
+                    <span>{positions.length} Open Positions</span>
                     <span>•</span>
                     <span
                       onClick={() => setActiveTab("positions")}
                       className="cursor-pointer text-indigo-500 hover:underline"
                     >
-                      Lihat Posisi
+                      View Positions
                     </span>
                   </div>
                 </>
@@ -186,8 +186,8 @@ export function DashboardSummary() {
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
               {strategies.length - activeStrategies.length === 0
-                ? "Semua engine menyala"
-                : `${strategies.length - activeStrategies.length} engine di-pause`}
+                ? "All engines active"
+                : `${strategies.length - activeStrategies.length} engines paused`}
             </div>
           </CardContent>
         </Card>
@@ -229,7 +229,7 @@ export function DashboardSummary() {
                 Strategy Health & Winrate Summary
               </CardTitle>
               <CardDescription className="text-xs">
-                Performa tingkat keberhasilan masing-masing file algoritma.
+                Success rate and winrate performance per algorithm file.
               </CardDescription>
             </div>
             <Button
@@ -238,7 +238,7 @@ export function DashboardSummary() {
               onClick={() => setActiveTab("strategies")}
               className="text-xs h-7 text-muted-foreground"
             >
-              Lihat Detail &rarr;
+              View Details &rarr;
             </Button>
           </CardHeader>
           <CardContent>
@@ -276,7 +276,7 @@ export function DashboardSummary() {
                           {strat.winrate}
                         </div>
                         <div className="text-[11px] text-muted-foreground font-mono">
-                          {strat.totalSignals} sinyal
+                          {strat.totalSignals} signals
                         </div>
                       </div>
                     </div>
@@ -295,7 +295,7 @@ export function DashboardSummary() {
               Bot Parameters & Risk
             </CardTitle>
             <CardDescription className="text-xs">
-              Konfigurasi limit Binance futures aktif.
+              Active Binance Futures limits and configuration.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5 text-xs">
@@ -326,7 +326,7 @@ export function DashboardSummary() {
             <div className="flex items-center justify-between py-1.5 border-b">
               <span className="text-muted-foreground">Max Open Positions</span>
               <span className="font-mono font-semibold">
-                {config.maxOpenPositions} Pasang
+                {config.maxOpenPositions} Pairs
               </span>
             </div>
             <div className="flex items-center justify-between py-1.5 border-b">
@@ -348,7 +348,7 @@ export function DashboardSummary() {
               onClick={() => setActiveTab("binance-config")}
               className="w-full text-xs mt-2"
             >
-              Ubah Parameter Trading
+              Edit Trading Parameters
             </Button>
           </CardContent>
         </Card>
@@ -363,7 +363,7 @@ export function DashboardSummary() {
               Recent Signal Activity
             </CardTitle>
             <CardDescription className="text-xs">
-              Histori dan pembaruan sinyal terbaru yang terdeteksi scanner.
+              Recent signals and status updates detected by scanner.
             </CardDescription>
           </div>
           <Button
@@ -372,7 +372,7 @@ export function DashboardSummary() {
             onClick={() => setActiveTab("signals")}
             className="text-xs h-7 text-muted-foreground"
           >
-            Buka Sinyal Lengkap &rarr;
+            Open Full Signals &rarr;
           </Button>
         </CardHeader>
         <CardContent>

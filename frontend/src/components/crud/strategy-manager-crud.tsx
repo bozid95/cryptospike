@@ -79,8 +79,8 @@ export function StrategyManagerCrud() {
               Strategy Engine Registry
             </CardTitle>
             <CardDescription className="text-xs">
-              Algoritma terdeteksi langsung dari source code backend NestJS.
-              Status ON/OFF otomatis tersimpan di PostgreSQL.
+              Algorithmic trading engines discovered from NestJS backend
+              registry. Active state is saved persistently to PostgreSQL.
             </CardDescription>
           </div>
         </CardHeader>
@@ -92,18 +92,18 @@ export function StrategyManagerCrud() {
             setSearchTerm(val);
             setCurrentPage(1);
           }}
-          searchPlaceholder="Cari strategi, indikator, TF..."
+          searchPlaceholder="Search strategy, indicator, TF..."
           rightActions={
             <>
-              <span>Menampilkan</span>
+              <span>Showing</span>
               <span className="font-semibold text-foreground">
                 {totalItems > 0 ? startIndex + 1 : 0}-{endIndex}
               </span>
-              <span>dari</span>
+              <span>of</span>
               <span className="font-semibold text-foreground">
                 {totalItems}
               </span>
-              <span>strategi backend</span>
+              <span>backend strategies</span>
             </>
           }
         />
@@ -114,22 +114,22 @@ export function StrategyManagerCrud() {
               <TableHeader>
                 <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
                   <TableHead className="w-[260px] px-4 py-3 font-semibold text-xs">
-                    ID & Nama Algoritma
+                    ID & Algorithm Name
                   </TableHead>
                   <TableHead className="w-[90px] px-4 py-3 font-semibold text-xs">
                     Timeframe
                   </TableHead>
                   <TableHead className="w-[170px] px-4 py-3 font-semibold text-xs">
-                    Indikator Teknis
+                    Technical Indicators
                   </TableHead>
                   <TableHead className="w-[160px] px-4 py-3 font-semibold text-xs">
-                    Sinyal & Winrate
+                    Signals & Winrate
                   </TableHead>
                   <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
-                    PnL Dihasilkan
+                    Realized PnL
                   </TableHead>
                   <TableHead className="w-[140px] px-4 py-3 text-right font-semibold text-xs">
-                    Status Eksekusi
+                    Execution Status
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -140,7 +140,7 @@ export function StrategyManagerCrud() {
                       colSpan={6}
                       className="h-28 text-center text-muted-foreground text-sm"
                     >
-                      Tidak ada strategi yang terdaftar di engine.
+                      No strategies registered in the engine.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -199,7 +199,7 @@ export function StrategyManagerCrud() {
                               {strat.totalSignals ?? 0}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
-                              sinyal
+                              signals
                             </span>
                             <span className="text-[10px] text-muted-foreground">
                               •
@@ -297,7 +297,7 @@ export function StrategyManagerCrud() {
             pageSizeOptions={[5, 10, 20]}
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
-            itemLabel="strategi backend"
+            itemLabel="backend strategies"
           />
         </CardContent>
       </Card>

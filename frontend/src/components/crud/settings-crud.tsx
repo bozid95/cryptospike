@@ -67,8 +67,8 @@ export function SettingsCrud() {
             Binance Futures API Credentials
           </CardTitle>
           <CardDescription className="text-xs">
-            Konfigurasi koneksi API Key dan Secret untuk eksekusi posisi kontrak
-            futures Binance.
+            Configure your API Key and Secret connection to execute contract
+            orders on Binance Futures.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 pt-0 space-y-4">
@@ -80,7 +80,7 @@ export function SettingsCrud() {
               id="apiKey"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Masukkan Binance Futures API Key..."
+              placeholder="Enter Binance Futures API Key..."
               className="font-mono text-xs"
             />
           </div>
@@ -95,7 +95,7 @@ export function SettingsCrud() {
                 onClick={() => setShowSecret((prev) => !prev)}
                 className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                {showSecret ? "Sembunyikan Secret" : "Tampilkan Secret"}
+                {showSecret ? "Hide Secret" : "Show Secret"}
               </button>
             </div>
             <Input
@@ -103,7 +103,7 @@ export function SettingsCrud() {
               type={showSecret ? "text" : "password"}
               value={apiSecret}
               onChange={(e) => setApiSecret(e.target.value)}
-              placeholder="Masukkan API Secret..."
+              placeholder="Enter API Secret..."
               className="font-mono text-xs"
             />
           </div>
@@ -111,7 +111,7 @@ export function SettingsCrud() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div className="grid gap-2">
               <Label className="text-xs font-semibold">
-                Lingkungan Eksekusi
+                Execution Environment
               </Label>
               <select
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-medium"
@@ -134,7 +134,7 @@ export function SettingsCrud() {
 
             <div className="flex flex-col justify-end gap-2">
               <Label className="text-xs font-semibold">
-                Otomatis Eksekusi Order (Bot Engine)?
+                Auto-Execute Orders (Bot Engine)?
               </Label>
               <div className="flex items-center gap-2.5 h-9">
                 <Switch
@@ -161,8 +161,8 @@ export function SettingsCrud() {
             Risk & Position Management
           </CardTitle>
           <CardDescription className="text-xs">
-            Parameter manajemen risiko untuk membatasi leverage dan kerugian per
-            transaksi.
+            Risk parameters to control leverage limits and max portfolio
+            exposure per trade.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 pt-0 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -183,7 +183,7 @@ export function SettingsCrud() {
 
           <div className="grid gap-2">
             <Label htmlFor="maxPos" className="text-xs font-semibold">
-              Max Open Positions Simultan
+              Max Concurrent Open Positions
             </Label>
             <Input
               id="maxPos"
@@ -198,7 +198,7 @@ export function SettingsCrud() {
 
           <div className="grid gap-2">
             <Label htmlFor="risk" className="text-xs font-semibold">
-              Alokasi Risiko Per Trade (%)
+              Risk Allocation Per Trade (%)
             </Label>
             <Input
               id="risk"
@@ -214,7 +214,7 @@ export function SettingsCrud() {
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t p-6 py-4 bg-muted/20">
           <span className="text-xs text-muted-foreground">
-            Perubahan akan otomatis disimpan ke database konfigurasi.
+            Changes will be saved persistently to PostgreSQL configuration.
           </span>
           <Button
             type="submit"
@@ -224,10 +224,10 @@ export function SettingsCrud() {
             {saved ? (
               <>
                 <CheckIcon className="size-4 text-emerald-400" />
-                Tersimpan!
+                Saved!
               </>
             ) : (
-              "Simpan Konfigurasi"
+              "Save Configuration"
             )}
           </Button>
         </CardFooter>

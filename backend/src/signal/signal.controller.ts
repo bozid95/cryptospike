@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Query, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { SignalService, CreateSignalInput } from './signal.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('api/signals')
 export class SignalController {
@@ -30,6 +31,7 @@ export class SignalController {
     return this.signalService.getSignalById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   createSignal(@Body() body: CreateSignalInput) {
     return this.signalService.createSignal(body);

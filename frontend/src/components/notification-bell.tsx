@@ -61,7 +61,7 @@ export function NotificationBell() {
           variant="outline"
           size="icon"
           className="relative size-8 rounded-full border-border bg-background"
-          aria-label="Notifikasi"
+          aria-label="Notifications"
         >
           <Bell className="size-4 text-foreground" />
           {unreadCount > 0 && (
@@ -80,7 +80,7 @@ export function NotificationBell() {
         {/* Header Notification */}
         <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/60">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-sm">Notifikasi</h3>
+            <h3 className="font-semibold text-sm">Notifications</h3>
             <Badge
               variant="secondary"
               className="text-[11px] font-mono px-1.5 py-0"
@@ -95,10 +95,10 @@ export function NotificationBell() {
                 size="sm"
                 onClick={markAllNotificationsAsRead}
                 className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                title="Tandai semua dibaca"
+                title="Mark all as read"
               >
                 <CheckCheck className="size-3.5 mr-1" />
-                Baca Semua
+                Mark All Read
               </Button>
             )}
             {notifications.length > 0 && (
@@ -107,7 +107,7 @@ export function NotificationBell() {
                 size="sm"
                 onClick={clearNotifications}
                 className="h-7 px-2 text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10"
-                title="Bersihkan notifikasi"
+                title="Clear notifications"
               >
                 <Trash2 className="size-3.5 mr-1" />
                 Clear
@@ -121,9 +121,9 @@ export function NotificationBell() {
           {notifications.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               <Bell className="size-8 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Belum ada notifikasi</p>
+              <p className="text-sm">No notifications yet</p>
               <p className="text-xs text-muted-foreground/80 mt-1">
-                Sinyal baru, TP, SL, dan penutupan posisi akan tampil di sini
+                New signals, TP, SL, and closed positions will appear here
               </p>
             </div>
           ) : (

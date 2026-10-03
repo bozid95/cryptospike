@@ -78,7 +78,7 @@ export function NavUser() {
             <DropdownMenuGroup>
               <DropdownMenuItem className="gap-2 text-xs">
                 <ShieldCheckIcon className="size-4 text-emerald-600" />
-                <span>Status: Terproteksi JWT</span>
+                <span>Status: JWT Protected</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -87,7 +87,7 @@ export function NavUser() {
               onClick={() => {
                 if (
                   window.confirm(
-                    "Apakah Anda yakin ingin keluar dari sesi operator?",
+                    "Are you sure you want to sign out of the operator session?",
                   )
                 ) {
                   logout();
@@ -95,7 +95,7 @@ export function NavUser() {
               }}
             >
               <LogOutIcon className="size-4" />
-              Keluar (Log out)
+              Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
