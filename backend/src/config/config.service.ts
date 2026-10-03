@@ -97,11 +97,14 @@ export class ConfigService implements OnModuleInit {
       return {
         apiKey: userConfig.apiKey || DEFAULT_CONFIG.apiKey,
         apiSecret: userConfig.apiSecret || DEFAULT_CONFIG.apiSecret,
-        environment: (userConfig.environment as any) || DEFAULT_CONFIG.environment,
+        environment:
+          (userConfig.environment as any) || DEFAULT_CONFIG.environment,
         leverage: userConfig.leverage ?? DEFAULT_CONFIG.leverage,
         marginType: (userConfig.marginType as any) || DEFAULT_CONFIG.marginType,
-        maxOpenPositions: userConfig.maxOpenPositions ?? DEFAULT_CONFIG.maxOpenPositions,
-        riskPerTradePct: userConfig.riskPerTradePct ?? DEFAULT_CONFIG.riskPerTradePct,
+        maxOpenPositions:
+          userConfig.maxOpenPositions ?? DEFAULT_CONFIG.maxOpenPositions,
+        riskPerTradePct:
+          userConfig.riskPerTradePct ?? DEFAULT_CONFIG.riskPerTradePct,
         autoExecute: userConfig.autoExecute ?? DEFAULT_CONFIG.autoExecute,
       };
     } catch (err: unknown) {
