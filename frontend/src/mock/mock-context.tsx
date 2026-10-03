@@ -246,7 +246,9 @@ export function CryptoSpikeProvider({
 
   const fetchClosedPositions = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/positions/history?limit=300`);
+      const res = await fetch(
+        `${API_BASE_URL}/api/positions/history?limit=300`,
+      );
       if (res.ok) {
         const json = await res.json();
         if (json.items && Array.isArray(json.items)) {

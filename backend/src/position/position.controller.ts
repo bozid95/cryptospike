@@ -76,7 +76,12 @@ export class PositionController {
         strategy: matchedSignal?.strategy || 'MANUAL / UNKNOWN',
         signalId: matchedSignal?.id || null,
         signalStatus: matchedSignal?.status || null,
+        tp1: matchedSignal?.tp1 || null,
+        tp2: matchedSignal?.tp2 || null,
+        tp3: matchedSignal?.tp3 || null,
         sl: matchedSignal?.sl || null,
+        createdAt: matchedSignal?.sentAt || (p.updateTime ? new Date(p.updateTime).toISOString() : new Date().toISOString()),
+        updatedAt: p.updateTime ? new Date(p.updateTime).toISOString() : new Date().toISOString(),
         updateTime: p.updateTime,
       };
     });
@@ -160,4 +165,3 @@ export class PositionController {
     return { success: true };
   }
 }
-

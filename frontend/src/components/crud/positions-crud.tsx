@@ -474,6 +474,9 @@ export function PositionsCrud() {
                     <TableHead className="w-[190px] px-4 py-3 font-semibold text-xs">
                       Target Orders (TP/SL)
                     </TableHead>
+                    <TableHead className="w-[160px] px-4 py-3 font-semibold text-xs">
+                      Waktu (Dibuat & Update)
+                    </TableHead>
                     <TableHead className="w-[100px] px-4 py-3 text-right font-semibold text-xs">
                       Tindakan
                     </TableHead>
@@ -483,7 +486,7 @@ export function PositionsCrud() {
                   {filteredPositions.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={8}
                         className="h-28 text-center text-muted-foreground text-sm"
                       >
                         Tidak ada posisi terbuka saat ini di akun Binance
@@ -586,34 +589,118 @@ export function PositionsCrud() {
                             </div>
                           </TableCell>
 
+                          {/* Target Orders (TP & SL) dengan Persentase dari Entry Point */}
                           <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
                             {pos.orders && pos.orders.length > 0 ? (
                               <div className="flex flex-col gap-1">
-                                {pos.orders.map((ord, idx) => (
-                                  <div
-                                    key={ord.orderId}
-                                    className="flex items-center gap-1.5 text-[11px]"
-                                  >
-                                    <Badge
-                                      variant="outline"
-                                      className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                                {pos.orders.map((ord, idx) => {
+                                  const diffPct =
+                                    pos.entryPrice > 0
+                                      ? (isLong
+                                          ? (ord.price - pos.entryPrice) / pos.entryPrice
+                                          : (pos.entryPrice - ord.price) / pos.entryPrice) * 100
+                                      : 0;
+                                  return (
+                                    <div
+                                      key={ord.orderId}
+                                      className="flex items-center gap-1.5 text-[11px]"
                                     >
-                                      TP{idx + 1}
-                                    </Badge>
-                                    <span className="font-semibold tabular-nums">
-                                      ${ord.price.toLocaleString()}
-                                    </span>
-                                    <span className="text-[10px] text-muted-foreground">
-                                      ({ord.origQty})
-                                    </span>
-                                  </div>
-                                ))}
+                                      <Badge
+                                        variant="outline"
+                                        className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                                      >
+                                        TP{idx + 1}
+                                      </Badge>
+                                      <span className="font-semibold tabular-nums text-foreground">
+                                        ${formatCryptoPrice(ord.price)}
+                                      </span>
+                                      <span className="font-bold text-[10px] bg-emerald-500/10 text-emerald-600 px-1 py-0.5 rounded border border-emerald-500/20 leading-none">
+                                        {diffPct >= 0 ? `+${diffPct.toFixed(2)}%` : `${diffPct.toFixed(2)}%`}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
                                   <span className="text-amber-500 font-bold">
                                     ●
                                   </span>
                                   <span>TSL Engine Active</span>
                                 </div>
+                              </div>
+                            ) : (pos.tp1 || pos.tp2 || pos.tp3) ? (
+                              <div className="flex flex-col gap-1">
+                                {pos.tp1 && (
+                                  <div className="flex items-center gap-1.5 text-[11px]">
+                                    <Badge
+                                      variant="outline"
+                                      className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                                    >
+                                      TP1
+                                    </Badge>
+                                    <span className="font-semibold tabular-nums text-foreground">
+                                      ${formatCryptoPrice(pos.tp1)}
+                                    </span>
+                                    <span className="font-bold text-[10px] bg-emerald-500/10 text-emerald-600 px-1 py-0.5 rounded border border-emerald-500/20 leading-none">
+                                      {pos.entryPrice > 0
+                                        ? `+${Math.abs(((pos.tp1 - pos.entryPrice) / pos.entryPrice) * 100).toFixed(2)}%`
+                                        : "+0.00%"}
+                                    </span>
+                                  </div>
+                                )}
+                                {pos.tp2 && (
+                                  <div className="flex items-center gap-1.5 text-[11px]">
+                                    <Badge
+                                      variant="outline"
+                                      className="px-1 py-0 h-4 text-[9px] font-bold border-teal-500/40 text-teal-600 bg-teal-500/5"
+                                    >
+                                      TP2
+                                    </Badge>
+                                    <span className="font-semibold tabular-nums text-foreground">
+                                      ${formatCryptoPrice(pos.tp2)}
+                                    </span>
+                                    <span className="font-bold text-[10px] bg-teal-500/10 text-teal-600 px-1 py-0.5 rounded border border-teal-500/20 leading-none">
+                                      {pos.entryPrice > 0
+                                        ? `+${Math.abs(((pos.tp2 - pos.entryPrice) / pos.entryPrice) * 100).toFixed(2)}%`
+                                        : "+0.00%"}
+                                    </span>
+                                  </div>
+                                )}
+                                {pos.tp3 && (
+                                  <div className="flex items-center gap-1.5 text-[11px]">
+                                    <Badge
+                                      variant="outline"
+                                      className="px-1 py-0 h-4 text-[9px] font-bold border-cyan-500/40 text-cyan-600 bg-cyan-500/5"
+                                    >
+                                      TP3
+                                    </Badge>
+                                    <span className="font-semibold tabular-nums text-foreground">
+                                      ${formatCryptoPrice(pos.tp3)}
+                                    </span>
+                                    <span className="font-bold text-[10px] bg-cyan-500/10 text-cyan-600 px-1 py-0.5 rounded border border-cyan-500/20 leading-none">
+                                      {pos.entryPrice > 0
+                                        ? `+${Math.abs(((pos.tp3 - pos.entryPrice) / pos.entryPrice) * 100).toFixed(2)}%`
+                                        : "+0.00%"}
+                                    </span>
+                                  </div>
+                                )}
+                                {pos.sl && (
+                                  <div className="flex items-center gap-1.5 text-[11px] text-destructive">
+                                    <Badge
+                                      variant="outline"
+                                      className="px-1 py-0 h-4 text-[9px] font-bold border-destructive/40 text-destructive bg-destructive/5"
+                                    >
+                                      SL
+                                    </Badge>
+                                    <span className="font-semibold tabular-nums">
+                                      ${formatCryptoPrice(pos.sl)}
+                                    </span>
+                                    <span className="font-bold text-[10px] bg-destructive/10 text-destructive px-1 py-0.5 rounded border border-destructive/20 leading-none">
+                                      {pos.entryPrice > 0
+                                        ? `-${Math.abs(((pos.entryPrice - pos.sl) / pos.entryPrice) * 100).toFixed(2)}%`
+                                        : "-0.00%"}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             ) : (
                               <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -623,6 +710,55 @@ export function PositionsCrud() {
                                 <span>Engine TSL Monitored</span>
                               </div>
                             )}
+                          </TableCell>
+
+                          {/* Waktu (Dibuat & Update) */}
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                            <div className="space-y-1">
+                              {/* Created At */}
+                              <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
+                                <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
+                                  Buat:
+                                </span>
+                                <ClockIcon className="size-3 text-muted-foreground/60 shrink-0" />
+                                <span className="text-foreground text-[11px] font-medium">
+                                  {new Date(
+                                    pos.createdAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                  ).toLocaleTimeString("id-ID", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    second: "2-digit",
+                                  })}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground/70">
+                                  {new Date(
+                                    pos.createdAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                  ).toLocaleDateString("id-ID")}
+                                </span>
+                              </div>
+
+                              {/* Updated At */}
+                              <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
+                                <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
+                                  Ubah:
+                                </span>
+                                <RefreshCwIcon className="size-2.5 text-primary/70 shrink-0" />
+                                <span className="text-foreground text-[11px] font-medium">
+                                  {new Date(
+                                    pos.updatedAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                  ).toLocaleTimeString("id-ID", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    second: "2-digit",
+                                  })}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground/70">
+                                  {new Date(
+                                    pos.updatedAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                  ).toLocaleDateString("id-ID")}
+                                </span>
+                              </div>
+                            </div>
                           </TableCell>
 
                           <TableCell className="align-middle px-4 py-3.5 text-right">

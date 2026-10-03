@@ -1,8 +1,4 @@
-import {
-  LogOutIcon,
-  MoreVerticalIcon,
-  ShieldCheckIcon,
-} from "lucide-react";
+import { LogOutIcon, MoreVerticalIcon, ShieldCheckIcon } from "lucide-react";
 
 import { useCryptoSpike } from "@/mock/mock-context";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";

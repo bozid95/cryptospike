@@ -71,7 +71,12 @@ export interface PositionItem {
   strategy?: string;
   signalId?: string | null;
   signalStatus?: string | null;
+  tp1?: number | null;
+  tp2?: number | null;
+  tp3?: number | null;
   sl?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
   updateTime: number;
 }
 
