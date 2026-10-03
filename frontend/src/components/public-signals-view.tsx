@@ -317,7 +317,11 @@ export function PublicSignalsView() {
                 Tahap Development & Uji Coba Sample Data
               </span>
               <p className="text-[11px] opacity-90 leading-relaxed font-sans">
-                Sistem saat ini sedang dalam <strong>tahap development & collecting sample signal</strong> untuk pengujian strategi algoritma. Sinyal ini murni untuk evaluasi teknis, <strong>bukan saran finansial dan jangan diikuti</strong>.
+                Sistem saat ini sedang dalam{" "}
+                <strong>tahap development & collecting sample signal</strong>{" "}
+                untuk pengujian strategi algoritma. Sinyal ini murni untuk
+                evaluasi teknis,{" "}
+                <strong>bukan saran finansial dan jangan diikuti</strong>.
               </p>
             </div>
           </div>
