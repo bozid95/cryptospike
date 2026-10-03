@@ -294,6 +294,32 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
                   sig.symbol,
                   positionAmt,
                 );
+
+                try {
+                  const entryPrice = parseFloat(livePos.entryPrice) || sig.entryPrice;
+                  const unRealizedProfit = parseFloat(livePos.unRealizedProfit) || 0;
+                  const leverage = parseInt(livePos.leverage, 10) || 10;
+                  const notional = Math.abs(positionAmt * markPrice);
+                  const initialMargin = leverage > 0 ? notional / leverage : 0;
+                  const roe = initialMargin > 0 ? (unRealizedProfit / initialMargin) * 100 : 0;
+
+                  await this.prisma.closedPosition.create({
+                    data: {
+                      symbol: sig.symbol,
+                      side: isLong ? 'LONG' : 'SHORT',
+                      entryPrice,
+                      exitPrice: markPrice,
+                      positionAmt: Math.abs(positionAmt),
+                      realizedPnl: unRealizedProfit,
+                      roe: parseFloat(roe.toFixed(2)),
+                      leverage,
+                      strategy: sig.strategy || 'AUTO_SCANNER',
+                      closeReason: 'TP3 Max Target Hit',
+                    },
+                  });
+                } catch (dbErr) {
+                  this.logger.warn(`Failed persisting TP3 closed position: ${dbErr}`);
+                }
               }
             }
 
@@ -347,6 +373,32 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             const positionAmt = parseFloat(livePos.positionAmt);
             if (positionAmt !== 0) {
               await this.binanceService.closePosition(sig.symbol, positionAmt);
+
+              try {
+                const entryPrice = parseFloat(livePos.entryPrice) || sig.entryPrice;
+                const unRealizedProfit = parseFloat(livePos.unRealizedProfit) || 0;
+                const leverage = parseInt(livePos.leverage, 10) || 10;
+                const notional = Math.abs(positionAmt * markPrice);
+                const initialMargin = leverage > 0 ? notional / leverage : 0;
+                const roe = initialMargin > 0 ? (unRealizedProfit / initialMargin) * 100 : 0;
+
+                await this.prisma.closedPosition.create({
+                  data: {
+                    symbol: sig.symbol,
+                    side: isLong ? 'LONG' : 'SHORT',
+                    entryPrice,
+                    exitPrice: markPrice,
+                    positionAmt: Math.abs(positionAmt),
+                    realizedPnl: unRealizedProfit,
+                    roe: parseFloat(roe.toFixed(2)),
+                    leverage,
+                    strategy: sig.strategy || 'AUTO_SCANNER',
+                    closeReason: isBreakevenOrProfit ? 'Trailing Stop Hit' : 'Stop Loss Hit',
+                  },
+                });
+              } catch (dbErr) {
+                this.logger.warn(`Failed persisting SL closed position: ${dbErr}`);
+              }
             }
           }
 

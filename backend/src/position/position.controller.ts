@@ -108,7 +108,31 @@ export class PositionController {
     @Body() body: { symbol: string; positionAmt: number; side?: string },
   ) {
     this.logger.log(`Manual close position requested for ${body.symbol}`);
-    // Jika body.side === 'LONG', amt bernilai positif; jika SHORT, amt bernilai negatif
+
+    // 1. Dapatkan snapshot posisi SEBELUM dieksekusi tutup di Binance
+    let entryPrice = 0;
+    let markPrice = 0;
+    let unRealizedProfit = 0;
+    let leverage = 10;
+    let roe = 0;
+
+    try {
+      const positions = await this.binanceService.getPositions();
+      const pos = positions.find((p) => p.symbol === body.symbol);
+      if (pos) {
+        entryPrice = parseFloat(pos.entryPrice) || 0;
+        markPrice = parseFloat(pos.markPrice) || 0;
+        unRealizedProfit = parseFloat(pos.unRealizedProfit) || 0;
+        leverage = parseInt(pos.leverage, 10) || 10;
+        const notional = Math.abs(body.positionAmt * (markPrice || entryPrice));
+        const initialMargin = leverage > 0 ? notional / leverage : 0;
+        roe = initialMargin > 0 ? (unRealizedProfit / initialMargin) * 100 : 0;
+      }
+    } catch (snapErr) {
+      this.logger.warn(`Failed to snapshot position before close: ${snapErr}`);
+    }
+
+    // 2. Eksekusi market close order ke Binance
     const signedAmt =
       body.side === 'SHORT'
         ? -Math.abs(body.positionAmt)
@@ -119,19 +143,8 @@ export class PositionController {
       signedAmt,
     );
 
-    // Dapatkan data posisi sebelum ditutup untuk disimpan ke tabel closed_positions
+    // 3. Simpan ke tabel closed_positions database PostgreSQL
     try {
-      const positions = await this.binanceService.getPositions();
-      const pos = positions.find((p) => p.symbol === body.symbol);
-      const entryPrice = pos ? parseFloat(pos.entryPrice) : 0;
-      const markPrice = pos ? parseFloat(pos.markPrice) : 0;
-      const unRealizedProfit = pos ? parseFloat(pos.unRealizedProfit) : 0;
-      const leverage = pos ? parseInt(pos.leverage, 10) : 10;
-      const notional = Math.abs(body.positionAmt * (markPrice || entryPrice));
-      const initialMargin = leverage > 0 ? notional / leverage : 0;
-      const roe =
-        initialMargin > 0 ? (unRealizedProfit / initialMargin) * 100 : 0;
-
       await this.prisma.closedPosition.create({
         data: {
           symbol: body.symbol,
@@ -146,6 +159,7 @@ export class PositionController {
           closeReason: 'Manual Operator Close',
         },
       });
+      this.logger.log(`Persisted closed position for ${body.symbol} to database.`);
     } catch (dbErr) {
       this.logger.warn(
         `Failed to persist closed position for ${body.symbol}: ${dbErr}`,
