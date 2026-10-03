@@ -839,16 +839,16 @@ export function PublicSignalsView() {
                     </div>
                   </div>
 
-                  {/* Target Levels: TP1, TP2, TP3 & SL */}
-                  <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-1.5 text-xs font-mono">
+                  {/* Target Levels: TP1, TP2, TP3 & SL (Structured 2x2 Grid) */}
+                  <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-2 text-xs font-mono">
                     <span className="text-[10px] text-muted-foreground block font-sans font-medium uppercase tracking-wider">
                       Targets (TP & SL)
                     </span>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="grid grid-cols-2 gap-2">
                       {/* TP1 */}
                       {sig.tp1 && (
                         <div
-                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                          className={`relative flex items-center justify-between px-2 py-1.5 rounded-lg text-[11px] transition-all w-full ${
                             isTp1Hit
                               ? "bg-emerald-500/20 border border-emerald-500/50 shadow-xs ring-1 ring-emerald-500/30"
                               : "bg-emerald-500/10 border border-emerald-500/20"
@@ -862,22 +862,24 @@ export function PublicSignalsView() {
                               <CheckIcon className="size-2.5 stroke-[3]" />
                             </span>
                           )}
-                          <span
-                            className={`text-[10px] font-bold ${
-                              isTp1Hit ? "text-emerald-500" : "text-emerald-600"
-                            }`}
-                          >
-                            TP1
-                          </span>
-                          <span className="font-semibold text-foreground">
-                            ${formatCryptoPrice(sig.tp1)}
-                          </span>
-                          <span className="text-[10px] text-emerald-600 font-bold">
-                            (
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`text-[10px] font-bold ${
+                                isTp1Hit ? "text-emerald-500" : "text-emerald-600"
+                              }`}
+                            >
+                              TP1
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${formatCryptoPrice(sig.tp1)}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-emerald-600 font-bold shrink-0">
+                            +
                             {isLong
-                              ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              ? (((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)
+                              : (((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}
+                            %
                           </span>
                         </div>
                       )}
@@ -885,7 +887,7 @@ export function PublicSignalsView() {
                       {/* TP2 */}
                       {sig.tp2 && (
                         <div
-                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                          className={`relative flex items-center justify-between px-2 py-1.5 rounded-lg text-[11px] transition-all w-full ${
                             isTp2Hit
                               ? "bg-teal-500/20 border border-teal-500/50 shadow-xs ring-1 ring-teal-500/30"
                               : "bg-teal-500/10 border border-teal-500/20"
@@ -899,22 +901,24 @@ export function PublicSignalsView() {
                               <CheckIcon className="size-2.5 stroke-[3]" />
                             </span>
                           )}
-                          <span
-                            className={`text-[10px] font-bold ${
-                              isTp2Hit ? "text-teal-500" : "text-teal-600"
-                            }`}
-                          >
-                            TP2
-                          </span>
-                          <span className="font-semibold text-foreground">
-                            ${formatCryptoPrice(sig.tp2)}
-                          </span>
-                          <span className="text-[10px] text-teal-600 font-bold">
-                            (
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`text-[10px] font-bold ${
+                                isTp2Hit ? "text-teal-500" : "text-teal-600"
+                              }`}
+                            >
+                              TP2
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${formatCryptoPrice(sig.tp2)}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-teal-600 font-bold shrink-0">
+                            +
                             {isLong
-                              ? `+${(((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              ? (((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)
+                              : (((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}
+                            %
                           </span>
                         </div>
                       )}
@@ -922,7 +926,7 @@ export function PublicSignalsView() {
                       {/* TP3 */}
                       {sig.tp3 && (
                         <div
-                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                          className={`relative flex items-center justify-between px-2 py-1.5 rounded-lg text-[11px] transition-all w-full ${
                             isTp3Hit
                               ? "bg-cyan-500/20 border border-cyan-500/50 shadow-xs ring-1 ring-cyan-500/30"
                               : "bg-cyan-500/10 border border-cyan-500/20"
@@ -936,22 +940,24 @@ export function PublicSignalsView() {
                               <CheckIcon className="size-2.5 stroke-[3]" />
                             </span>
                           )}
-                          <span
-                            className={`text-[10px] font-bold ${
-                              isTp3Hit ? "text-cyan-500" : "text-cyan-600"
-                            }`}
-                          >
-                            TP3
-                          </span>
-                          <span className="font-semibold text-foreground">
-                            ${formatCryptoPrice(sig.tp3)}
-                          </span>
-                          <span className="text-[10px] text-cyan-600 font-bold">
-                            (
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`text-[10px] font-bold ${
+                                isTp3Hit ? "text-cyan-500" : "text-cyan-600"
+                              }`}
+                            >
+                              TP3
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${formatCryptoPrice(sig.tp3)}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-cyan-600 font-bold shrink-0">
+                            +
                             {isLong
-                              ? `+${(((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              ? (((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)
+                              : (((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}
+                            %
                           </span>
                         </div>
                       )}
@@ -959,7 +965,7 @@ export function PublicSignalsView() {
                       {/* SL */}
                       {sig.sl && (
                         <div
-                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                          className={`relative flex items-center justify-between px-2 py-1.5 rounded-lg text-[11px] transition-all w-full ${
                             isSlHit
                               ? "bg-destructive/20 border border-destructive/50 shadow-xs ring-1 ring-destructive/30"
                               : "bg-destructive/10 border border-destructive/20"
@@ -973,18 +979,20 @@ export function PublicSignalsView() {
                               <XIcon className="size-2.5 stroke-[3]" />
                             </span>
                           )}
-                          <span className="text-[10px] font-bold text-destructive">
-                            SL
-                          </span>
-                          <span className="font-semibold text-destructive">
-                            ${formatCryptoPrice(sig.sl)}
-                          </span>
-                          <span className="text-[10px] text-destructive font-bold">
-                            (-
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-destructive">
+                              SL
+                            </span>
+                            <span className="font-semibold text-destructive">
+                              ${formatCryptoPrice(sig.sl)}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-destructive font-bold shrink-0">
+                            -
                             {isLong
-                              ? `${Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              ? Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(1)
+                              : Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}
+                            %
                           </span>
                         </div>
                       )}

@@ -423,9 +423,11 @@ export class CryptoSavageV1Strategy implements IStrategy {
       const lastEma20_4h = ema20_4h[ema20_4h.length - 1];
 
       const is4hBullishStructure =
-        lastPrice >= lastEma50_4h * 0.99 || lastEma20_4h >= lastEma50_4h * 0.995;
+        lastPrice >= lastEma50_4h * 0.99 ||
+        lastEma20_4h >= lastEma50_4h * 0.995;
       const is4hBearishStructure =
-        lastPrice <= lastEma50_4h * 1.01 || lastEma20_4h <= lastEma50_4h * 1.005;
+        lastPrice <= lastEma50_4h * 1.01 ||
+        lastEma20_4h <= lastEma50_4h * 1.005;
 
       // --- A. EVALUASI SETUP LONG (BULLISH) ---
       // 1. Support Zone Interaction (Wajib dekat zona S/R 4H yang kuat)
@@ -442,7 +444,9 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // 2. 4H Trend Confluence
       if (is4hBullishStructure) {
         longScore += 20;
-        longReasons.push('4H Higher Timeframe Bullish Trend confirmed (EMA20/50 alignment)');
+        longReasons.push(
+          '4H Higher Timeframe Bullish Trend confirmed (EMA20/50 alignment)',
+        );
       }
 
       // 3. Rejection Wick (Pin bar di area bawah pada 1H)
@@ -480,7 +484,9 @@ export class CryptoSavageV1Strategy implements IStrategy {
         );
       } else if (currentRsi1h >= 40 && currentRsi1h <= 65) {
         longScore += 5;
-        longReasons.push(`1H RSI Healthy Momentum (${currentRsi1h.toFixed(1)})`);
+        longReasons.push(
+          `1H RSI Healthy Momentum (${currentRsi1h.toFixed(1)})`,
+        );
       }
 
       // 7. Counter-Trendline Breakout
@@ -520,7 +526,9 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // 2. 4H Trend Confluence
       if (is4hBearishStructure) {
         shortScore += 20;
-        shortReasons.push('4H Higher Timeframe Bearish Trend confirmed (EMA20/50 alignment)');
+        shortReasons.push(
+          '4H Higher Timeframe Bearish Trend confirmed (EMA20/50 alignment)',
+        );
       }
 
       // 3. Rejection Wick (Pin bar di area atas pada 1H)
