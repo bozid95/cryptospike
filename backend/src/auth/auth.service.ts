@@ -25,30 +25,49 @@ export class AuthService implements OnModuleInit {
 
   private async ensureDefaultAdmin() {
     try {
-      const userCount = await this.prisma.user.count();
-      if (userCount === 0) {
-        const defaultUsername = process.env.ADMIN_USERNAME || 'admin';
-        const defaultPassword = process.env.ADMIN_PASSWORD || 'cryptospike123';
+      const adminUsername = process.env.ADMIN_USERNAME || 'cspk_operator_9x';
+      const adminPassword =
+        process.env.ADMIN_PASSWORD || 'Kx9#mQ2$vL8@wP5!Zt7&';
 
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(defaultPassword, salt);
+      const existingUser = await this.prisma.user.findFirst({
+        where: {
+          OR: [{ role: 'admin' }, { username: adminUsername }],
+        },
+      });
 
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(adminPassword, salt);
+
+      if (!existingUser) {
         await this.prisma.user.create({
           data: {
-            username: defaultUsername,
+            username: adminUsername,
             passwordSalt: salt,
             passwordHash: hash,
             role: 'admin',
             isActive: true,
           },
         });
-
         this.logger.log(
-          `[AUTH INIT] Default admin user initialized: username="${defaultUsername}"`,
+          `[AUTH INIT] Admin user created: username="${adminUsername}"`,
+        );
+      } else {
+        // Update user admin agar kredensial selalu tersinkron jika diubah via env
+        await this.prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            username: adminUsername,
+            passwordSalt: salt,
+            passwordHash: hash,
+            isActive: true,
+          },
+        });
+        this.logger.log(
+          `[AUTH INIT] Admin user synced/updated: username="${adminUsername}"`,
         );
       }
     } catch (err: any) {
-      this.logger.warn(`Could not initialize default admin: ${err.message}`);
+      this.logger.warn(`Could not initialize/sync admin user: ${err.message}`);
     }
   }
 
