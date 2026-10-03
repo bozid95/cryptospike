@@ -14,6 +14,10 @@ fi
 # 2. Start NestJS Backend di background
 echo "Starting NestJS Backend on port 3001..."
 cd /app/backend
+if [ ! -f "dist/main.js" ]; then
+  echo "dist/main.js not found! Running build on the fly..."
+  npx nest build || npm run build
+fi
 node dist/main.js &
 BACKEND_PID=$!
 

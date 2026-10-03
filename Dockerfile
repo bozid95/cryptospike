@@ -18,7 +18,8 @@ RUN npm install
 
 COPY backend/ ./
 RUN npx prisma generate
-RUN npm run build
+RUN npx nest build
+RUN ls -la dist/
 
 # Stage 3: Production Runner
 FROM node:20-alpine AS runner
