@@ -131,6 +131,35 @@ export function CryptoSpikeProvider({
     void fetchDbConfig();
   }, []);
 
+  // Load strategies dari backend Registry (DB PostgreSQL)
+  const fetchDbStrategies = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/strategies");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped: StrategyItem[] = data.map((s: any) => ({
+            strategyId: s.key || s.id,
+            name: s.displayName || s.id,
+            timeframe: s.timeframe || "1h",
+            description: s.description || "",
+            isEnabled: s.isEnabled ?? true,
+            winrate: "66.7%",
+            totalSignals: 0,
+            updatedAt: new Date().toISOString(),
+          }));
+          setStrategies(mapped);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load strategies from BE API:", e);
+    }
+  };
+
+  useEffect(() => {
+    void fetchDbStrategies();
+  }, []);
+
   // Load signals dari database PostgreSQL backend
   const fetchDbSignals = async () => {
     try {
@@ -174,18 +203,29 @@ export function CryptoSpikeProvider({
     localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
   }, [config]);
 
-  // Strategy operations
+  // Strategy operations (Terkoneksi langsung ke Backend Registry & DB PostgreSQL)
   const toggleStrategy = (strategyId: string) => {
     setStrategies((prev) =>
-      prev.map((s) =>
-        s.strategyId === strategyId
-          ? {
-              ...s,
-              isEnabled: !s.isEnabled,
-              updatedAt: new Date().toISOString(),
-            }
-          : s,
-      ),
+      prev.map((s) => {
+        if (s.strategyId === strategyId) {
+          const nextState = !s.isEnabled;
+          // Kirim ke backend untuk di-update di memory & DB
+          fetch(`http://localhost:3001/api/strategies/${strategyId}/toggle`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isEnabled: nextState }),
+          }).catch((err) => {
+            console.warn(`Failed to toggle strategy ${strategyId} on BE:`, err);
+          });
+
+          return {
+            ...s,
+            isEnabled: nextState,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return s;
+      }),
     );
   };
 
