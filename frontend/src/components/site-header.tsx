@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useCryptoSpike } from "@/context/trading-context";
 
 export function SiteHeader() {
@@ -94,6 +95,9 @@ export function SiteHeader() {
 
         {/* 4. Notification Bell Dropdown */}
         <NotificationBell />
+
+        {/* 5. Theme Toggle Button */}
+        <ThemeToggle />
       </div>
     </header>
   );

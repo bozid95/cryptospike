@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useCryptoSpike } from "@/context/trading-context";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -371,6 +372,9 @@ export function PublicSignalsView() {
 
             {/* Notification Bell with Audio Chimes */}
             <NotificationBell />
+
+            {/* Dark / Light Mode Switcher */}
+            <ThemeToggle />
 
             {/* Operator Login Button */}
             <Button
