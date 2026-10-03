@@ -15,6 +15,8 @@ import {
   CheckCircle2Icon,
   ShieldAlertIcon,
   ZapIcon,
+  ClockIcon,
+  RefreshCwIcon,
 } from "lucide-react";
 
 import { useCryptoSpike } from "@/mock/mock-context";
@@ -432,10 +434,13 @@ export function SignalsCrud() {
                   <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
                     Profit / Loss (PnL)
                   </TableHead>
-                  <TableHead className="w-[160px] px-4 py-3 font-semibold text-xs">
+                  <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
                     Strategi Source
                   </TableHead>
-                  <TableHead className="w-[160px] px-4 py-3 text-right font-semibold text-xs">
+                  <TableHead className="w-[165px] px-4 py-3 font-semibold text-xs">
+                    Waktu (Dibuat & Update)
+                  </TableHead>
+                  <TableHead className="w-[140px] px-4 py-3 text-right font-semibold text-xs">
                     Aksi Monitor
                   </TableHead>
                 </TableRow>
@@ -444,7 +449,7 @@ export function SignalsCrud() {
                 {paginatedSignals.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="h-32 text-center text-muted-foreground text-sm"
                     >
                       Tidak ada sinyal yang sesuai kriteria filter.
@@ -651,7 +656,62 @@ export function SignalsCrud() {
                           </div>
                         </TableCell>
 
-                        {/* 7. Action / Simulasi Close */}
+                        {/* 7. Waktu Dibuat & Waktu Diperbaharui */}
+                        <TableCell className="align-middle py-3.5 font-mono text-xs">
+                          <div className="space-y-1">
+                            {/* Created At */}
+                            <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
+                              <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
+                                Buat:
+                              </span>
+                              <ClockIcon className="size-3 text-muted-foreground/60 shrink-0" />
+                              <span className="text-foreground text-[11px] font-medium">
+                                {new Date(
+                                  sig.createdAt || sig.sentAt,
+                                ).toLocaleTimeString("id-ID", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                })}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground/70">
+                                {new Date(
+                                  sig.createdAt || sig.sentAt,
+                                ).toLocaleDateString("id-ID")}
+                              </span>
+                            </div>
+
+                            {/* Updated At */}
+                            <div className="flex items-center gap-1.5 text-muted-foreground leading-tight">
+                              <span className="text-[10px] uppercase font-sans font-semibold text-muted-foreground/70 w-8">
+                                Ubah:
+                              </span>
+                              <RefreshCwIcon className="size-2.5 text-primary/70 shrink-0" />
+                              <span className="text-foreground text-[11px] font-medium">
+                                {new Date(
+                                  sig.updatedAt ||
+                                    sig.hitTime ||
+                                    sig.closedAt ||
+                                    sig.sentAt,
+                                ).toLocaleTimeString("id-ID", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                })}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground/70">
+                                {new Date(
+                                  sig.updatedAt ||
+                                    sig.hitTime ||
+                                    sig.closedAt ||
+                                    sig.sentAt,
+                                ).toLocaleDateString("id-ID")}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        {/* 8. Action / Simulasi Close */}
                         <TableCell className="align-middle text-right">
                           <div className="flex items-center justify-end gap-1">
                             {isRunning && (

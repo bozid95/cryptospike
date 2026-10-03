@@ -587,10 +587,13 @@ export function CryptoSpikeProvider({
 
   // Signal operations
   const createSignal = (signal: Omit<SignalItem, "id" | "sentAt">) => {
+    const nowIso = new Date().toISOString();
     const newSignal: SignalItem = {
       ...signal,
       id: `sig-${Date.now().toString().slice(-4)}`,
-      sentAt: new Date().toISOString(),
+      sentAt: nowIso,
+      createdAt: nowIso,
+      updatedAt: nowIso,
     };
     setSignals((prev) => [newSignal, ...prev]);
   };
@@ -600,9 +603,18 @@ export function CryptoSpikeProvider({
     status: SignalItem["status"],
     profitPct?: number,
   ) => {
+    const nowIso = new Date().toISOString();
     setSignals((prev) =>
       prev.map((s) =>
-        s.id === id ? { ...s, status, profitPct: profitPct ?? s.profitPct } : s,
+        s.id === id
+          ? {
+              ...s,
+              status,
+              profitPct: profitPct ?? s.profitPct,
+              updatedAt: nowIso,
+              hitTime: nowIso,
+            }
+          : s,
       ),
     );
   };

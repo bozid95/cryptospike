@@ -27,6 +27,8 @@ export interface SignalItem {
     | "CANCELLED";
   profitPct?: number;
   sentAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   closedAt?: string;
   hitTime?: string | null;
 }
