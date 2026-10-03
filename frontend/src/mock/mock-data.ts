@@ -73,6 +73,21 @@ export interface PositionItem {
   updateTime: number;
 }
 
+export interface ClosedPositionItem {
+  id: string;
+  symbol: string;
+  side: "LONG" | "SHORT";
+  entryPrice: number;
+  exitPrice: number;
+  positionAmt: number;
+  realizedPnl: number;
+  roe: number;
+  leverage: number;
+  strategy?: string;
+  closedAt: string;
+  closeReason?: string;
+}
+
 export interface BinanceBalanceInfo {
   environment: string;
   marginBalance?: number;

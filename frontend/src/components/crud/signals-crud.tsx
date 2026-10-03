@@ -509,9 +509,7 @@ export function SignalsCrud() {
                               <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
                                 TP1
                               </span>
-                              <span>
-                                ${formatCryptoPrice(sig.tp1)}
-                              </span>
+                              <span>${formatCryptoPrice(sig.tp1)}</span>
                               <span className="font-bold text-[10px] bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20 leading-none">
                                 {isLong
                                   ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
@@ -525,9 +523,7 @@ export function SignalsCrud() {
                                 <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
                                   TP2
                                 </span>
-                                <span>
-                                  ${formatCryptoPrice(sig.tp2)}
-                                </span>
+                                <span>${formatCryptoPrice(sig.tp2)}</span>
                                 <span className="font-bold text-[10px] bg-teal-500/10 px-1 py-0.5 rounded border border-teal-500/20 leading-none">
                                   {isLong
                                     ? `+${(((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
@@ -542,9 +538,7 @@ export function SignalsCrud() {
                                 <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
                                   TP3
                                 </span>
-                                <span>
-                                  ${formatCryptoPrice(sig.tp3)}
-                                </span>
+                                <span>${formatCryptoPrice(sig.tp3)}</span>
                                 <span className="font-bold text-[10px] bg-cyan-500/10 px-1 py-0.5 rounded border border-cyan-500/20 leading-none">
                                   {isLong
                                     ? `+${(((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
@@ -558,9 +552,7 @@ export function SignalsCrud() {
                               <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
                                 SL
                               </span>
-                              <span>
-                                ${formatCryptoPrice(sig.sl)}
-                              </span>
+                              <span>${formatCryptoPrice(sig.sl)}</span>
                               <span className="font-bold text-[10px] bg-destructive/10 px-1 py-0.5 rounded border border-destructive/20 leading-none">
                                 {isLong
                                   ? `-${Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(2)}%`

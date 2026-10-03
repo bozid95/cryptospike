@@ -7,6 +7,7 @@ import {
   type AuthUser,
   type BinanceBalanceInfo,
   type PositionItem,
+  type ClosedPositionItem,
   type SignalItem,
   type StrategyItem,
   type TradingConfig,
@@ -64,6 +65,10 @@ interface CryptoSpikeContextType {
     positionAmt: number,
     side?: string,
   ) => Promise<boolean>;
+
+  // Closed Positions History
+  closedPositions: ClosedPositionItem[];
+  clearClosedPositions: () => void;
 }
 
 const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
@@ -76,6 +81,7 @@ const SIGNALS_KEY = "cryptospike_mock_signals_v3";
 const CONFIG_KEY = "cryptospike_mock_config_v3";
 const TOKEN_KEY = "cryptospike_jwt_token";
 const USER_KEY = "cryptospike_auth_user";
+const CLOSED_POSITIONS_KEY = "cryptospike_closed_positions_v1";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
@@ -227,6 +233,24 @@ export function CryptoSpikeProvider({
   const [positions, setPositions] = useState<PositionItem[]>([]);
   const [isLoadingPositions, setIsLoadingPositions] = useState(false);
 
+  const [closedPositions, setClosedPositions] = useState<ClosedPositionItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(CLOSED_POSITIONS_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const clearClosedPositions = () => {
+    setClosedPositions([]);
+    try {
+      localStorage.removeItem(CLOSED_POSITIONS_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
   const refreshBalance = async () => {
     try {
       setIsLoadingBalance(true);
@@ -263,12 +287,43 @@ export function CryptoSpikeProvider({
     side?: string,
   ): Promise<boolean> => {
     try {
+      // Temukan data posisi sebelum di-close untuk history
+      const existingPos = positions.find((p) => p.symbol === symbol);
+
       const res = await fetch(`${API_BASE_URL}/api/positions/close`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symbol, positionAmt, side }),
       });
       if (res.ok) {
+        // Catat ke history closed positions
+        if (existingPos) {
+          const closedItem: ClosedPositionItem = {
+            id: `close-${Date.now()}-${symbol}`,
+            symbol: existingPos.symbol,
+            side: existingPos.side,
+            entryPrice: existingPos.entryPrice,
+            exitPrice: existingPos.markPrice,
+            positionAmt: existingPos.positionAmt,
+            realizedPnl: existingPos.unRealizedProfit,
+            roe: existingPos.roe,
+            leverage: existingPos.leverage,
+            strategy: existingPos.strategy,
+            closedAt: new Date().toISOString(),
+            closeReason: "Manual Operator Close",
+          };
+
+          setClosedPositions((prev) => {
+            const next = [closedItem, ...prev].slice(0, 100);
+            try {
+              localStorage.setItem(CLOSED_POSITIONS_KEY, JSON.stringify(next));
+            } catch {
+              // ignore
+            }
+            return next;
+          });
+        }
+
         await refreshPositions();
         await refreshBalance();
         return true;
@@ -604,6 +659,8 @@ export function CryptoSpikeProvider({
         isLoadingPositions,
         refreshPositions,
         closePosition,
+        closedPositions,
+        clearClosedPositions,
       }}
     >
       {children}

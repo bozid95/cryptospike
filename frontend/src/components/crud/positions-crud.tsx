@@ -11,6 +11,9 @@ import {
   LayersIcon,
   ShieldCheckIcon,
   ActivityIcon,
+  HistoryIcon,
+  ClockIcon,
+  Trash2Icon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/mock/mock-context";
 import { Badge } from "@/components/ui/badge";
@@ -73,12 +76,21 @@ function formatCryptoPrice(val: number | null | undefined): string {
 }
 
 export function PositionsCrud() {
-  const { positions, isLoadingPositions, refreshPositions, closePosition } =
-    useCryptoSpike();
+  const {
+    positions,
+    isLoadingPositions,
+    refreshPositions,
+    closePosition,
+    closedPositions,
+    clearClosedPositions,
+  } = useCryptoSpike();
+  const [activeTabFilter, setActiveTabFilter] = useState<"ACTIVE" | "CLOSED">(
+    "ACTIVE",
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [closingSymbol, setClosingSymbol] = useState<string | null>(null);
 
-  // Summary Metrics
+  // Summary Metrics Active
   const summary = useMemo(() => {
     let totalUnrealizedPnl = 0;
     let totalInitialMargin = 0;
@@ -117,6 +129,31 @@ export function PositionsCrud() {
     };
   }, [positions]);
 
+  // Summary Metrics Closed
+  const closedSummary = useMemo(() => {
+    let totalRealizedPnl = 0;
+    let winCount = 0;
+    let lossCount = 0;
+
+    for (const c of closedPositions) {
+      totalRealizedPnl += c.realizedPnl;
+      if (c.realizedPnl > 0) winCount++;
+      else if (c.realizedPnl < 0) lossCount++;
+    }
+
+    const totalClosed = closedPositions.length;
+    const winrate =
+      totalClosed > 0 ? ((winCount / totalClosed) * 100).toFixed(1) : "0.0";
+
+    return {
+      totalClosed,
+      totalRealizedPnl,
+      winCount,
+      lossCount,
+      winrate,
+    };
+  }, [closedPositions]);
+
   const filteredPositions = useMemo(() => {
     if (!searchTerm.trim()) return positions;
     const q = searchTerm.toLowerCase();
@@ -128,6 +165,17 @@ export function PositionsCrud() {
         p.marginType.toLowerCase().includes(q),
     );
   }, [positions, searchTerm]);
+
+  const filteredClosedPositions = useMemo(() => {
+    if (!searchTerm.trim()) return closedPositions;
+    const q = searchTerm.toLowerCase();
+    return closedPositions.filter(
+      (p) =>
+        p.symbol.toLowerCase().includes(q) ||
+        p.side.toLowerCase().includes(q) ||
+        (p.strategy && p.strategy.toLowerCase().includes(q)),
+    );
+  }, [closedPositions, searchTerm]);
 
   const handleClose = async (
     symbol: string,
@@ -300,34 +348,91 @@ export function PositionsCrud() {
           </div>
         </CardHeader>
 
-        {/* Filter Bar */}
+        {/* Sub-Navigation & Filter Bar */}
         <div className="px-6 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-b bg-muted/50">
-          <div className="relative w-full sm:w-72">
-            <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Cari simbol pair atau side..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-9 pl-8 text-xs bg-background"
-            />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Segmented Buttons Active vs History Closed */}
+            <div className="inline-flex rounded-lg border bg-background p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setActiveTabFilter("ACTIVE")}
+                className={`px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeTabFilter === "ACTIVE"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BriefcaseIcon className="size-3.5" />
+                Active ({positions.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTabFilter("CLOSED")}
+                className={`px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeTabFilter === "CLOSED"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <HistoryIcon className="size-3.5" />
+                History Closed ({closedPositions.length})
+              </button>
+            </div>
+
+            <div className="relative w-full sm:w-56">
+              <SearchIcon className="absolute left-2.5 top-2 size-3.5 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Cari simbol pair atau side..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-8 pl-8 text-xs bg-background"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto text-xs text-muted-foreground font-mono">
-            <span>Total Posisi Terbuka:</span>
-            <span className="font-semibold text-foreground text-sm">
-              {filteredPositions.length}
-            </span>
+          <div className="flex items-center gap-3 self-end sm:self-auto text-xs text-muted-foreground font-mono">
+            {activeTabFilter === "ACTIVE" ? (
+              <>
+                <span>Total Posisi Terbuka:</span>
+                <span className="font-semibold text-foreground text-sm">
+                  {filteredPositions.length}
+                </span>
+              </>
+            ) : (
+              <>
+                <span>Winrate History:</span>
+                <span className="font-semibold text-emerald-600 text-sm">
+                  {closedSummary.winrate}%
+                </span>
+                {closedPositions.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
+                    onClick={() => {
+                      if (window.confirm("Hapus seluruh catatan history posisi?")) {
+                        clearClosedPositions();
+                      }
+                    }}
+                  >
+                    <Trash2Icon className="size-3 mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         </div>
 
         <CardContent className="p-6 pt-4 space-y-4">
           <div className="rounded-md border overflow-x-auto bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
-                  <TableHead className="w-[180px] px-4 py-3 font-semibold text-xs">
-                    Simbol & Arah
+            {activeTabFilter === "ACTIVE" ? (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
+                    <TableHead className="w-[180px] px-4 py-3 font-semibold text-xs">
+                      Simbol & Arah
                   </TableHead>
                   <TableHead className="w-[120px] px-4 py-3 font-semibold text-xs">
                     Ukuran (Size)
@@ -546,6 +651,140 @@ export function PositionsCrud() {
                 )}
               </TableBody>
             </Table>
+            ) : (
+              /* TAB 2: CLOSED POSITIONS HISTORY TABLE */
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
+                    <TableHead className="w-[180px] px-4 py-3 font-semibold text-xs">
+                      Simbol & Arah
+                    </TableHead>
+                    <TableHead className="w-[120px] px-4 py-3 font-semibold text-xs">
+                      Ukuran (Size)
+                    </TableHead>
+                    <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
+                      Entry Price
+                    </TableHead>
+                    <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
+                      Exit Price
+                    </TableHead>
+                    <TableHead className="w-[160px] px-4 py-3 font-semibold text-xs">
+                      Realized PnL (ROE)
+                    </TableHead>
+                    <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
+                      Strategi Source
+                    </TableHead>
+                    <TableHead className="w-[170px] px-4 py-3 text-right font-semibold text-xs">
+                      Waktu Ditutup
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredClosedPositions.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="h-28 text-center text-muted-foreground text-sm"
+                      >
+                        Belum ada riwayat posisi yang ditutup.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredClosedPositions.map((cp) => {
+                      const isLong = cp.side === "LONG";
+                      const isProfit = cp.realizedPnl >= 0;
+
+                      return (
+                        <TableRow key={cp.id} className="hover:bg-muted/40">
+                          <TableCell className="align-middle px-4 py-3.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm tracking-tight">
+                                {cp.symbol}
+                              </span>
+                              <Badge
+                                variant={isLong ? "default" : "destructive"}
+                                className={`text-[10px] font-mono px-1.5 py-0 flex items-center gap-1 ${
+                                  isLong
+                                    ? "bg-emerald-600 hover:bg-emerald-600"
+                                    : "bg-rose-600 hover:bg-rose-600"
+                                }`}
+                              >
+                                {isLong ? (
+                                  <TrendingUpIcon className="size-3" />
+                                ) : (
+                                  <TrendingDownIcon className="size-3" />
+                                )}
+                                {cp.side}
+                              </Badge>
+                            </div>
+                            <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                              {cp.leverage}x Leverage
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                            <span className="font-semibold text-foreground">
+                              {cp.positionAmt}
+                            </span>
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums text-foreground">
+                            ${formatCryptoPrice(cp.entryPrice)}
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums font-semibold text-foreground">
+                            ${formatCryptoPrice(cp.exitPrice)}
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono">
+                            <div
+                              className={`font-bold text-sm tabular-nums ${
+                                isProfit ? "text-emerald-600" : "text-rose-600"
+                              }`}
+                            >
+                              {isProfit ? "+" : ""}$
+                              {cp.realizedPnl.toFixed(2)}
+                            </div>
+                            <div
+                              className={`text-[11px] font-semibold tabular-nums ${
+                                isProfit
+                                  ? "text-emerald-600/80"
+                                  : "text-rose-600/80"
+                              }`}
+                            >
+                              {isProfit ? "+" : ""}
+                              {cp.roe}%
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                              {cp.strategy || "MANUAL"}
+                            </span>
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs text-right text-muted-foreground">
+                            <div className="flex items-center justify-end gap-1 text-[11px]">
+                              <ClockIcon className="size-3 text-muted-foreground/70" />
+                              <span>
+                                {new Date(cp.closedAt).toLocaleTimeString("id-ID", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-muted-foreground/70">
+                              {new Date(cp.closedAt).toLocaleDateString("id-ID")}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </CardContent>
       </Card>
