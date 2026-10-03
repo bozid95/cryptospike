@@ -10,7 +10,12 @@ async function bootstrap() {
   const allowedOriginsEnv = process.env.ALLOWED_ORIGINS;
   const allowedOriginsList = allowedOriginsEnv
     ? allowedOriginsEnv.split(',').map((o) => o.trim())
-    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://localhost:4173'];
+    : [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:3000',
+        'http://localhost:4173',
+      ];
 
   app.enableCors({
     origin: (

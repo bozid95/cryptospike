@@ -34,6 +34,8 @@ export function LoginView() {
       const res = await login(username.trim(), password.trim());
       if (!res.success) {
         setErrorMessage(res.message || "Invalid username or password.");
+      } else {
+        window.history.pushState(null, "", "/dashboard");
       }
     } catch (err: any) {
       setErrorMessage(

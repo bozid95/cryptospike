@@ -27,8 +27,14 @@ import {
 } from "@/components/ui/sidebar";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { signals, strategies, config, positions, setActiveTab, isAuthenticated } =
-    useCryptoSpike();
+  const {
+    signals,
+    strategies,
+    config,
+    positions,
+    setActiveTab,
+    isAuthenticated,
+  } = useCryptoSpike();
 
   const activeSignalsCount = signals.filter(
     (s) => s.status === "ACTIVE",
@@ -51,7 +57,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "#positions",
           icon: BriefcaseIcon,
           badge:
-            activePositionsCount > 0 ? `${activePositionsCount} Open` : undefined,
+            activePositionsCount > 0
+              ? `${activePositionsCount} Open`
+              : undefined,
           badgeVariant: "default" as const,
         },
         {
@@ -106,7 +114,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              onClick={() => setActiveTab(isAuthenticated ? "overview" : "signals")}
+              onClick={() =>
+                setActiveTab(isAuthenticated ? "overview" : "signals")
+              }
               className="hover:bg-transparent cursor-pointer p-0 gap-3"
             >
               <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-base shadow-xs shrink-0">
@@ -135,7 +145,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* 2. Content Menu: Bersih & Terfokus */}
       <SidebarContent className="p-2 gap-2 overflow-y-auto">
-        <NavMain label={isAuthenticated ? "Control Panel" : "Public Feeds"} items={mainNavItems} />
+        <NavMain
+          label={isAuthenticated ? "Control Panel" : "Public Feeds"}
+          items={mainNavItems}
+        />
       </SidebarContent>
 
       {/* 3. Footer: Profil Pengguna & Keluar (Hanya jika login) */}

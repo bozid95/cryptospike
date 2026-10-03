@@ -98,7 +98,8 @@ function formatCryptoPrice(val: number | null | undefined): string {
 }
 
 export function SignalsCrud() {
-  const { signals, updateSignalStatus, deleteSignal, isAuthenticated } = useCryptoSpike();
+  const { signals, updateSignalStatus, deleteSignal, isAuthenticated } =
+    useCryptoSpike();
   const [filter, setFilter] = useState<"ALL" | "RUNNING" | "CLOSED">("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -649,7 +650,8 @@ export function SignalsCrud() {
                                   Delete Signal?
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Delete {sig.symbol} ({sig.side}) from database?
+                                  Delete {sig.symbol} ({sig.side}) from
+                                  database?
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -1045,7 +1047,9 @@ export function SignalsCrud() {
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
                                     <AlertDialogAction
                                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       onClick={() => handleDelete(sig.id)}

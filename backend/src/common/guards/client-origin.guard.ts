@@ -44,3 +44,4 @@ export class ClientOriginGuard implements CanActivate {
     );
   }
 }
+

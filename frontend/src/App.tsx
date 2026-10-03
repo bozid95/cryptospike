@@ -59,8 +59,7 @@ function MainLayout() {
     };
   }, []);
 
-  const isLoginRoute =
-    pathname.includes("/login") || hash === "#login";
+  const isLoginRoute = pathname.includes("/login") || hash === "#login";
 
   // Jika route adalah /login dan belum login, tampilkan halaman LoginView
   if (isLoginRoute && !isAuthenticated) {

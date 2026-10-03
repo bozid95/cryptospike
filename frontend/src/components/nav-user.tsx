@@ -91,6 +91,7 @@ export function NavUser() {
                   )
                 ) {
                   logout();
+                  window.history.pushState(null, "", "/");
                 }
               }}
             >
