@@ -165,15 +165,11 @@ export function SignalsCrud() {
 
   const runningSignals = signals.filter(
     (s) =>
-      s.status === "ACTIVE" ||
-      s.status === "TP1_HIT" ||
-      s.status === "TP2_HIT",
+      s.status === "ACTIVE" || s.status === "TP1_HIT" || s.status === "TP2_HIT",
   );
   const closedSignals = signals.filter(
     (s) =>
-      s.status !== "ACTIVE" &&
-      s.status !== "TP1_HIT" &&
-      s.status !== "TP2_HIT",
+      s.status !== "ACTIVE" && s.status !== "TP1_HIT" && s.status !== "TP2_HIT",
   );
 
   const filteredSignals = useMemo(() => {
