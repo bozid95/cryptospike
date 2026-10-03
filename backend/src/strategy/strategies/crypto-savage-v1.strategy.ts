@@ -359,8 +359,8 @@ export class CryptoSavageV1Strategy implements IStrategy {
   async evaluate(data: MarketData): Promise<StrategyResult | null> {
     const { symbol, lastPrice, quoteVolume } = data;
 
-    // 1. Likuiditas minimum filter (Ebook menekankan broker liquid dan chart jelas)
-    if (quoteVolume < 30000000) return null;
+    // 1. Likuiditas minimum filter ($50M quote volume untuk menghindari koin illiquid / manipulatif)
+    if (quoteVolume < 50000000) return null;
 
     try {
       // 2. Ambil data Multi-Timeframe:
@@ -520,8 +520,9 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // ==========================================
       // 7. DECISION & RISK MANAGEMENT (1:2+ RRR)
       // ==========================================
-      const isLongValid = longScore >= 70;
-      const isShortValid = shortScore >= 70;
+      // Tingkatkan standar validitas: minimal 75 poin confluence (HTF Zone + Rejection/Momentum + Trendline/EMA)
+      const isLongValid = longScore >= 75;
+      const isShortValid = shortScore >= 75;
 
       if (!isLongValid && !isShortValid) {
         return null;

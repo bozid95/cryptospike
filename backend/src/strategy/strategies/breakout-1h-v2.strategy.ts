@@ -90,7 +90,7 @@ export class Breakout1hV2Strategy implements IStrategy {
 
       // --- FILTER UNTUK LONG ---
       if (isLong) {
-        // Long wajib berada dalam HTF Bullish (4H Trend Alignment: Close > EMA20 dan EMA20 >= EMA50)
+        // 1. Long wajib berada dalam HTF Bullish (4H Trend Alignment: Close > EMA20 dan EMA20 >= EMA50)
         if (closes4h.length >= 50) {
           const ema20 = this.calcEMA(closes4h, 20);
           const ema50 = this.calcEMA(closes4h, 50);
@@ -107,40 +107,71 @@ export class Breakout1hV2Strategy implements IStrategy {
           reasons.push(`4H Bullish Trend Confirmed (Price > EMA20 > EMA50)`);
         }
 
-        // Cek RSI 1H agar tidak membeli di pucuk overbought ekstrem (> 80)
+        // 2. Validasi Breakout Nyata pada 1H: Harga saat ini harus menembus swing high candle 1H sebelumnya
+        if (klines1h.length >= 5) {
+          const prevHigh1h = Math.max(
+            klines1h[klines1h.length - 2].high,
+            klines1h[klines1h.length - 3].high,
+          );
+          if (lastPrice <= prevHigh1h) {
+            // Belum terjadi breakout struktur resistance 1H
+            return null;
+          }
+          reasons.push(`1H Structural Breakout Above Resistance ($${prevHigh1h.toFixed(4)})`);
+        }
+
+        // 3. Cek RSI 1H agar tidak membeli di pucuk overbought ekstrem (> 75)
         if (closes1h.length >= 15) {
           const rsi1h = this.calcRSI(closes1h, 14);
-          if (rsi1h !== null && rsi1h > 80) {
+          if (rsi1h !== null && (rsi1h > 75 || rsi1h < 45)) {
             return null;
           }
           if (rsi1h !== null) {
-            reasons.push(`1H RSI Healthy: ${rsi1h.toFixed(1)}`);
+            reasons.push(`1H RSI Strong Momentum: ${rsi1h.toFixed(1)}`);
           }
         }
       }
 
       // --- FILTER UNTUK SHORT ---
       if (!isLong) {
-        // Proteksi SHORT: Hindari short-selling koin yang sudah oversold (RSI 1H < 35)
+        // 1. 4H Trend Alignment untuk SHORT: Close < EMA20 dan EMA20 <= EMA50
+        if (closes4h.length >= 50) {
+          const ema20 = this.calcEMA(closes4h, 20);
+          const ema50 = this.calcEMA(closes4h, 50);
+          const lastClose4h = closes4h[closes4h.length - 1];
+          const lastEma20 = ema20[ema20.length - 1];
+          const lastEma50 = ema50[ema50.length - 1];
+
+          const is4hBearish =
+            lastClose4h < lastEma20 && lastEma20 <= lastEma50 * 1.005;
+          if (!is4hBearish) {
+            // Ditolak: Jangan short jika 4H masih uptrend
+            return null;
+          }
+          reasons.push(`4H Bearish Trend Confirmed (Price < EMA20 < EMA50)`);
+        }
+
+        // 2. Validasi Breakdown Nyata pada 1H: Harga saat ini menembus swing low candle 1H sebelumnya
+        if (klines1h.length >= 5) {
+          const prevLow1h = Math.min(
+            klines1h[klines1h.length - 2].low,
+            klines1h[klines1h.length - 3].low,
+          );
+          if (lastPrice >= prevLow1h) {
+            // Belum terjadi breakdown struktur support 1H
+            return null;
+          }
+          reasons.push(`1H Structural Breakdown Below Support ($${prevLow1h.toFixed(4)})`);
+        }
+
+        // 3. Proteksi SHORT: Hindari short koin yang oversold (RSI 1H < 35) atau overbought (> 55)
         if (closes1h.length >= 15) {
           const rsi1h = this.calcRSI(closes1h, 14);
-          if (rsi1h !== null && rsi1h < 35) {
-            // Ditolak: harga sudah terlalu jenuh jual, risiko pantulan short squeeze sangat tinggi
+          if (rsi1h !== null && (rsi1h < 35 || rsi1h > 55)) {
             return null;
           }
           if (rsi1h !== null) {
-            reasons.push(`1H RSI Safe for SHORT: ${rsi1h.toFixed(1)} (> 35)`);
-          }
-        }
-
-        // Cek 4H Trend untuk SHORT: Harga tidak boleh jauh di atas EMA20 4H (dilarang short saat super rally)
-        if (closes4h.length >= 25) {
-          const ema20 = this.calcEMA(closes4h, 20);
-          const lastClose4h = closes4h[closes4h.length - 1];
-          const lastEma20 = ema20[ema20.length - 1];
-          if (lastClose4h > lastEma20 * 1.03) {
-            // Ditolak: Koin masih trending up sangat kuat di 4H
-            return null;
+            reasons.push(`1H RSI Breakdown Momentum: ${rsi1h.toFixed(1)}`);
           }
         }
       }
