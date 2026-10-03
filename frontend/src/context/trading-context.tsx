@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { toast } from "sonner";
 import {
   INITIAL_CONFIG,
   INITIAL_SIGNALS,
@@ -351,11 +352,18 @@ export function CryptoSpikeProvider({
         await refreshPositions();
         await refreshBalance();
         void fetchClosedPositions();
+        toast.success(`Posisi ${symbol} berhasil ditutup`, {
+          description: existingPos
+            ? `PnL: $${existingPos.unRealizedProfit} (${existingPos.roe}%)`
+            : "Market order close terkirim ke Binance.",
+        });
         return true;
       }
+      toast.error(`Gagal menutup posisi ${symbol}`);
       return false;
     } catch (err) {
       console.error("Failed to close position:", err);
+      toast.error(`Gagal menutup posisi ${symbol}`);
       return false;
     }
   };
@@ -463,6 +471,103 @@ export function CryptoSpikeProvider({
     }
   };
 
+  // Audio notification synth using Web Audio API
+  const playNotificationSound = (type: "new_signal" | "tp" | "sl" | "info") => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      const now = ctx.currentTime;
+      if (type === "tp") {
+        // Nada sukses / naik (dua nada naik C5 -> G5)
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.15); // G5
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === "sl") {
+        // Nada peringatan turun (G4 -> C4)
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(392.0, now);
+        osc.frequency.exponentialRampToValueAtTime(261.63, now + 0.25);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else {
+        // Nada sinyal baru (bell chime chime)
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.exponentialRampToValueAtTime(880.0, now + 0.12); // A5
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    } catch {
+      // Audio context might be blocked if user hasn't interacted
+    }
+  };
+
+  const sendPushNotification = (
+    title: string,
+    body: string,
+    type: "new_signal" | "tp" | "sl" | "info" = "info",
+  ) => {
+    // 1. Play sound
+    playNotificationSound(type);
+
+    // 2. In-App Toast via Sonner
+    if (type === "new_signal") {
+      toast.info(title, {
+        description: body,
+        duration: 8000,
+      });
+    } else if (type === "tp") {
+      toast.success(title, {
+        description: body,
+        duration: 8000,
+      });
+    } else if (type === "sl") {
+      toast.error(title, {
+        description: body,
+        duration: 8000,
+      });
+    } else {
+      toast(title, {
+        description: body,
+        duration: 5000,
+      });
+    }
+
+    // 3. Browser Desktop Notification jika didukung & diizinkan
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        new Notification(title, {
+          body,
+          icon: "/favicon.ico",
+        });
+      } catch (err) {
+        console.warn("Failed to trigger desktop notification:", err);
+      }
+    }
+  };
+
+  // Minta izin notifikasi browser saat mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, []);
+
   useEffect(() => {
     void fetchDbSignals();
 
@@ -481,6 +586,15 @@ export function CryptoSpikeProvider({
         if (prev.some((s) => s.id === newSig.id)) return prev;
         return [newSig, ...prev];
       });
+
+      // Trigger Push Notification
+      const sideText = (newSig as any).side || (newSig as any).type || "LONG";
+      const icon = sideText === "LONG" ? "🟢" : "🔴";
+      sendPushNotification(
+        `${icon} Sinyal Baru: ${newSig.symbol} (${sideText})`,
+        `Entry: ${newSig.entryPrice.toLocaleString()} | TP1: ${newSig.tp1.toLocaleString()} | SL: ${newSig.sl.toLocaleString()} [${newSig.strategy}]`,
+        "new_signal",
+      );
     });
 
     // Menerima update status sinyal (TP1 hit, SL hit, close)
@@ -491,8 +605,55 @@ export function CryptoSpikeProvider({
         status: SignalItem["status"];
         profitPct?: number;
       }) => {
-        setSignals((prev) =>
-          prev.map((s) =>
+        setSignals((prev) => {
+          const matched = prev.find((s) => s.id === update.id);
+          if (matched) {
+            const sym = matched.symbol;
+            const pPct =
+              typeof update.profitPct === "number"
+                ? `${update.profitPct > 0 ? "+" : ""}${update.profitPct.toFixed(2)}%`
+                : "";
+
+            if (update.status === "TP1_HIT") {
+              sendPushNotification(
+                `🎯 Take Profit 1 Hit: ${sym}!`,
+                `Target TP1 tersentuh. Keuntungan ${pPct}. Strategi: ${matched.strategy}`,
+                "tp",
+              );
+            } else if (update.status === "TP2_HIT") {
+              sendPushNotification(
+                `🎯🎯 Take Profit 2 Hit: ${sym}!`,
+                `Target TP2 tersentuh! Keuntungan ${pPct}.`,
+                "tp",
+              );
+            } else if (update.status === "TP3_HIT") {
+              sendPushNotification(
+                `🚀🚀 Take Profit 3 (MAX) Hit: ${sym}!`,
+                `Target TP3 maksimal tercapai! Keuntungan ${pPct}.`,
+                "tp",
+              );
+            } else if (update.status === "TSL_HIT") {
+              sendPushNotification(
+                `🛡️ Trailing Stop Hit: ${sym}`,
+                `Trailing Stop tersentuh untuk mengunci profit ${pPct}.`,
+                "tp",
+              );
+            } else if (update.status === "SL_HIT") {
+              sendPushNotification(
+                `🛑 Stop Loss Hit: ${sym}`,
+                `Sinyal menyentuh batas risiko SL (${pPct || "Loss"}).`,
+                "sl",
+              );
+            } else if ((update.status as string) === "CLOSED" || update.status === "CANCELLED") {
+              sendPushNotification(
+                `ℹ️ Posisi Ditutup: ${sym}`,
+                `Sinyal telah selesai / ditutup. PnL: ${pPct}.`,
+                "info",
+              );
+            }
+          }
+
+          return prev.map((s) =>
             s.id === update.id
               ? {
                   ...s,
@@ -500,8 +661,8 @@ export function CryptoSpikeProvider({
                   profitPct: update.profitPct ?? s.profitPct,
                 }
               : s,
-          ),
-        );
+          );
+        });
       },
     );
 
@@ -732,4 +893,3 @@ export function useCryptoSpike() {
 
 export const useTrading = useCryptoSpike;
 export const TradingProvider = CryptoSpikeProvider;
-

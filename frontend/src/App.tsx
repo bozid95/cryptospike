@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 import { LoginView } from "@/components/login-view";
+import { Toaster } from "@/components/ui/sonner";
 
 function DashboardContent() {
   const { activeTab } = useCryptoSpike();
@@ -50,6 +51,7 @@ function MainLayout() {
 export default function App() {
   return (
     <CryptoSpikeProvider>
+      <Toaster richColors position="top-right" />
       <MainLayout />
     </CryptoSpikeProvider>
   );
