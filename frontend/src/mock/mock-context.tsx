@@ -222,25 +222,49 @@ export function CryptoSpikeProvider({
   }, []);
 
   // Load strategies dari backend Registry (DB PostgreSQL)
-  const fetchDbStrategies = async () => {
+  const fetchDbStrategies = async (signalsData?: SignalItem[]) => {
     try {
       const res = await fetch("http://localhost:3001/api/strategies");
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
-          const mapped: StrategyItem[] = data.map((s: any) => ({
-            strategyId: s.key || s.id,
-            name: s.displayName || s.id,
-            timeframe: s.timeframe || "1h",
-            description: s.description || "",
-            isEnabled: s.isEnabled ?? true,
-            version: s.version || "v1",
-            author: s.author || "System",
-            indicators: Array.isArray(s.indicators) ? s.indicators : [],
-            winrate: "66.7%",
-            totalSignals: 0,
-            updatedAt: new Date().toISOString(),
-          }));
+          const activeSignalsList = signalsData || signals;
+          const mapped: StrategyItem[] = data.map((s: any) => {
+            const key = s.key || s.id;
+            // Hitung sinyal real dari database yang cocok dengan strategi ini
+            const stratSignals = activeSignalsList.filter(
+              (sig) =>
+                sig.strategy === key ||
+                (s.id && sig.strategy?.startsWith(s.id)),
+            );
+            const totalCount = stratSignals.length;
+            const hitCount = stratSignals.filter((sig) =>
+              sig.status?.includes("TP"),
+            ).length;
+            const closedCount = stratSignals.filter(
+              (sig) => sig.status?.includes("TP") || sig.status === "SL_HIT",
+            ).length;
+            const wr =
+              closedCount > 0
+                ? `${((hitCount / closedCount) * 100).toFixed(1)}%`
+                : totalCount > 0
+                  ? "100.0%"
+                  : "0.0%";
+
+            return {
+              strategyId: key,
+              name: s.displayName || s.id,
+              timeframe: s.timeframe || "1h",
+              description: s.description || "",
+              isEnabled: s.isEnabled ?? true,
+              version: s.version || "v1",
+              author: s.author || "System",
+              indicators: Array.isArray(s.indicators) ? s.indicators : [],
+              winrate: wr,
+              totalSignals: totalCount,
+              updatedAt: new Date().toISOString(),
+            };
+          });
           setStrategies(mapped);
         }
       }
@@ -249,18 +273,15 @@ export function CryptoSpikeProvider({
     }
   };
 
-  useEffect(() => {
-    void fetchDbStrategies();
-  }, []);
-
   // Load signals dari database PostgreSQL backend
   const fetchDbSignals = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/signals?limit=100");
+      const res = await fetch("http://localhost:3001/api/signals?limit=500");
       if (res.ok) {
         const json = await res.json();
         if (json.items && Array.isArray(json.items) && json.items.length > 0) {
           setSignals(json.items);
+          void fetchDbStrategies(json.items);
         }
       }
     } catch (e) {

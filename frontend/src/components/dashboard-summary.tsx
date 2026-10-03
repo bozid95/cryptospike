@@ -4,8 +4,10 @@ import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
   BotIcon,
+  BriefcaseIcon,
   CheckCircle2Icon,
   CpuIcon,
+  DollarSignIcon,
   FlameIcon,
   RadioIcon,
   ShieldCheckIcon,
@@ -35,7 +37,7 @@ import {
 } from "@/components/ui/table";
 
 export function DashboardSummary() {
-  const { signals, strategies, config, setActiveTab, balance } =
+  const { signals, strategies, config, setActiveTab, balance, positions } =
     useCryptoSpike();
 
   const totalSignals = signals.length;
@@ -72,6 +74,15 @@ export function DashboardSummary() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveTab("positions")}
+            className="text-xs gap-1.5 font-medium border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
+          >
+            <BriefcaseIcon className="size-3.5" />
+            Active Positions ({positions.length})
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -118,23 +129,40 @@ export function DashboardSummary() {
           </CardContent>
         </Card>
 
-        {/* Winrate Realized */}
+        {/* Live Unrealized PnL Posisi Aktif */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription className="text-xs font-medium">
-              Target Winrate (TP1+)
+              Unrealized Floating PnL
             </CardDescription>
-            <TrendingUpIcon className="size-4 text-emerald-600" />
+            <DollarSignIcon className="size-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tabular-nums text-emerald-600">
-              {winrate}%
-            </div>
-            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground font-mono">
-              <span>{hitSignals.length} TP hit</span>
-              <span>•</span>
-              <span>{slSignals.length} SL hit</span>
-            </div>
+            {(() => {
+              const totalUnrealized = positions.reduce((acc, p) => acc + (p.unRealizedProfit || 0), 0);
+              const isPositive = totalUnrealized >= 0;
+              return (
+                <>
+                  <div
+                    className={`text-2xl font-bold tabular-nums ${
+                      isPositive ? "text-emerald-600" : "text-rose-500"
+                    }`}
+                  >
+                    {isPositive ? "+" : ""}${totalUnrealized.toFixed(2)}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground font-mono">
+                    <span>{positions.length} Posisi Terbuka</span>
+                    <span>•</span>
+                    <span
+                      onClick={() => setActiveTab("positions")}
+                      className="cursor-pointer text-indigo-500 hover:underline"
+                    >
+                      Lihat Posisi
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
 
@@ -165,7 +193,7 @@ export function DashboardSummary() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription className="text-xs font-medium">
-              Margin Balance (USD)
+              Total Margin Balance
             </CardDescription>
             <ShieldCheckIcon className="size-4 text-emerald-600" />
           </CardHeader>
@@ -177,8 +205,8 @@ export function DashboardSummary() {
             </div>
             <div className="mt-1 text-xs text-muted-foreground font-mono">
               {balance
-                ? `USDT: $${balance.usdtAvailable.toLocaleString()} • USDC: $${balance.usdcBalance.toLocaleString()} • BTC: ${balance.btcBalance}`
-                : "USDT: $5,000 • USDC: $5,000 • BTC: 0.01"}
+                ? `USDT: $${balance.usdtAvailable.toLocaleString()} • USDC: $${balance.usdcBalance.toLocaleString()}`
+                : "USDT: $5,000 • USDC: $5,000"}
             </div>
           </CardContent>
         </Card>
