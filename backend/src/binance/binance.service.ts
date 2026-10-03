@@ -283,7 +283,12 @@ export class BinanceService {
 
       const baseUrl = this.getFuturesBaseUrl();
       const timestamp = Date.now();
-      const query = `symbol=${symbol}&leverage=${leverage}&timestamp=${timestamp}`;
+      const query = new URLSearchParams({
+        symbol,
+        leverage: String(leverage),
+        timestamp: String(timestamp),
+      }).toString();
+
       const signature = crypto
         .createHmac('sha256', apiSecret)
         .update(query)
@@ -291,7 +296,7 @@ export class BinanceService {
 
       const response = await axios.post(
         `${baseUrl}/fapi/v1/leverage?${query}&signature=${signature}`,
-        {},
+        null,
         { headers: { 'X-MBX-APIKEY': apiKey } },
       );
       return response.data;
@@ -309,7 +314,12 @@ export class BinanceService {
 
       const baseUrl = this.getFuturesBaseUrl();
       const timestamp = Date.now();
-      const query = `symbol=${symbol}&marginType=${marginType}&timestamp=${timestamp}`;
+      const query = new URLSearchParams({
+        symbol,
+        marginType,
+        timestamp: String(timestamp),
+      }).toString();
+
       const signature = crypto
         .createHmac('sha256', apiSecret)
         .update(query)
@@ -317,7 +327,7 @@ export class BinanceService {
 
       const response = await axios.post(
         `${baseUrl}/fapi/v1/marginType?${query}&signature=${signature}`,
-        {},
+        null,
         { headers: { 'X-MBX-APIKEY': apiKey } },
       );
       return response.data;

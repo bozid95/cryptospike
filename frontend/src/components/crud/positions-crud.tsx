@@ -272,13 +272,17 @@ export function PositionsCrud() {
                                 </div>
                               ))}
                               <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                <span className="text-amber-500 font-bold">●</span>
+                                <span className="text-amber-500 font-bold">
+                                  ●
+                                </span>
                                 <span>TSL Engine Active</span>
                               </div>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <span className="text-emerald-500 font-bold">●</span>
+                              <span className="text-emerald-500 font-bold">
+                                ●
+                              </span>
                               <span>Engine TSL Monitored</span>
                             </div>
                           )}
