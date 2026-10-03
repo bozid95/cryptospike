@@ -45,6 +45,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  broadcastPositionPrice(data: { symbol: string; markPrice: number }) {
+    if (this.server) {
+      this.server.emit('position_price_update', data);
+    }
+  }
+
   @SubscribeMessage('ping')
   handlePing(): string {
     return 'pong';

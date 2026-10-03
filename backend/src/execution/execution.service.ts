@@ -144,7 +144,10 @@ export class ExecutionService {
 
       // A. Pasang TP1 (50% posisi) dengan order LIMIT Reduce-Only
       if (signal.tp1 && qtyTP1 > 0) {
-        const roundedTP1 = this.binanceService.roundTick(signal.tp1, filters.tickSize);
+        const roundedTP1 = this.binanceService.roundTick(
+          signal.tp1,
+          filters.tickSize,
+        );
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
@@ -155,16 +158,23 @@ export class ExecutionService {
             timeInForce: 'GTC',
             reduceOnly: true,
           });
-          this.logger.log(`[TP1 PLACED] ${signal.symbol} 50% (${qtyTP1}) @ ${roundedTP1}`);
+          this.logger.log(
+            `[TP1 PLACED] ${signal.symbol} 50% (${qtyTP1}) @ ${roundedTP1}`,
+          );
         } catch (e: any) {
           this.logger.warn(`Failed TP1: ${e.message}`);
         }
       }
 
       // B. Pasang TP2 (30% posisi) dengan order LIMIT Reduce-Only
-      const tp2Price = signal.tp2 || (signal.side === 'LONG' ? signal.tp1 * 1.015 : signal.tp1 * 0.985);
+      const tp2Price =
+        signal.tp2 ||
+        (signal.side === 'LONG' ? signal.tp1 * 1.015 : signal.tp1 * 0.985);
       if (tp2Price && qtyTP2 > 0) {
-        const roundedTP2 = this.binanceService.roundTick(tp2Price, filters.tickSize);
+        const roundedTP2 = this.binanceService.roundTick(
+          tp2Price,
+          filters.tickSize,
+        );
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
@@ -175,16 +185,23 @@ export class ExecutionService {
             timeInForce: 'GTC',
             reduceOnly: true,
           });
-          this.logger.log(`[TP2 PLACED] ${signal.symbol} 30% (${qtyTP2}) @ ${roundedTP2}`);
+          this.logger.log(
+            `[TP2 PLACED] ${signal.symbol} 30% (${qtyTP2}) @ ${roundedTP2}`,
+          );
         } catch (e: any) {
           this.logger.warn(`Failed TP2: ${e.message}`);
         }
       }
 
       // C. Pasang TP3 (20% posisi) dengan order LIMIT Reduce-Only
-      const tp3Price = signal.tp3 || (signal.side === 'LONG' ? tp2Price * 1.02 : tp2Price * 0.98);
+      const tp3Price =
+        signal.tp3 ||
+        (signal.side === 'LONG' ? tp2Price * 1.02 : tp2Price * 0.98);
       if (tp3Price && qtyTP3 > 0) {
-        const roundedTP3 = this.binanceService.roundTick(tp3Price, filters.tickSize);
+        const roundedTP3 = this.binanceService.roundTick(
+          tp3Price,
+          filters.tickSize,
+        );
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
@@ -195,7 +212,9 @@ export class ExecutionService {
             timeInForce: 'GTC',
             reduceOnly: true,
           });
-          this.logger.log(`[TP3 PLACED] ${signal.symbol} 20% (${qtyTP3}) @ ${roundedTP3}`);
+          this.logger.log(
+            `[TP3 PLACED] ${signal.symbol} 20% (${qtyTP3}) @ ${roundedTP3}`,
+          );
         } catch (e: any) {
           this.logger.warn(`Failed TP3: ${e.message}`);
         }

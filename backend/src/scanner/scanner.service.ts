@@ -23,6 +23,8 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
   private tickerSub?: Subscription;
   private monitorTimer?: NodeJS.Timeout;
 
+  private openSymbols = new Set<string>();
+
   constructor(
     private readonly binanceWs: BinanceWsService,
     private readonly binanceService: BinanceService,
@@ -58,13 +60,15 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async handleIncomingTicker(ticker: BinanceWsTicker) {
-    // 1. Broadcast update harga ke frontend dashboard
-    this.gateway.broadcastTicker({
-      symbol: ticker.s,
-      lastPrice: parseFloat(ticker.c),
-      priceChangePct: parseFloat(ticker.P),
-      volume: parseFloat(ticker.v),
-    });
+    const lastPrice = parseFloat(ticker.c);
+
+    // 1. Streaming harga terfokus: Hanya broadcast jika koin tersebut sedang ada di posisi aktif pengguna
+    if (this.openSymbols.has(ticker.s)) {
+      this.gateway.broadcastPositionPrice({
+        symbol: ticker.s,
+        markPrice: lastPrice,
+      });
+    }
 
     // 2. Cooldown check per symbol (minimal 20 detik antar evaluasi per symbol)
     const now = Date.now();
@@ -152,6 +156,8 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
 
       // Ambil open positions riil dari Binance
       const positions = await this.binanceService.getPositions();
+      this.openSymbols = new Set(positions.map((p: any) => p.symbol));
+
       const posMap = new Map<string, any>(
         positions.map((p: any) => [p.symbol, p]),
       );
@@ -267,14 +273,17 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
           slThreshold = sig.tp1;
         }
 
-        const hitSL = isLong ? markPrice <= slThreshold : markPrice >= slThreshold;
+        const hitSL = isLong
+          ? markPrice <= slThreshold
+          : markPrice >= slThreshold;
 
         if (hitSL) {
           const finalProfitPct = isLong
             ? ((markPrice - sig.entryPrice) / sig.entryPrice) * 100
             : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
 
-          const isBreakevenOrProfit = sig.status === 'TP1_HIT' || sig.status === 'TP2_HIT';
+          const isBreakevenOrProfit =
+            sig.status === 'TP1_HIT' || sig.status === 'TP2_HIT';
           const newStatus = isBreakevenOrProfit ? 'TSL_HIT' : 'SL_HIT';
 
           this.logger.log(

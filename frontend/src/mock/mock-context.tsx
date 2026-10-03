@@ -72,13 +72,23 @@ export function CryptoSpikeProvider({
   const [activeTab, setActiveTabState] = useState<string>(() => {
     // 1. Cek URL Hash terlebih dahulu (misal: #positions, #signals, #config)
     const hash = window.location.hash.replace("#", "").trim();
-    if (hash && ["overview", "positions", "signals", "strategies", "config"].includes(hash)) {
+    if (
+      hash &&
+      ["overview", "positions", "signals", "strategies", "config"].includes(
+        hash,
+      )
+    ) {
       return hash;
     }
     // 2. Cek localStorage
     try {
       const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
-      if (savedTab && ["overview", "positions", "signals", "strategies", "config"].includes(savedTab)) {
+      if (
+        savedTab &&
+        ["overview", "positions", "signals", "strategies", "config"].includes(
+          savedTab,
+        )
+      ) {
         return savedTab;
       }
     } catch {
@@ -296,6 +306,37 @@ export function CryptoSpikeProvider({
                 }
               : s,
           ),
+        );
+      },
+    );
+
+    // Menerima update harga mark realtime khusus untuk open positions
+    socket.on(
+      "position_price_update",
+      (update: { symbol: string; markPrice: number }) => {
+        setPositions((prev) =>
+          prev.map((p) => {
+            if (p.symbol === update.symbol) {
+              const newMarkPrice = update.markPrice;
+              const isLong = p.side === "LONG";
+              const unRealizedProfit = isLong
+                ? (newMarkPrice - p.entryPrice) * p.positionAmt
+                : (p.entryPrice - newMarkPrice) * p.positionAmt;
+              const roe =
+                p.initialMargin > 0
+                  ? (unRealizedProfit / p.initialMargin) * 100
+                  : 0;
+
+              return {
+                ...p,
+                markPrice: newMarkPrice,
+                unRealizedProfit: parseFloat(unRealizedProfit.toFixed(2)),
+                roe: parseFloat(roe.toFixed(2)),
+                notional: parseFloat((p.positionAmt * newMarkPrice).toFixed(2)),
+              };
+            }
+            return p;
+          }),
         );
       },
     );
