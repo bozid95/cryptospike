@@ -178,11 +178,11 @@ export function AnnouncementsCrud() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <MegaphoneIcon className="size-6 text-primary" />
-            Announcement & Running Text
+            <MegaphoneIcon className="size-5 sm:size-6 text-primary" />
+            Announcements
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Manage public banner announcements and dynamic running text marquee.
+            Manage banner announcements and public ticker marquee.
           </p>
         </div>
         <div className="flex items-center gap-2">

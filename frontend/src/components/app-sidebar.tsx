@@ -87,14 +87,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
         {
           id: "announcements",
-          title: "Announcements & Ticker",
+          title: "Announcements",
           url: "#announcements",
           icon: MegaphoneIcon,
           badge:
             activeAnnouncementsCount > 0
-              ? `${activeAnnouncementsCount} Active`
+              ? activeAnnouncementsCount
               : undefined,
-          badgeVariant: "outline" as const,
+          badgeVariant: (activeAnnouncementsCount > 0 ? "default" : "secondary") as
+            | "default"
+            | "secondary",
         },
         {
           id: "config",
