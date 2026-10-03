@@ -7,6 +7,10 @@ import {
   TrendingDownIcon,
   XCircleIcon,
   ExternalLinkIcon,
+  DollarSignIcon,
+  LayersIcon,
+  ShieldCheckIcon,
+  ActivityIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/mock/mock-context";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +49,45 @@ export function PositionsCrud() {
   const [searchTerm, setSearchTerm] = useState("");
   const [closingSymbol, setClosingSymbol] = useState<string | null>(null);
 
+  // Summary Metrics
+  const summary = useMemo(() => {
+    let totalUnrealizedPnl = 0;
+    let totalInitialMargin = 0;
+    let totalNotional = 0;
+    let longCount = 0;
+    let shortCount = 0;
+    let winningCount = 0;
+    let losingCount = 0;
+
+    for (const p of positions) {
+      totalUnrealizedPnl += p.unRealizedProfit;
+      totalInitialMargin += p.initialMargin;
+      totalNotional += p.notional;
+      if (p.side === "LONG") longCount++;
+      else shortCount++;
+
+      if (p.unRealizedProfit > 0) winningCount++;
+      else if (p.unRealizedProfit < 0) losingCount++;
+    }
+
+    const totalRoe =
+      totalInitialMargin > 0
+        ? (totalUnrealizedPnl / totalInitialMargin) * 100
+        : 0;
+
+    return {
+      totalPositions: positions.length,
+      totalUnrealizedPnl,
+      totalInitialMargin,
+      totalNotional,
+      totalRoe,
+      longCount,
+      shortCount,
+      winningCount,
+      losingCount,
+    };
+  }, [positions]);
+
   const filteredPositions = useMemo(() => {
     if (!searchTerm.trim()) return positions;
     const q = searchTerm.toLowerCase();
@@ -52,6 +95,7 @@ export function PositionsCrud() {
       (p) =>
         p.symbol.toLowerCase().includes(q) ||
         p.side.toLowerCase().includes(q) ||
+        (p.strategy && p.strategy.toLowerCase().includes(q)) ||
         p.marginType.toLowerCase().includes(q),
     );
   }, [positions, searchTerm]);
@@ -71,6 +115,130 @@ export function PositionsCrud() {
 
   return (
     <div className="space-y-4">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Card 1: Total Unrealized PnL */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Total Unrealized PnL
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span
+                  className={`text-xl font-bold font-mono ${
+                    summary.totalUnrealizedPnl >= 0
+                      ? "text-emerald-500"
+                      : "text-rose-500"
+                  }`}
+                >
+                  {summary.totalUnrealizedPnl >= 0 ? "+" : ""}
+                  ${summary.totalUnrealizedPnl.toFixed(2)}
+                </span>
+                <span
+                  className={`text-xs font-mono font-medium ${
+                    summary.totalRoe >= 0 ? "text-emerald-500" : "text-rose-500"
+                  }`}
+                >
+                  ({summary.totalRoe >= 0 ? "+" : ""}
+                  {summary.totalRoe.toFixed(2)}%)
+                </span>
+              </div>
+              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-0.5">
+                <span className="text-emerald-500 font-semibold font-mono">
+                  {summary.winningCount} Win
+                </span>
+                <span>•</span>
+                <span className="text-rose-500 font-semibold font-mono">
+                  {summary.losingCount} Loss
+                </span>
+              </div>
+            </div>
+            <div
+              className={`p-2.5 rounded-full ${
+                summary.totalUnrealizedPnl >= 0
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : "bg-rose-500/10 text-rose-500"
+              }`}
+            >
+              <DollarSignIcon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Total Margin In Play */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Total Margin Dipakai
+              </span>
+              <div className="text-xl font-bold font-mono text-foreground">
+                ${summary.totalInitialMargin.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <span className="text-[11px] text-muted-foreground">
+                Alokasi margin aktif Binance
+              </span>
+            </div>
+            <div className="p-2.5 rounded-full bg-blue-500/10 text-blue-500">
+              <ShieldCheckIcon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 3: Total Notional Value */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Total Nilai Notional
+              </span>
+              <div className="text-xl font-bold font-mono text-foreground">
+                ${summary.totalNotional.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <span className="text-[11px] text-muted-foreground">
+                Total eksposur pasar terbuka
+              </span>
+            </div>
+            <div className="p-2.5 rounded-full bg-indigo-500/10 text-indigo-500">
+              <ActivityIcon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 4: Open Positions Breakdown */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Distribusi Posisi
+              </span>
+              <div className="text-xl font-bold font-mono text-foreground flex items-center gap-2">
+                <span>{summary.totalPositions} Posisi</span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] font-mono pt-0.5">
+                <span className="text-emerald-500 font-semibold flex items-center gap-0.5">
+                  <TrendingUpIcon className="size-3" /> {summary.longCount} Long
+                </span>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-rose-500 font-semibold flex items-center gap-0.5">
+                  <TrendingDownIcon className="size-3" /> {summary.shortCount} Short
+                </span>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-full bg-amber-500/10 text-amber-500">
+              <LayersIcon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="border-border shadow-xs">
         <CardHeader className="p-6 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
