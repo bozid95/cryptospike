@@ -194,6 +194,32 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     avgProfitPct: 0,
     updatedAt: new Date().toISOString(),
   },
+  {
+    strategyId: "crypto_savage_v1",
+    name: "Crypto Savage v1 (Price Action Multi-Confluence)",
+    timeframe: "1h",
+    description:
+      "Strategi Price Action murni berdasarkan Handbook Crypto Savage: Dynamic True S/R (HTF 4H), Multiple Rejection Wick, Engulfing Follow-Through, Trendline Breakout, 50 EMA Confluence, dan RSI Divergence.",
+    isEnabled: true,
+    version: "v1",
+    author: "Crypto Savage Handbook",
+    indicators: [
+      "Dynamic True S/R Zone (4H/1H)",
+      "Multiple Long Wick Rejection",
+      "Momentum / Engulfing Follow-Through",
+      "Counter-Trendline Breakout",
+      "50 EMA Dynamic S/R",
+      "RSI 14 Divergence",
+      "Strict 1:2+ RRR Engine",
+    ],
+    winrate: "0.0%",
+    totalSignals: 0,
+    winSignals: 0,
+    lossSignals: 0,
+    totalPnlPct: 0,
+    avgProfitPct: 0,
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 export const INITIAL_SIGNALS: SignalItem[] = [];

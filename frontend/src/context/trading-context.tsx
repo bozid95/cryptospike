@@ -227,7 +227,14 @@ export function CryptoSpikeProvider({
   const [strategies, setStrategies] = useState<StrategyItem[]>(() => {
     try {
       const saved = localStorage.getItem(STRATEGIES_KEY);
-      return saved ? JSON.parse(saved) : INITIAL_STRATEGIES;
+      if (saved) {
+        const parsed: StrategyItem[] = JSON.parse(saved);
+        // Merge with INITIAL_STRATEGIES to ensure newly added strategies exist
+        const existingIds = new Set(parsed.map((s) => s.strategyId));
+        const missing = INITIAL_STRATEGIES.filter((s) => !existingIds.has(s.strategyId));
+        return [...parsed, ...missing];
+      }
+      return INITIAL_STRATEGIES;
     } catch (e) {
       console.warn(
         "Failed to load strategies from storage, falling back to initial",
