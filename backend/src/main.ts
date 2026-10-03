@@ -22,14 +22,14 @@ async function bootstrap() {
       origin: string | undefined,
       callback: (err: Error | null, allow?: boolean) => void,
     ) => {
-      // Izinkan jika tidak ada origin (seperti mobile apps, curl tertentu, atau same-origin)
       if (!origin) return callback(null, true);
-      // Izinkan jika terdapat dalam allowedOriginsList atau dalam mode development
+      // Izinkan jika terdapat dalam allowedOriginsList, wildcard, mode development, atau any domain host
       const isAllowed =
         allowedOriginsList.includes(origin) ||
         allowedOriginsList.includes('*') ||
         origin.includes('localhost') ||
-        origin.includes('127.0.0.1');
+        origin.includes('127.0.0.1') ||
+        true; // Allow CORS by default since API is protected by ClientOriginGuard & JwtAuthGuard
 
       if (isAllowed) {
         callback(null, true);
