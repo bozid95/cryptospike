@@ -61,7 +61,6 @@ export class SignalService {
     });
 
     if (active) {
-      this.logger.debug(`Signal ${input.symbol} ignored: already active`);
       return null;
     }
 
