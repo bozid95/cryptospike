@@ -14,9 +14,10 @@ export interface TradingConfigDto {
 }
 
 const DEFAULT_CONFIG: TradingConfigDto = {
-  apiKey: 'dhA11NTt2uFViDGybKvJv9g0IQc8PJilepPHV7uqgWH5H2opcwaJjGto1CgWiz13',
-  apiSecret: 'wVVzZaysTZ3Pz4XhGDkPPRJAgvwIjw0sYJkxTlAsVHu6Q3tSP9TBpJmhCRdPBlIm',
-  environment: 'TESTNET',
+  apiKey: process.env.BINANCE_API_KEY || '',
+  apiSecret: process.env.BINANCE_SECRET_KEY || '',
+  environment:
+    process.env.BINANCE_TESTNET === 'false' ? 'PRODUCTION' : 'TESTNET',
   leverage: 10,
   marginType: 'ISOLATED',
   maxOpenPositions: 3,

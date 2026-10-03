@@ -17,7 +17,7 @@ export class Breakout1hV1Strategy implements IStrategy {
     author: 'CryptoSpike Engine',
     timeframe: '1h',
     indicators: ['Volume Spike', 'Candle Range', 'Momentum'],
-    defaultEnabled: true,
+    defaultEnabled: false,
   };
 
   evaluate(data: MarketData): Promise<StrategyResult | null> {

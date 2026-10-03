@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { IStrategy, StrategyResult, MarketData } from './strategy.interface';
 import { Breakout1hV1Strategy } from './strategies/breakout-1h-v1.strategy';
+import { Breakout1hV2Strategy } from './strategies/breakout-1h-v2.strategy';
 import { PrePump15mV1Strategy } from './strategies/prepump-15m-v1.strategy';
 
 @Injectable()
@@ -13,11 +14,13 @@ export class StrategyRegistry implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly breakout1hV1: Breakout1hV1Strategy,
+    private readonly breakout1hV2: Breakout1hV2Strategy,
     private readonly prepump15mV1: PrePump15mV1Strategy,
   ) {}
 
   async onModuleInit() {
     this.register(this.breakout1hV1);
+    this.register(this.breakout1hV2);
     this.register(this.prepump15mV1);
 
     await this.loadStrategyStates();

@@ -57,10 +57,8 @@ type RawKlineArray = [
 @Injectable()
 export class BinanceService {
   private readonly logger = new Logger(BinanceService.name);
-  private readonly defaultApiKey =
-    'dhA11NTt2uFViDGybKvJv9g0IQc8PJilepPHV7uqgWH5H2opcwaJjGto1CgWiz13';
-  private readonly defaultApiSecret =
-    'wVVzZaysTZ3Pz4XhGDkPPRJAgvwIjw0sYJkxTlAsVHu6Q3tSP9TBpJmhCRdPBlIm';
+  private readonly defaultApiKey = '';
+  private readonly defaultApiSecret = '';
 
   private getFuturesBaseUrl(): string {
     const isTestnet = process.env.BINANCE_TESTNET !== 'false';

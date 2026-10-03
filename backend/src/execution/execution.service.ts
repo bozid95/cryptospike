@@ -88,7 +88,7 @@ export class ExecutionService {
         return null;
       }
 
-      let rawQuantity = notionalValue / signal.entryPrice;
+      const rawQuantity = notionalValue / signal.entryPrice;
       const quantity = this.binanceService.roundStep(
         rawQuantity,
         filters.stepSize,

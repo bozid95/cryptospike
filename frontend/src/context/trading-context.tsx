@@ -454,11 +454,9 @@ export function CryptoSpikeProvider({
           const activeSignalsList = signalsData || signals;
           const mapped: StrategyItem[] = data.map((s: any) => {
             const key = s.key || s.id;
-            // Hitung sinyal real dari database yang cocok dengan strategi ini
+            // Hitung sinyal real dari database yang cocok persis dengan strategi ini (key: breakout_1h_v1 vs breakout_1h_v2)
             const stratSignals = activeSignalsList.filter(
-              (sig) =>
-                sig.strategy === key ||
-                (s.id && sig.strategy?.startsWith(s.id)),
+              (sig) => sig.strategy === key,
             );
             const totalCount = stratSignals.length;
             const hitCount = stratSignals.filter(

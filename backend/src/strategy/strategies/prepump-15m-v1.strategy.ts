@@ -21,7 +21,7 @@ export class PrePump15mV1Strategy implements IStrategy {
       'Volume Anomaly',
       'Consolidation Compression',
     ],
-    defaultEnabled: true,
+    defaultEnabled: false,
   };
 
   evaluate(data: MarketData): Promise<StrategyResult | null> {
