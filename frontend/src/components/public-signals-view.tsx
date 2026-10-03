@@ -388,6 +388,19 @@ export function PublicSignalsView() {
                 }
               }
 
+              // Hitung PnL secara dinamis: jika sinyal belum memiliki profitPct tersimpan di DB
+              let displayProfitPct = sig.profitPct;
+              if (typeof displayProfitPct !== "number") {
+                if (displayPrice && sig.entryPrice && sig.entryPrice > 0) {
+                  displayProfitPct = isLong
+                    ? ((displayPrice - sig.entryPrice) / sig.entryPrice) * 100
+                    : ((sig.entryPrice - displayPrice) / sig.entryPrice) * 100;
+                } else if (isRunning) {
+                  displayProfitPct = 0.0;
+                }
+              }
+              const isProfitPositive = (displayProfitPct ?? 0) >= 0;
+
               return (
                 <div
                   key={sig.id}
@@ -564,14 +577,16 @@ export function PublicSignalsView() {
                     </span>
 
                     <div className="flex items-center gap-2">
-                      {typeof sig.profitPct === "number" && (
+                      {typeof displayProfitPct === "number" && (
                         <span
                           className={`font-mono font-bold text-xs ${
-                            isProfit ? "text-emerald-500" : "text-rose-500"
+                            isProfitPositive
+                              ? "text-emerald-500"
+                              : "text-rose-500"
                           }`}
                         >
-                          {isProfit ? "+" : ""}
-                          {sig.profitPct.toFixed(2)}%
+                          {isProfitPositive ? "+" : ""}
+                          {displayProfitPct.toFixed(2)}%
                         </span>
                       )}
 
