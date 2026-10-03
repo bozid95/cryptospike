@@ -51,7 +51,13 @@ function MainLayout() {
 export default function App() {
   return (
     <CryptoSpikeProvider>
-      <Toaster richColors position="top-right" />
+      <Toaster
+        richColors
+        closeButton
+        position="top-right"
+        visibleToasts={4}
+        expand={false}
+      />
       <MainLayout />
     </CryptoSpikeProvider>
   );

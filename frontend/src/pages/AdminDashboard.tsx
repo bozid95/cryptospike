@@ -87,8 +87,8 @@ export function AdminDashboard() {
             <CardHeader>
               <CardTitle>Strategy Manager</CardTitle>
               <CardDescription>
-                Enable or disable strategy modules independently. Disabled strategies
-                will not process market data.
+                Enable or disable strategy modules independently. Disabled
+                strategies will not process market data.
               </CardDescription>
             </CardHeader>
             <CardContent>
