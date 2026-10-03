@@ -59,9 +59,12 @@ function MainLayout() {
     return <LoginView />;
   }
 
-  // 2. Jika user baru saja login dari /login, otomatis alihkan ke /dashboard
+  // 2. Jika user sudah login dan masih di route /login, alihkan ke /dashboard
   if (isLoginRoute && isAuthenticated) {
     window.history.replaceState(null, "", "/dashboard");
+    if (pathname.includes("/login")) {
+      setPathname("/dashboard");
+    }
   }
 
   // 3. Jika user belum login: Tampilkan PublicSignalsView (UI Publik Khusus Pengunjung, bukan Dashboard!)

@@ -36,6 +36,7 @@ export function LoginView() {
         setErrorMessage(res.message || "Invalid username or password.");
       } else {
         window.history.pushState(null, "", "/dashboard");
+        window.dispatchEvent(new Event("popstate"));
       }
     } catch (err: any) {
       setErrorMessage(
