@@ -750,10 +750,11 @@ export function CryptoSpikeProvider({
       },
     );
 
-    // Menerima update harga mark realtime khusus untuk open positions
+    // Menerima update harga mark realtime khusus untuk open positions dan active signals
     socket.on(
       "position_price_update",
       (update: { symbol: string; markPrice: number }) => {
+        // 1. Update Open Positions (Binance)
         setPositions((prev) =>
           prev.map((p) => {
             if (p.symbol === update.symbol) {
@@ -776,6 +777,31 @@ export function CryptoSpikeProvider({
               };
             }
             return p;
+          }),
+        );
+
+        // 2. Update Active Signals (Floating PnL % & Current Price)
+        setSignals((prev) =>
+          prev.map((s) => {
+            if (
+              s.symbol === update.symbol &&
+              (s.status === "ACTIVE" ||
+                s.status === "TP1_HIT" ||
+                s.status === "TP2_HIT")
+            ) {
+              const isLong = s.side === "LONG";
+              const currentPrice = update.markPrice;
+              const floatingProfitPct = isLong
+                ? ((currentPrice - s.entryPrice) / s.entryPrice) * 100
+                : ((s.entryPrice - currentPrice) / s.entryPrice) * 100;
+
+              return {
+                ...s,
+                currentPrice,
+                profitPct: parseFloat(floatingProfitPct.toFixed(2)),
+              };
+            }
+            return s;
           }),
         );
       },

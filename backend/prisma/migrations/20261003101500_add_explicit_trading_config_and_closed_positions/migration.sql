@@ -31,3 +31,4 @@ CREATE TABLE IF NOT EXISTS "closed_positions" (
 -- CreateIndex
 CREATE INDEX IF NOT EXISTS "idx_closed_positions_symbol" ON "closed_positions"("symbol");
 CREATE INDEX IF NOT EXISTS "idx_closed_positions_closed_at" ON "closed_positions"("closed_at");
+

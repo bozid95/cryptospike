@@ -485,14 +485,29 @@ export function SignalsCrud() {
                               ${formatCryptoPrice(sig.entryPrice)}
                             </span>
                           </div>
-                          {sig.currentPrice && (
-                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1 leading-tight">
-                              <span className="font-sans font-medium text-muted-foreground/75">
+                          {sig.currentPrice ? (
+                            <div className="flex items-center gap-1.5 text-[11px] mt-1 leading-tight">
+                              <span className="font-sans font-medium text-muted-foreground/75 flex items-center gap-1">
+                                {isRunning && (
+                                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                )}
                                 Last
                               </span>
-                              <span className="font-medium text-foreground/85">
+                              <span
+                                className={`font-semibold ${
+                                  isRunning
+                                    ? isProfit
+                                      ? "text-emerald-500"
+                                      : "text-rose-500"
+                                    : "text-foreground/85"
+                                }`}
+                              >
                                 ${formatCryptoPrice(sig.currentPrice)}
                               </span>
+                            </div>
+                          ) : (
+                            <div className="text-[11px] text-muted-foreground/60 mt-1 leading-tight font-sans">
+                              Tracking...
                             </div>
                           )}
                         </TableCell>

@@ -24,6 +24,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
   private monitorTimer?: NodeJS.Timeout;
 
   private openSymbols = new Set<string>();
+  private activeSignalSymbols = new Set<string>();
   private latestPrices = new Map<string, number>();
 
   constructor(
@@ -66,8 +67,8 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     // Simpan harga real-time untuk keperluan evaluasi Lifecycle TP/SL semua sinyal (RnD & virtual)
     this.latestPrices.set(ticker.s, lastPrice);
 
-    // 1. Streaming harga terfokus: Hanya broadcast jika koin tersebut sedang ada di posisi aktif pengguna
-    if (this.openSymbols.has(ticker.s)) {
+    // 1. Streaming harga terfokus: Broadcast jika koin sedang ada di posisi aktif Binance atau sinyal yang sedang ACTIVE
+    if (this.openSymbols.has(ticker.s) || this.activeSignalSymbols.has(ticker.s)) {
       this.gateway.broadcastPositionPrice({
         symbol: ticker.s,
         markPrice: lastPrice,
@@ -118,6 +119,9 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
       });
 
       if (signal) {
+        // Daftarkan simbol sinyal baru ke watched set
+        this.activeSignalSymbols.add(signal.symbol);
+
         // Push sinyal realtime ke dashboard frontend via websocket
         this.gateway.broadcastSignal(signal);
 
@@ -137,13 +141,15 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Monitor status sinyal ACTIVE (Cek TP/SL)
+   * Monitor status sinyal ACTIVE (Cek TP/SL) secara cepat (setiap 3 detik)
    */
   private startLifecycleMonitor() {
     this.logger.log('Starting background TP/SL lifecycle monitor...');
+    // Jalankan pengecekan pertama secara langsung
+    void this.checkActiveSignals();
     this.monitorTimer = setInterval(() => {
       void this.checkActiveSignals();
-    }, 15000);
+    }, 3000);
   }
 
   private async checkActiveSignals() {
@@ -157,11 +163,19 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         take: 30,
       });
 
+      // Update daftar simbol sinyal yang aktif agar live ticker langsung di-stream ke frontend
+      this.activeSignalSymbols = new Set(activeSignals.map((s) => s.symbol));
+
       if (activeSignals.length === 0) return;
 
       // Ambil open positions riil dari Binance
-      const positions = await this.binanceService.getPositions();
-      this.openSymbols = new Set(positions.map((p: any) => p.symbol));
+      let positions: any[] = [];
+      try {
+        positions = await this.binanceService.getPositions();
+        this.openSymbols = new Set(positions.map((p: any) => p.symbol));
+      } catch (err: any) {
+        // Binance API rate limit / network error fallback
+      }
 
       const posMap = new Map<string, any>(
         positions.map((p: any) => [p.symbol, p]),
