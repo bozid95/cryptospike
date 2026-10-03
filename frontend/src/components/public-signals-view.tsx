@@ -14,6 +14,7 @@ import {
   FilterIcon,
   TrophyIcon,
   LayersIcon,
+  AlertTriangleIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/context/trading-context";
 import { NotificationBell } from "@/components/notification-bell";
@@ -306,6 +307,19 @@ export function PublicSignalsView() {
               Automated high-probability futures signals with dynamic
               multi-target TP and Trailing Stop.
             </p>
+          </div>
+
+          {/* Development & Sample Data Disclaimer Notice */}
+          <div className="max-w-2xl mx-auto bg-amber-500/10 border border-amber-500/30 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-left text-amber-600 dark:text-amber-400">
+            <AlertTriangleIcon className="size-4 shrink-0 stroke-[2.2] text-amber-500" />
+            <div className="text-xs space-y-0.5">
+              <span className="font-bold uppercase tracking-wider text-[11px] block">
+                Tahap Development & Uji Coba Sample Data
+              </span>
+              <p className="text-[11px] opacity-90 leading-relaxed font-sans">
+                Sistem saat ini sedang dalam <strong>tahap development & collecting sample signal</strong> untuk pengujian strategi algoritma. Sinyal ini murni untuk evaluasi teknis, <strong>bukan saran finansial dan jangan diikuti</strong>.
+              </p>
+            </div>
           </div>
 
           {/* 4 Cards Stat Grid */}
