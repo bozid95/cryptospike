@@ -120,16 +120,18 @@ export function SignalsCrud() {
       if (sig.side === "LONG") longCount++;
       else shortCount++;
 
-      if (sig.status === "ACTIVE") {
+      const isSignalRunning =
+        sig.status === "ACTIVE" ||
+        sig.status === "TP1_HIT" ||
+        sig.status === "TP2_HIT";
+
+      if (isSignalRunning) {
         runningCount++;
-      } else if (sig.status === "TP1_HIT") {
-        tp1Count++;
-        totalRealizedProfitPct += sig.profitPct ?? 0;
-      } else if (sig.status === "TP2_HIT") {
-        tp2Count++;
-        totalRealizedProfitPct += sig.profitPct ?? 0;
       } else if (sig.status === "TP3_HIT") {
         tp3Count++;
+        totalRealizedProfitPct += sig.profitPct ?? 0;
+      } else if (sig.status === "TSL_HIT") {
+        tp1Count++;
         totalRealizedProfitPct += sig.profitPct ?? 0;
       } else if (sig.status === "SL_HIT") {
         slCount++;
@@ -161,14 +163,29 @@ export function SignalsCrud() {
     };
   }, [signals]);
 
-  const runningSignals = signals.filter((s) => s.status === "ACTIVE");
-  const closedSignals = signals.filter((s) => s.status !== "ACTIVE");
+  const runningSignals = signals.filter(
+    (s) =>
+      s.status === "ACTIVE" ||
+      s.status === "TP1_HIT" ||
+      s.status === "TP2_HIT",
+  );
+  const closedSignals = signals.filter(
+    (s) =>
+      s.status !== "ACTIVE" &&
+      s.status !== "TP1_HIT" &&
+      s.status !== "TP2_HIT",
+  );
 
   const filteredSignals = useMemo(() => {
     return signals.filter((sig) => {
+      const isSignalRunning =
+        sig.status === "ACTIVE" ||
+        sig.status === "TP1_HIT" ||
+        sig.status === "TP2_HIT";
+
       // 1. Filter status segment
-      if (filter === "RUNNING" && sig.status !== "ACTIVE") return false;
-      if (filter === "CLOSED" && sig.status === "ACTIVE") return false;
+      if (filter === "RUNNING" && !isSignalRunning) return false;
+      if (filter === "CLOSED" && isSignalRunning) return false;
 
       // 2. Search filter
       if (searchTerm.trim()) {

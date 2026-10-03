@@ -66,10 +66,17 @@ export function PublicSignalsView() {
       if (sig.side === "LONG") longCount++;
       else shortCount++;
 
-      if (sig.status === "ACTIVE") {
+      // Sinyal masih RUNNING jika ACTIVE, TP1_HIT, atau TP2_HIT (masih berlanjut mengejar TP2/TP3)
+      const isSignalRunning =
+        sig.status === "ACTIVE" ||
+        sig.status === "TP1_HIT" ||
+        sig.status === "TP2_HIT";
+
+      if (isSignalRunning) {
         runningCount++;
       } else if (
-        sig.status?.includes("TP") ||
+        sig.status === "TP3_HIT" ||
+        sig.status === "TSL_HIT" ||
         (typeof sig.profitPct === "number" && sig.profitPct > 0)
       ) {
         hitCount++;
@@ -102,8 +109,13 @@ export function PublicSignalsView() {
 
   const filteredSignals = useMemo(() => {
     return signals.filter((sig) => {
-      if (filter === "RUNNING" && sig.status !== "ACTIVE") return false;
-      if (filter === "CLOSED" && sig.status === "ACTIVE") return false;
+      const isSignalRunning =
+        sig.status === "ACTIVE" ||
+        sig.status === "TP1_HIT" ||
+        sig.status === "TP2_HIT";
+
+      if (filter === "RUNNING" && !isSignalRunning) return false;
+      if (filter === "CLOSED" && isSignalRunning) return false;
       if (!searchTerm.trim()) return true;
 
       const q = searchTerm.toLowerCase();
@@ -361,7 +373,10 @@ export function PublicSignalsView() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
             {paginatedSignals.map((sig) => {
               const isLong = sig.side === "LONG";
-              const isRunning = sig.status === "ACTIVE";
+              const isRunning =
+                sig.status === "ACTIVE" ||
+                sig.status === "TP1_HIT" ||
+                sig.status === "TP2_HIT";
               const isProfit = (sig.profitPct ?? 0) >= 0;
 
               // Hitung harga keluar (Exit Price) untuk sinyal yang sudah selesai jika currentPrice tidak tersimpan
