@@ -12,6 +12,8 @@ import {
   LockIcon,
   FlameIcon,
   FilterIcon,
+  TrophyIcon,
+  LayersIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/context/trading-context";
 import { NotificationBell } from "@/components/notification-bell";
@@ -62,14 +64,83 @@ export function PublicSignalsView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
-  // Daftar unik strategi yang ada di daftar sinyal
-  const availableStrategies = useMemo(() => {
-    const set = new Set<string>();
-    for (const s of signals) {
-      if (s.strategy) set.add(s.strategy);
+  // Daftar unik & ringkasan performa per strategi (Winrate Leaderboard)
+  const strategyStats = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        strategy: string;
+        total: number;
+        running: number;
+        hits: number;
+        losses: number;
+        totalPnl: number;
+      }
+    >();
+
+    for (const sig of signals) {
+      const strat = sig.strategy || "Unknown";
+      if (!map.has(strat)) {
+        map.set(strat, {
+          strategy: strat,
+          total: 0,
+          running: 0,
+          hits: 0,
+          losses: 0,
+          totalPnl: 0,
+        });
+      }
+      const item = map.get(strat)!;
+      item.total++;
+
+      const isClosed =
+        sig.status === "TP3_HIT" ||
+        sig.status === "SL_HIT" ||
+        sig.status === "TSL_HIT" ||
+        (sig.status as string) === "CLOSED" ||
+        sig.status === "CANCELLED";
+
+      if (!isClosed) {
+        item.running++;
+      }
+
+      const hasHitTp =
+        sig.status === "TP1_HIT" ||
+        sig.status === "TP2_HIT" ||
+        sig.status === "TP3_HIT" ||
+        sig.status === "TSL_HIT";
+
+      const isLoss =
+        sig.status === "SL_HIT" ||
+        (isClosed && typeof sig.profitPct === "number" && sig.profitPct < 0);
+
+      if (hasHitTp) {
+        item.hits++;
+        item.totalPnl += sig.profitPct || 0;
+      } else if (isLoss) {
+        item.losses++;
+        item.totalPnl += sig.profitPct || 0;
+      }
     }
-    return Array.from(set).sort();
+
+    return Array.from(map.values())
+      .map((st) => {
+        const evaluated = st.hits + st.losses;
+        const winrate =
+          evaluated > 0 ? ((st.hits / evaluated) * 100).toFixed(1) : "0.0";
+        return {
+          ...st,
+          winrate: parseFloat(winrate),
+          totalPnl: parseFloat(st.totalPnl.toFixed(2)),
+          evaluated,
+        };
+      })
+      .sort((a, b) => b.winrate - a.winrate || b.total - a.total);
   }, [signals]);
+
+  const availableStrategies = useMemo(() => {
+    return strategyStats.map((s) => s.strategy);
+  }, [strategyStats]);
 
   // Summary Metrics
   const summary = useMemo(() => {
@@ -328,6 +399,90 @@ export function PublicSignalsView() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Strategy Winrate Leaderboard Cards (Panduan Memilih Strategi Terbaik) */}
+          {strategyStats.length > 0 && (
+            <div className="max-w-5xl mx-auto space-y-2 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                  <TrophyIcon className="size-3.5 text-amber-500" />
+                  Strategy Winrate Guide
+                </span>
+                <span className="text-[11px] text-muted-foreground font-sans">
+                  Click a strategy to filter signals
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                {strategyStats.map((st, idx) => {
+                  const isSelected = selectedStrategy === st.strategy;
+                  const isHighWinrate = st.winrate >= 65;
+
+                  return (
+                    <button
+                      key={st.strategy}
+                      type="button"
+                      onClick={() => {
+                        setSelectedStrategy(isSelected ? "ALL" : st.strategy);
+                        setCurrentPage(1);
+                      }}
+                      className={`text-left p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer relative overflow-hidden group ${
+                        isSelected
+                          ? "bg-emerald-500/10 border-emerald-500/60 shadow-xs ring-1 ring-emerald-500/30"
+                          : "bg-card hover:bg-muted/40 border-border/80 hover:border-emerald-500/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="text-[10px] font-mono text-muted-foreground font-bold">
+                            #{idx + 1}
+                          </span>
+                          <span className="font-bold text-xs font-mono text-foreground truncate">
+                            {st.strategy}
+                          </span>
+                        </div>
+                        {isHighWinrate && (
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] px-1 py-0 border-amber-500/40 text-amber-500 font-mono shrink-0"
+                          >
+                            TOP
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="flex items-baseline justify-between mt-1">
+                        <div>
+                          <div className="text-base sm:text-lg font-bold font-mono text-emerald-600">
+                            {st.winrate}%
+                          </div>
+                          <div className="text-[10px] font-mono text-muted-foreground">
+                            {st.hits}W / {st.losses}L ({st.total} Total)
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div
+                            className={`text-xs font-mono font-bold ${
+                              st.totalPnl >= 0
+                                ? "text-emerald-500"
+                                : "text-rose-500"
+                            }`}
+                          >
+                            {st.totalPnl >= 0 ? "+" : ""}
+                            {st.totalPnl.toFixed(1)}%
+                          </div>
+                          <div className="text-[10px] text-muted-foreground font-sans">
+                            {st.running} Running
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
