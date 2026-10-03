@@ -79,7 +79,11 @@ export class BinanceService {
   private async syncServerTime(force = false): Promise<number> {
     const now = Date.now();
     // Re-sync setiap 3 menit kecuali di-force
-    if (!force && this.lastTimeSync && now - this.lastTimeSync < 3 * 60 * 1000) {
+    if (
+      !force &&
+      this.lastTimeSync &&
+      now - this.lastTimeSync < 3 * 60 * 1000
+    ) {
       // Kurangi buffer 1500ms: aman dalam batas recvWindow=60000ms dan mencegah error ahead of server time
       return now + this.timeOffset - 1500;
     }
@@ -262,7 +266,9 @@ export class BinanceService {
       }
     }
 
-    this.logger.error(`Failed to fetch 24hr tickers from all available endpoints`);
+    this.logger.error(
+      `Failed to fetch 24hr tickers from all available endpoints`,
+    );
     return [];
   }
 
@@ -298,19 +304,21 @@ export class BinanceService {
           },
         );
 
-        const mapped: BinanceKline[] = response.data.map((c: RawKlineArray) => ({
-          openTime: c[0],
-          open: parseFloat(c[1]),
-          high: parseFloat(c[2]),
-          low: parseFloat(c[3]),
-          close: parseFloat(c[4]),
-          volume: parseFloat(c[5]),
-          closeTime: c[6],
-          quoteVolume: parseFloat(c[7]),
-          trades: c[8],
-          takerBuyBaseVolume: parseFloat(c[9]),
-          takerBuyQuoteVolume: parseFloat(c[10]),
-        }));
+        const mapped: BinanceKline[] = response.data.map(
+          (c: RawKlineArray) => ({
+            openTime: c[0],
+            open: parseFloat(c[1]),
+            high: parseFloat(c[2]),
+            low: parseFloat(c[3]),
+            close: parseFloat(c[4]),
+            volume: parseFloat(c[5]),
+            closeTime: c[6],
+            quoteVolume: parseFloat(c[7]),
+            trades: c[8],
+            takerBuyBaseVolume: parseFloat(c[9]),
+            takerBuyQuoteVolume: parseFloat(c[10]),
+          }),
+        );
 
         // Simpan ke cache selama 8 detik
         this.klineCache.set(cacheKey, {
@@ -327,7 +335,9 @@ export class BinanceService {
       }
     }
 
-    this.logger.error(`Failed to fetch klines for ${symbol} across all endpoints`);
+    this.logger.error(
+      `Failed to fetch klines for ${symbol} across all endpoints`,
+    );
     return [];
   }
 
