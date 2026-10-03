@@ -4,15 +4,10 @@ import {
   TrendingUpIcon,
   TrendingDownIcon,
   ZapIcon,
-  ShieldAlertIcon,
-  ActivityIcon,
-  BellIcon,
   SearchIcon,
   ClockIcon,
   CheckCircle2Icon,
   LockIcon,
-  SparklesIcon,
-  ExternalLinkIcon,
   FlameIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/context/trading-context";
@@ -121,56 +116,50 @@ export function PublicSignalsView() {
   const totalPages = Math.max(1, Math.ceil(filteredSignals.length / pageSize));
   const validCurrentPage = Math.min(currentPage, totalPages);
   const startIndex = (validCurrentPage - 1) * pageSize;
-  const paginatedSignals = filteredSignals.slice(
-    startIndex,
-    startIndex + pageSize,
-  );
+  const paginatedSignals = filteredSignals.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-emerald-500/20 selection:text-emerald-500">
-      {/* 1. Public Top Navigation Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white font-bold text-lg shadow-sm shadow-emerald-500/20">
+      {/* 1. Clean Responsive Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/95 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
+          {/* Brand Identity */}
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="flex size-8 sm:size-9 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm sm:text-base shrink-0 shadow-xs">
               ⚡
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-lg bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-                  CryptoSpike
-                </span>
-                <Badge
-                  variant="outline"
-                  className="font-mono text-[10px] px-1.5 py-0 border-emerald-500/40 text-emerald-600 bg-emerald-500/10 font-bold"
-                >
-                  PUBLIC LIVE FEED
-                </Badge>
-              </div>
-              <p className="text-[11px] text-muted-foreground hidden sm:block">
-                Automated Price Action & High-Probability Trading Signals
-              </p>
+            <div className="min-w-0 flex items-center gap-1.5">
+              <span className="font-bold tracking-tight text-base sm:text-lg text-foreground truncate">
+                CryptoSpike
+              </span>
+              <Badge
+                variant="outline"
+                className="hidden xs:inline-flex text-[9px] sm:text-[10px] font-mono px-1.5 py-0 border-emerald-500/40 text-emerald-600 bg-emerald-500/10 font-bold shrink-0"
+              >
+                LIVE
+              </Badge>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 sm:gap-4">
-            {/* Live Ticker Pulse */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 font-mono text-xs font-semibold">
-              <span className="relative flex h-2 w-2">
+          {/* Right Actions: Live Indicator, Notifications, Login */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {/* Live Scanner Pulse Badge */}
+            <div className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 font-mono text-[11px] font-semibold">
+              <span className="relative flex size-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full size-2 bg-emerald-500"></span>
               </span>
-              <span className="hidden sm:inline">LIVE SCANNER</span>
+              <span className="hidden sm:inline">Scanner Live</span>
             </div>
 
-            {/* Notification Bell Dropdown */}
+            {/* Notification Bell with Audio Chimes */}
             <NotificationBell />
 
-            {/* Link Operator Login */}
+            {/* Operator Login Button */}
             <Button
               variant="outline"
               size="sm"
-              className="h-9 px-3 gap-1.5 text-xs font-semibold rounded-lg hover:border-emerald-500/50 hover:bg-emerald-500/5 cursor-pointer"
+              className="h-8 sm:h-9 px-2 sm:px-3 gap-1.5 text-xs font-semibold rounded-lg hover:border-emerald-500/40 hover:bg-emerald-500/5 cursor-pointer"
               onClick={() => {
                 window.location.href = "/login";
               }}
@@ -182,111 +171,91 @@ export function PublicSignalsView() {
         </div>
       </header>
 
-      {/* 2. Hero Section: Headline & Live Statistics */}
-      <section className="border-b border-border/60 bg-gradient-to-b from-card/80 to-background/40 py-8 sm:py-12 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="text-center max-w-2xl mx-auto space-y-2.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/60 border border-border/80 text-xs font-mono text-muted-foreground">
-              <SparklesIcon className="size-3.5 text-amber-500" />
-              <span>Realtime Binance Futures Signal Stream</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-              Live Algorithmic Signals
+      {/* 2. Hero Section: Headline & Summary Cards */}
+      <section className="border-b border-border/60 bg-muted/20 py-6 sm:py-10 px-3.5 sm:px-6">
+        <div className="max-w-7xl mx-auto space-y-5">
+          <div className="text-center max-w-xl mx-auto space-y-1.5">
+            <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+              Price Action Signals
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Sinyal trading otomatis berbasis Price Action (S/R, Trendline
-              Breakout, Confluence) dengan target Take Profit bertahap dan
-              Trailing Stop Loss aktif.
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Automated high-probability futures signals with dynamic multi-target TP and Trailing Stop.
             </p>
           </div>
 
           {/* 4 Cards Stat Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto pt-2">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 max-w-5xl mx-auto">
             {/* Stat 1: Total Signals */}
-            <Card className="border-border/80 shadow-xs bg-card/60 backdrop-blur">
-              <CardContent className="p-4 space-y-1">
-                <span className="text-xs text-muted-foreground font-medium flex items-center justify-between">
-                  Signals Discovered
-                  <RadioIcon className="size-3.5 text-emerald-500" />
+            <Card className="border-border/80 shadow-xs bg-card">
+              <CardContent className="p-3 sm:p-4 space-y-1">
+                <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
+                  Total Signals
+                  <RadioIcon className="size-3 sm:size-3.5 text-emerald-500" />
                 </span>
-                <div className="text-2xl font-bold font-mono text-foreground">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
                   {summary.totalSignals}
                 </div>
-                <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-emerald-500 font-semibold">
-                    {summary.runningCount} Active
-                  </span>
+                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center gap-1">
+                  <span className="text-emerald-500 font-semibold">{summary.runningCount} Active</span>
                   <span>•</span>
-                  <span>{summary.closedCount} Completed</span>
+                  <span>{summary.closedCount} Closed</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Stat 2: Realized Winrate */}
-            <Card className="border-border/80 shadow-xs bg-card/60 backdrop-blur">
-              <CardContent className="p-4 space-y-1">
-                <span className="text-xs text-muted-foreground font-medium flex items-center justify-between">
-                  Realized Winrate
-                  <CheckCircle2Icon className="size-3.5 text-teal-500" />
+            {/* Stat 2: Winrate */}
+            <Card className="border-border/80 shadow-xs bg-card">
+              <CardContent className="p-3 sm:p-4 space-y-1">
+                <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
+                  Winrate
+                  <CheckCircle2Icon className="size-3 sm:size-3.5 text-teal-500" />
                 </span>
-                <div className="text-2xl font-bold font-mono text-emerald-600">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600">
                   {summary.winrate}%
                 </div>
-                <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-emerald-600 font-semibold">
-                    {summary.hitCount} Win
-                  </span>
+                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center gap-1">
+                  <span className="text-emerald-600 font-semibold">{summary.hitCount} Win</span>
                   <span>/</span>
-                  <span className="text-rose-500 font-semibold">
-                    {summary.lossCount} Loss
-                  </span>
+                  <span className="text-rose-500 font-semibold">{summary.lossCount} Loss</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Stat 3: Net Cumulative Gain */}
-            <Card className="border-border/80 shadow-xs bg-card/60 backdrop-blur">
-              <CardContent className="p-4 space-y-1">
-                <span className="text-xs text-muted-foreground font-medium flex items-center justify-between">
-                  Total Tracked PnL
-                  <FlameIcon className="size-3.5 text-amber-500" />
+            {/* Stat 3: Realized PnL */}
+            <Card className="border-border/80 shadow-xs bg-card">
+              <CardContent className="p-3 sm:p-4 space-y-1">
+                <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
+                  Realized PnL
+                  <FlameIcon className="size-3 sm:size-3.5 text-amber-500" />
                 </span>
                 <div
-                  className={`text-2xl font-bold font-mono ${
-                    summary.totalRealizedProfitPct >= 0
-                      ? "text-emerald-500"
-                      : "text-rose-500"
+                  className={`text-xl sm:text-2xl font-bold font-mono ${
+                    summary.totalRealizedProfitPct >= 0 ? "text-emerald-500" : "text-rose-500"
                   }`}
                 >
                   {summary.totalRealizedProfitPct >= 0 ? "+" : ""}
                   {summary.totalRealizedProfitPct.toFixed(2)}%
                 </div>
-                <div className="text-[11px] text-muted-foreground font-sans">
-                  Cumulative ROI Closed
+                <div className="text-[10px] sm:text-[11px] text-muted-foreground">
+                  Cumulative Closed Return
                 </div>
               </CardContent>
             </Card>
 
-            {/* Stat 4: Long / Short Sentiment */}
-            <Card className="border-border/80 shadow-xs bg-card/60 backdrop-blur">
-              <CardContent className="p-4 space-y-1">
-                <span className="text-xs text-muted-foreground font-medium flex items-center justify-between">
-                  Market Direction
-                  <ZapIcon className="size-3.5 text-indigo-500" />
+            {/* Stat 4: Long/Short Sentiment */}
+            <Card className="border-border/80 shadow-xs bg-card">
+              <CardContent className="p-3 sm:p-4 space-y-1">
+                <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
+                  Direction Bias
+                  <ZapIcon className="size-3 sm:size-3.5 text-indigo-500" />
                 </span>
-                <div className="text-2xl font-bold font-mono text-foreground flex items-center gap-2">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-foreground flex items-center gap-1.5">
                   <span className="text-emerald-500">{summary.longCount}L</span>
-                  <span className="text-muted-foreground text-sm font-normal">
-                    /
-                  </span>
+                  <span className="text-muted-foreground text-sm font-normal">/</span>
                   <span className="text-rose-500">{summary.shortCount}S</span>
                 </div>
-                <div className="text-[11px] font-mono text-muted-foreground">
-                  {(
-                    (summary.longCount / Math.max(summary.totalSignals, 1)) *
-                    100
-                  ).toFixed(0)}
-                  % Bullish Bias
+                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground">
+                  {((summary.longCount / Math.max(summary.totalSignals, 1)) * 100).toFixed(0)}% Long Ratio
                 </div>
               </CardContent>
             </Card>
@@ -294,31 +263,31 @@ export function PublicSignalsView() {
         </div>
       </section>
 
-      {/* 3. Main Content: Filter Tabs, Search & Signal Cards Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        {/* Controls Toolbar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      {/* 3. Main Content: Filter Tabs, Search & Signal Cards */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 py-5 sm:py-8 space-y-4 sm:space-y-6">
+        {/* Responsive Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-xl border border-border/80 self-start">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/80 self-start w-full sm:w-auto overflow-x-auto">
             <button
               onClick={() => {
                 setFilter("ALL");
                 setCurrentPage(1);
               }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 filter === "ALL"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              All Signals ({signals.length})
+              All ({signals.length})
             </button>
             <button
               onClick={() => {
                 setFilter("RUNNING");
                 setCurrentPage(1);
               }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 filter === "RUNNING"
                   ? "bg-background text-emerald-600 shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -332,18 +301,18 @@ export function PublicSignalsView() {
                 setFilter("CLOSED");
                 setCurrentPage(1);
               }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 filter === "CLOSED"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              History Closed ({summary.closedCount})
+              Closed ({summary.closedCount})
             </button>
           </div>
 
           {/* Search Box */}
-          <div className="relative sm:w-72">
+          <div className="relative w-full sm:w-64">
             <SearchIcon className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchTerm}
@@ -351,7 +320,7 @@ export function PublicSignalsView() {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Search pair (e.g. BTC, QTUM)..."
+              placeholder="Filter pair (e.g. BTC, ETH)..."
               className="pl-9 h-9 text-xs rounded-xl bg-card"
             />
           </div>
@@ -359,18 +328,15 @@ export function PublicSignalsView() {
 
         {/* Signal Cards Grid */}
         {paginatedSignals.length === 0 ? (
-          <div className="p-12 text-center border rounded-2xl bg-card space-y-3">
+          <div className="p-10 text-center border rounded-2xl bg-card space-y-2">
             <RadioIcon className="size-8 mx-auto text-muted-foreground/60" />
-            <h3 className="font-semibold text-base text-foreground">
-              No signals found
-            </h3>
-            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              No trading signals currently match your filter criteria or search
-              keyword.
+            <h3 className="font-semibold text-sm text-foreground">No signals found</h3>
+            <p className="text-xs text-muted-foreground">
+              Try adjusting your filter or search keyword.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
             {paginatedSignals.map((sig) => {
               const isLong = sig.side === "LONG";
               const isRunning = sig.status === "ACTIVE";
@@ -379,21 +345,19 @@ export function PublicSignalsView() {
               return (
                 <div
                   key={sig.id}
-                  className={`rounded-2xl border bg-card p-4 space-y-3.5 transition-all shadow-xs hover:shadow-md hover:border-emerald-500/30 ${
-                    isRunning
-                      ? "border-emerald-500/30 ring-1 ring-emerald-500/10"
-                      : "border-border/80"
+                  className={`rounded-2xl border bg-card p-3.5 sm:p-4 space-y-3 transition-all shadow-xs hover:shadow-md hover:border-emerald-500/30 ${
+                    isRunning ? "border-emerald-500/30 ring-1 ring-emerald-500/10" : "border-border/80"
                   }`}
                 >
-                  {/* Card Header: Pair, Direction Badge & Status */}
+                  {/* Card Header: Pair, Side Badge & Status */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold font-mono text-base tracking-tight text-foreground">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="font-bold font-mono text-base tracking-tight text-foreground">
                         {sig.symbol}
                       </span>
                       <Badge
                         variant={isLong ? "default" : "destructive"}
-                        className="text-[10px] font-mono px-2 py-0.5 font-bold flex items-center gap-0.5"
+                        className="text-[10px] font-mono px-1.5 py-0 font-bold flex items-center gap-0.5"
                       >
                         {isLong ? (
                           <TrendingUpIcon className="size-3" />
@@ -431,7 +395,7 @@ export function PublicSignalsView() {
                     </Badge>
                   </div>
 
-                  {/* Price Banner: Entry vs Current */}
+                  {/* Price Grid: Entry vs Mark Price */}
                   <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-muted/40 border border-border/50 text-xs font-mono">
                     <div>
                       <span className="text-[10px] text-muted-foreground block font-sans">
@@ -443,7 +407,7 @@ export function PublicSignalsView() {
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground block font-sans">
-                        Current Mark
+                        Mark Price
                       </span>
                       <span
                         className={`font-bold text-xs ${
@@ -454,104 +418,84 @@ export function PublicSignalsView() {
                             : "text-foreground"
                         }`}
                       >
-                        {sig.currentPrice
-                          ? `$${formatCryptoPrice(sig.currentPrice)}`
-                          : "-"}
+                        {sig.currentPrice ? `$${formatCryptoPrice(sig.currentPrice)}` : "-"}
                       </span>
                     </div>
                   </div>
 
-                  {/* Target Levels (TP1, TP2, TP3 & SL) */}
-                  <div className="p-3 rounded-xl bg-muted/30 border border-border/40 space-y-2 text-xs font-mono">
+                  {/* Target Levels: TP1, TP2, TP3 & SL */}
+                  <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-1.5 text-xs font-mono">
                     <span className="text-[10px] text-muted-foreground block font-sans font-medium uppercase tracking-wider">
-                      Target Exit Levels
+                      Targets (TP & SL)
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {/* TP1 */}
                       {sig.tp1 && (
-                        <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-emerald-600">
-                            TP1
-                          </span>
+                        <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">
+                          <span className="text-[10px] font-bold text-emerald-600">TP1</span>
                           <span className="font-semibold text-foreground">
                             ${formatCryptoPrice(sig.tp1)}
                           </span>
                           <span className="text-[10px] text-emerald-600 font-bold">
-                            (
-                            {isLong
+                            ({isLong
                               ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}%`})
                           </span>
                         </div>
                       )}
 
                       {/* TP2 */}
                       {sig.tp2 && (
-                        <div className="flex items-center gap-1 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-teal-600">
-                            TP2
-                          </span>
+                        <div className="flex items-center gap-1 bg-teal-500/10 border border-teal-500/20 px-1.5 py-0.5 rounded text-[11px]">
+                          <span className="text-[10px] font-bold text-teal-600">TP2</span>
                           <span className="font-semibold text-foreground">
                             ${formatCryptoPrice(sig.tp2)}
                           </span>
                           <span className="text-[10px] text-teal-600 font-bold">
-                            (
-                            {isLong
+                            ({isLong
                               ? `+${(((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}%`})
                           </span>
                         </div>
                       )}
 
                       {/* TP3 */}
                       {sig.tp3 && (
-                        <div className="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-cyan-600">
-                            TP3
-                          </span>
+                        <div className="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-1.5 py-0.5 rounded text-[11px]">
+                          <span className="text-[10px] font-bold text-cyan-600">TP3</span>
                           <span className="font-semibold text-foreground">
                             ${formatCryptoPrice(sig.tp3)}
                           </span>
                           <span className="text-[10px] text-cyan-600 font-bold">
-                            (
-                            {isLong
+                            ({isLong
                               ? `+${(((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}%`})
                           </span>
                         </div>
                       )}
 
                       {/* SL */}
                       {sig.sl && (
-                        <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-destructive">
-                            SL
-                          </span>
+                        <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-1.5 py-0.5 rounded text-[11px]">
+                          <span className="text-[10px] font-bold text-destructive">SL</span>
                           <span className="font-semibold text-destructive">
                             ${formatCryptoPrice(sig.sl)}
                           </span>
                           <span className="text-[10px] text-destructive font-bold">
-                            (-
-                            {isLong
+                            (-{isLong
                               ? `${Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`}
-                            )
+                              : `${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`})
                           </span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Card Footer: Strategy, Live PnL & Timestamp */}
+                  {/* Card Footer: Strategy, PnL & Time */}
                   <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
-                    <div className="flex items-center gap-1.5 text-muted-foreground font-mono text-[11px]">
-                      <span className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-sans">
-                        {sig.strategy}
-                      </span>
-                    </div>
+                    <span className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono text-muted-foreground truncate max-w-[140px]">
+                      {sig.strategy}
+                    </span>
 
                     <div className="flex items-center gap-2">
                       {typeof sig.profitPct === "number" && (
@@ -567,9 +511,7 @@ export function PublicSignalsView() {
 
                       <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
                         <ClockIcon className="size-3 text-muted-foreground/60" />
-                        {new Date(
-                          sig.createdAt || sig.sentAt,
-                        ).toLocaleTimeString("en-US", {
+                        {new Date(sig.createdAt || sig.sentAt).toLocaleTimeString("en-US", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -597,14 +539,10 @@ export function PublicSignalsView() {
       </main>
 
       {/* 4. Public Footer */}
-      <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground space-y-1 bg-card/40">
-        <div>
-          CryptoSpike Realtime Signal Scanner • High Frequency Price Action
-          Algorithmic Trading
-        </div>
-        <div className="text-[11px] text-muted-foreground/75">
-          Disclaimer: Data sinyal disediakan murni untuk keperluan riset
-          analisis teknikal dan tidak menjamin keuntungan finansial.
+      <footer className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground space-y-1 bg-card">
+        <div>CryptoSpike • Realtime Algorithmic Trading Signals</div>
+        <div className="text-[11px] text-muted-foreground/70">
+          Disclaimer: Signals provided for technical research and market analysis only.
         </div>
       </footer>
     </div>
