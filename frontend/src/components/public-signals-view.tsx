@@ -821,61 +821,69 @@ export function PublicSignalsView() {
                   }`}
                 >
                   {/* Card Header: Pair, Side Badge & Status */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="font-bold font-mono text-base tracking-tight text-foreground">
-                        {sig.symbol}
-                      </span>
-                      <Badge
-                        variant={isLong ? "default" : "destructive"}
-                        className="text-[10px] font-mono px-1.5 py-0 font-bold flex items-center gap-0.5"
-                      >
-                        {isLong ? (
-                          <TrendingUpIcon className="size-3" />
-                        ) : (
-                          <TrendingDownIcon className="size-3" />
-                        )}
-                        {sig.side}
-                      </Badge>
-                      {sig.strength === "STRONG" && (
+                  <div className="space-y-1.5">
+                    {/* Row 1: Symbol, Side Badge, and Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="font-bold font-mono text-base tracking-tight text-foreground truncate">
+                          {sig.symbol}
+                        </span>
                         <Badge
-                          variant="outline"
-                          className="text-[9px] px-1 py-0 border-amber-500/40 text-amber-500 font-mono"
+                          variant={isLong ? "default" : "destructive"}
+                          className="text-[10px] font-mono px-1.5 py-0 font-bold shrink-0 flex items-center gap-0.5"
                         >
-                          STRONG
+                          {isLong ? (
+                            <TrendingUpIcon className="size-3" />
+                          ) : (
+                            <TrendingDownIcon className="size-3" />
+                          )}
+                          {sig.side}
                         </Badge>
+                      </div>
+
+                      <Badge
+                        variant="outline"
+                        className={`font-mono text-[10px] px-2 py-0.5 shrink-0 flex items-center gap-1 font-semibold ${
+                          isRunning
+                            ? "border-emerald-500/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                            : sig.status.includes("TP")
+                              ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
+                              : sig.status === "SL_HIT"
+                                ? "border-rose-500/40 text-rose-600 bg-rose-500/10"
+                                : "border-slate-300 dark:border-zinc-700 text-muted-foreground"
+                        }`}
+                      >
+                        {isRunning && (
+                          <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        )}
+                        {sig.status.replace("_HIT", "")}
+                      </Badge>
+                    </div>
+
+                    {/* Row 2: Secondary Tags (Strategy, Volume, Strength) */}
+                    <div className="flex items-center gap-1.5 flex-wrap text-[10px] font-mono">
+                      {sig.strategy && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-medium truncate max-w-[150px] border border-border/50">
+                          {sig.strategy}
+                        </span>
                       )}
                       {(sig.volume24h ||
                         sig.reasons?.match(/Vol:\s*(\$[\d.]+M)/)?.[1]) && (
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-500 bg-sky-500/5 font-mono"
+                        <span
+                          className="px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/25 font-medium"
                           title="24h Trading Volume"
                         >
+                          Vol{" "}
                           {sig.volume24h ||
-                            sig.reasons?.match(/Vol:\s*(\$[\d.]+M)/)?.[1]}{" "}
-                          Vol
-                        </Badge>
+                            sig.reasons?.match(/Vol:\s*(\$[\d.]+M)/)?.[1]}
+                        </span>
+                      )}
+                      {sig.strength === "STRONG" && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold">
+                          STRONG
+                        </span>
                       )}
                     </div>
-
-                    <Badge
-                      variant="outline"
-                      className={`font-mono text-[10px] px-2 py-0.5 flex items-center gap-1 ${
-                        isRunning
-                          ? "border-emerald-500/40 text-emerald-500 bg-emerald-500/10"
-                          : sig.status.includes("TP")
-                            ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
-                            : sig.status === "SL_HIT"
-                              ? "border-rose-500/30 text-rose-600 bg-rose-500/5"
-                              : "border-muted text-muted-foreground"
-                      }`}
-                    >
-                      {isRunning && (
-                        <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      )}
-                      {sig.status.replace("_HIT", "")}
-                    </Badge>
                   </div>
 
                   {/* Price & Position Size Grid */}
@@ -1132,62 +1140,56 @@ export function PublicSignalsView() {
                     </div>
                   </div>
 
-                  {/* Card Footer: Strategy, PnL & Time */}
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200 dark:border-zinc-800">
-                    <span className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono text-muted-foreground truncate max-w-[140px]">
-                      {sig.strategy}
+                  {/* Card Footer: Time & PnL */}
+                  <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-200 dark:border-zinc-800">
+                    <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                      <ClockIcon className="size-3 text-muted-foreground/60" />
+                      {new Date(
+                        sig.createdAt || sig.sentAt,
+                      ).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
 
-                    <div className="flex items-center gap-2">
-                      {typeof displayProfitPct === "number" &&
-                        (() => {
-                          const margin = sig.simulatedMargin ?? 10.0;
-                          // Jika sinyal sudah selesai (CLOSED/TP/SL), gunakan nilai riil dari DB (sig.realizedPnlUsd)
-                          // Jika masih RUNNING/ACTIVE, selalu hitung floating PnL dinamis dari displayProfitPct live
-                          const pnlUsd =
-                            !isRunning &&
-                            typeof sig.realizedPnlUsd === "number" &&
-                            sig.realizedPnlUsd !== 0
-                              ? sig.realizedPnlUsd
-                              : (margin * displayProfitPct) / 100;
-                          const isUsdPositive = pnlUsd >= 0;
+                    {typeof displayProfitPct === "number" &&
+                      (() => {
+                        const margin = sig.simulatedMargin ?? 10.0;
+                        // Jika sinyal sudah selesai (CLOSED/TP/SL), gunakan nilai riil dari DB (sig.realizedPnlUsd)
+                        // Jika masih RUNNING/ACTIVE, selalu hitung floating PnL dinamis dari displayProfitPct live
+                        const pnlUsd =
+                          !isRunning &&
+                          typeof sig.realizedPnlUsd === "number" &&
+                          sig.realizedPnlUsd !== 0
+                            ? sig.realizedPnlUsd
+                            : (margin * displayProfitPct) / 100;
+                        const isUsdPositive = pnlUsd >= 0;
 
-                          // Tampilkan 2 desimal jika >= $0.01, atau 3 desimal jika sangat kecil agar tidak tampak $0.00
-                          const formattedPnlUsd =
-                            Math.abs(pnlUsd) > 0 && Math.abs(pnlUsd) < 0.01
-                              ? pnlUsd.toFixed(3)
-                              : pnlUsd.toFixed(2);
+                        // Tampilkan 2 desimal jika >= $0.01, atau 3 desimal jika sangat kecil agar tidak tampak $0.00
+                        const formattedPnlUsd =
+                          Math.abs(pnlUsd) > 0 && Math.abs(pnlUsd) < 0.01
+                            ? pnlUsd.toFixed(3)
+                            : pnlUsd.toFixed(2);
 
-                          return (
-                            <span
-                              className={`font-mono font-bold text-xs flex items-center gap-1 ${
-                                isProfitPositive
-                                  ? "text-emerald-500"
-                                  : "text-rose-500"
-                              }`}
-                              title={`Simulated from $${margin.toFixed(2)} margin (1% risk on $1,000 capital): ${isUsdPositive ? "+" : ""}$${formattedPnlUsd}`}
-                            >
-                              <span>
-                                {isProfitPositive ? "+" : ""}
-                                {displayProfitPct.toFixed(2)}%
-                              </span>
-                              <span className="text-[10px] font-semibold opacity-90">
-                                ({isUsdPositive ? "+" : ""}${formattedPnlUsd})
-                              </span>
+                        return (
+                          <span
+                            className={`font-mono font-bold text-xs flex items-center gap-1 ${
+                              isProfitPositive
+                                ? "text-emerald-500"
+                                : "text-rose-500"
+                            }`}
+                            title={`Simulated from $${margin.toFixed(2)} margin (1% risk on $1,000 capital): ${isUsdPositive ? "+" : ""}$${formattedPnlUsd}`}
+                          >
+                            <span>
+                              {isProfitPositive ? "+" : ""}
+                              {displayProfitPct.toFixed(2)}%
                             </span>
-                          );
-                        })()}
-
-                      <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
-                        <ClockIcon className="size-3 text-muted-foreground/60" />
-                        {new Date(
-                          sig.createdAt || sig.sentAt,
-                        ).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
+                            <span className="text-[10px] font-semibold opacity-90">
+                              ({isUsdPositive ? "+" : ""}${formattedPnlUsd})
+                            </span>
+                          </span>
+                        );
+                      })()}
                   </div>
                 </div>
               );
