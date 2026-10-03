@@ -7,6 +7,8 @@ import {
   SearchIcon,
   ClockIcon,
   CheckCircle2Icon,
+  CheckIcon,
+  XIcon,
   LockIcon,
   FlameIcon,
 } from "lucide-react";
@@ -401,6 +403,42 @@ export function PublicSignalsView() {
               }
               const isProfitPositive = (displayProfitPct ?? 0) >= 0;
 
+              // Deteksi apakah TP1, TP2, TP3, atau SL sudah tersentuh (hit)
+              const isTp3Hit =
+                sig.status === "TP3_HIT" ||
+                (displayPrice && sig.tp3
+                  ? isLong
+                    ? displayPrice >= sig.tp3
+                    : displayPrice <= sig.tp3
+                  : false);
+
+              const isTp2Hit =
+                isTp3Hit ||
+                sig.status === "TP2_HIT" ||
+                (displayPrice && sig.tp2
+                  ? isLong
+                    ? displayPrice >= sig.tp2
+                    : displayPrice <= sig.tp2
+                  : false);
+
+              const isTp1Hit =
+                isTp2Hit ||
+                sig.status === "TP1_HIT" ||
+                sig.status === "TSL_HIT" ||
+                (displayPrice && sig.tp1
+                  ? isLong
+                    ? displayPrice >= sig.tp1
+                    : displayPrice <= sig.tp1
+                  : false);
+
+              const isSlHit =
+                sig.status === "SL_HIT" ||
+                (displayPrice && sig.sl
+                  ? isLong
+                    ? displayPrice <= sig.sl
+                    : displayPrice >= sig.sl
+                  : false);
+
               return (
                 <div
                   key={sig.id}
@@ -506,8 +544,26 @@ export function PublicSignalsView() {
                     <div className="flex flex-wrap gap-1.5">
                       {/* TP1 */}
                       {sig.tp1 && (
-                        <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">
-                          <span className="text-[10px] font-bold text-emerald-600">
+                        <div
+                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                            isTp1Hit
+                              ? "bg-emerald-500/20 border border-emerald-500/50 shadow-xs ring-1 ring-emerald-500/30"
+                              : "bg-emerald-500/10 border border-emerald-500/20"
+                          }`}
+                        >
+                          {isTp1Hit && (
+                            <span
+                              className="absolute -top-1.5 -right-1.5 size-3.5 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-xs ring-1 ring-card"
+                              title="TP1 Reached"
+                            >
+                              <CheckIcon className="size-2.5 stroke-[3]" />
+                            </span>
+                          )}
+                          <span
+                            className={`text-[10px] font-bold ${
+                              isTp1Hit ? "text-emerald-500" : "text-emerald-600"
+                            }`}
+                          >
                             TP1
                           </span>
                           <span className="font-semibold text-foreground">
@@ -525,8 +581,26 @@ export function PublicSignalsView() {
 
                       {/* TP2 */}
                       {sig.tp2 && (
-                        <div className="flex items-center gap-1 bg-teal-500/10 border border-teal-500/20 px-1.5 py-0.5 rounded text-[11px]">
-                          <span className="text-[10px] font-bold text-teal-600">
+                        <div
+                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                            isTp2Hit
+                              ? "bg-teal-500/20 border border-teal-500/50 shadow-xs ring-1 ring-teal-500/30"
+                              : "bg-teal-500/10 border border-teal-500/20"
+                          }`}
+                        >
+                          {isTp2Hit && (
+                            <span
+                              className="absolute -top-1.5 -right-1.5 size-3.5 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-xs ring-1 ring-card"
+                              title="TP2 Reached"
+                            >
+                              <CheckIcon className="size-2.5 stroke-[3]" />
+                            </span>
+                          )}
+                          <span
+                            className={`text-[10px] font-bold ${
+                              isTp2Hit ? "text-teal-500" : "text-teal-600"
+                            }`}
+                          >
                             TP2
                           </span>
                           <span className="font-semibold text-foreground">
@@ -544,8 +618,26 @@ export function PublicSignalsView() {
 
                       {/* TP3 */}
                       {sig.tp3 && (
-                        <div className="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-1.5 py-0.5 rounded text-[11px]">
-                          <span className="text-[10px] font-bold text-cyan-600">
+                        <div
+                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                            isTp3Hit
+                              ? "bg-cyan-500/20 border border-cyan-500/50 shadow-xs ring-1 ring-cyan-500/30"
+                              : "bg-cyan-500/10 border border-cyan-500/20"
+                          }`}
+                        >
+                          {isTp3Hit && (
+                            <span
+                              className="absolute -top-1.5 -right-1.5 size-3.5 bg-cyan-600 text-white rounded-full flex items-center justify-center shadow-xs ring-1 ring-card"
+                              title="TP3 Reached"
+                            >
+                              <CheckIcon className="size-2.5 stroke-[3]" />
+                            </span>
+                          )}
+                          <span
+                            className={`text-[10px] font-bold ${
+                              isTp3Hit ? "text-cyan-500" : "text-cyan-600"
+                            }`}
+                          >
                             TP3
                           </span>
                           <span className="font-semibold text-foreground">
@@ -563,7 +655,21 @@ export function PublicSignalsView() {
 
                       {/* SL */}
                       {sig.sl && (
-                        <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-1.5 py-0.5 rounded text-[11px]">
+                        <div
+                          className={`relative flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] transition-all ${
+                            isSlHit
+                              ? "bg-destructive/20 border border-destructive/50 shadow-xs ring-1 ring-destructive/30"
+                              : "bg-destructive/10 border border-destructive/20"
+                          }`}
+                        >
+                          {isSlHit && (
+                            <span
+                              className="absolute -top-1.5 -right-1.5 size-3.5 bg-rose-600 text-white rounded-full flex items-center justify-center shadow-xs ring-1 ring-card"
+                              title="SL Triggered"
+                            >
+                              <XIcon className="size-2.5 stroke-[3]" />
+                            </span>
+                          )}
                           <span className="text-[10px] font-bold text-destructive">
                             SL
                           </span>
