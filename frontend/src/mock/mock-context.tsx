@@ -5,6 +5,7 @@ import {
   INITIAL_SIGNALS,
   INITIAL_STRATEGIES,
   type BinanceBalanceInfo,
+  type PositionItem,
   type SignalItem,
   type StrategyItem,
   type TradingConfig,
@@ -42,6 +43,12 @@ interface CryptoSpikeContextType {
   balance: BinanceBalanceInfo | null;
   isLoadingBalance: boolean;
   refreshBalance: () => Promise<void>;
+
+  // Real Binance Positions
+  positions: PositionItem[];
+  isLoadingPositions: boolean;
+  refreshPositions: () => Promise<void>;
+  closePosition: (symbol: string, positionAmt: number, side?: string) => Promise<boolean>;
 }
 
 const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
@@ -101,6 +108,9 @@ export function CryptoSpikeProvider({
   const [balance, setBalance] = useState<BinanceBalanceInfo | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
+  const [positions, setPositions] = useState<PositionItem[]>([]);
+  const [isLoadingPositions, setIsLoadingPositions] = useState(false);
+
   const refreshBalance = async () => {
     try {
       setIsLoadingBalance(true);
@@ -113,6 +123,40 @@ export function CryptoSpikeProvider({
       console.warn("Could not fetch live Binance balance:", err);
     } finally {
       setIsLoadingBalance(false);
+    }
+  };
+
+  const refreshPositions = async () => {
+    try {
+      setIsLoadingPositions(true);
+      const res = await fetch("http://localhost:3001/api/positions");
+      if (res.ok) {
+        const data = (await res.json()) as PositionItem[];
+        setPositions(data);
+      }
+    } catch (err) {
+      console.warn("Could not fetch live Binance positions:", err);
+    } finally {
+      setIsLoadingPositions(false);
+    }
+  };
+
+  const closePosition = async (symbol: string, positionAmt: number, side?: string): Promise<boolean> => {
+    try {
+      const res = await fetch("http://localhost:3001/api/positions/close", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symbol, positionAmt, side }),
+      });
+      if (res.ok) {
+        await refreshPositions();
+        await refreshBalance();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Failed to close position:", err);
+      return false;
     }
   };
 
@@ -200,15 +244,26 @@ export function CryptoSpikeProvider({
     });
 
     // Menerima update status sinyal (TP1 hit, SL hit, close)
-    socket.on("signal_status_update", (update: { id: string; status: SignalItem["status"]; profitPct?: number }) => {
-      setSignals((prev) =>
-        prev.map((s) =>
-          s.id === update.id
-            ? { ...s, status: update.status, profitPct: update.profitPct ?? s.profitPct }
-            : s,
-        ),
-      );
-    });
+    socket.on(
+      "signal_status_update",
+      (update: {
+        id: string;
+        status: SignalItem["status"];
+        profitPct?: number;
+      }) => {
+        setSignals((prev) =>
+          prev.map((s) =>
+            s.id === update.id
+              ? {
+                  ...s,
+                  status: update.status,
+                  profitPct: update.profitPct ?? s.profitPct,
+                }
+              : s,
+          ),
+        );
+      },
+    );
 
     // Fallback polling berkala setiap 30 detik untuk safety
     const interval = setInterval(() => {
@@ -223,9 +278,11 @@ export function CryptoSpikeProvider({
 
   useEffect(() => {
     void refreshBalance();
+    void refreshPositions();
     const interval = setInterval(() => {
       void refreshBalance();
-    }, 15000);
+      void refreshPositions();
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -363,6 +420,10 @@ export function CryptoSpikeProvider({
         balance,
         isLoadingBalance,
         refreshBalance,
+        positions,
+        isLoadingPositions,
+        refreshPositions,
+        closePosition,
       }}
     >
       {children}

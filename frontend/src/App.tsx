@@ -1,6 +1,7 @@
 import { CryptoSpikeProvider, useCryptoSpike } from "@/mock/mock-context";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { PositionsCrud } from "@/components/crud/positions-crud";
 import { SettingsCrud } from "@/components/crud/settings-crud";
 import { SignalsCrud } from "@/components/crud/signals-crud";
 import { StrategyManagerCrud } from "@/components/crud/strategy-manager-crud";
@@ -16,6 +17,7 @@ function DashboardContent() {
     <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       {/* Tampilan Konten Dinamis Berdasarkan Tab */}
       {activeTab === "overview" && <DashboardSummary />}
+      {activeTab === "positions" && <PositionsCrud />}
       {activeTab === "signals" && <SignalsCrud />}
       {activeTab === "strategies" && <StrategyManagerCrud />}
       {activeTab === "config" && <SettingsCrud />}

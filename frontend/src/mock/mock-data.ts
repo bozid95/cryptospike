@@ -31,6 +31,22 @@ export interface StrategyItem {
   updatedAt?: string;
 }
 
+export interface PositionItem {
+  symbol: string;
+  side: "LONG" | "SHORT";
+  positionAmt: number;
+  entryPrice: number;
+  markPrice: number;
+  liquidationPrice: number;
+  leverage: number;
+  marginType: string;
+  unRealizedProfit: number;
+  roe: number;
+  notional: number;
+  initialMargin: number;
+  updateTime: number;
+}
+
 export interface BinanceBalanceInfo {
   environment: string;
   marginBalance?: number;

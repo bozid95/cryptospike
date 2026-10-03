@@ -12,6 +12,7 @@ import { StrategyRegistry } from '../strategy/strategy.registry';
 import { SignalService } from '../signal/signal.service';
 import { EventsGateway } from '../gateway/events.gateway';
 import { PrismaService } from '../prisma/prisma.service';
+import { ExecutionService } from '../execution/execution.service';
 import { Subscription } from 'rxjs';
 
 @Injectable()
@@ -27,6 +28,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     private readonly signalService: SignalService,
     private readonly gateway: EventsGateway,
     private readonly prisma: PrismaService,
+    private readonly executionService: ExecutionService,
   ) {}
 
   onModuleInit() {
@@ -107,6 +109,18 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
       if (signal) {
         // Push sinyal realtime ke dashboard frontend via websocket
         this.gateway.broadcastSignal(signal);
+
+        // Eksekusi order posisi riil di Binance Futures memakai saldo
+        void this.executionService.executeSignal({
+          symbol: signal.symbol,
+          side: signal.side as 'LONG' | 'SHORT',
+          entryPrice: signal.entryPrice,
+          tp1: signal.tp1,
+          tp2: signal.tp2 ?? undefined,
+          sl: signal.sl,
+          strategy: strategyKey,
+          signalId: signal.id,
+        });
       }
     }
   }

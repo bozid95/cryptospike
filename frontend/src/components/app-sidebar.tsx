@@ -3,6 +3,7 @@
 import {
   ActivityIcon,
   BotIcon,
+  BriefcaseIcon,
   CpuIcon,
   LayoutDashboardIcon,
   RadioIcon,
@@ -24,20 +25,29 @@ import {
 } from "@/components/ui/sidebar";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { signals, strategies, config, setActiveTab } = useCryptoSpike();
+  const { signals, strategies, config, positions, setActiveTab } = useCryptoSpike();
 
   const activeSignalsCount = signals.filter(
     (s) => s.status === "ACTIVE",
   ).length;
   const activeStrategiesCount = strategies.filter((s) => s.isEnabled).length;
+  const activePositionsCount = positions.length;
 
-  // Navigasi Utama: Bebas Redundansi (Hanya 4 Menu Esensial)
+  // Navigasi Utama: Bebas Redundansi
   const mainNavItems = [
     {
       id: "overview",
       title: "Dashboard Summary",
       url: "#overview",
       icon: LayoutDashboardIcon,
+    },
+    {
+      id: "positions",
+      title: "Active Positions",
+      url: "#positions",
+      icon: BriefcaseIcon,
+      badge: activePositionsCount > 0 ? `${activePositionsCount} Open` : undefined,
+      badgeVariant: "default" as const,
     },
     {
       id: "signals",
