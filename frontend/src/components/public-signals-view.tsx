@@ -777,7 +777,7 @@ export function PublicSignalsView() {
                     </Badge>
                   </div>
 
-                  {/* Price Grid: Entry vs Mark Price */}
+                  {/* Price & Position Size Grid */}
                   <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-muted/40 border border-border/50 text-xs font-mono">
                     <div>
                       <span className="text-[10px] text-muted-foreground block font-sans">
@@ -803,6 +803,38 @@ export function PublicSignalsView() {
                         {displayPrice
                           ? `$${formatCryptoPrice(displayPrice)}`
                           : "-"}
+                      </span>
+                    </div>
+
+                    {/* Sizing & Capital Allocation */}
+                    <div className="pt-1.5 border-t border-border/40">
+                      <span className="text-[10px] text-muted-foreground block font-sans">
+                        Simulated Margin (1%)
+                      </span>
+                      <span className="font-semibold text-foreground text-[11px] flex items-center gap-1">
+                        <span>${(sig.simulatedMargin ?? 10.0).toFixed(2)}</span>
+                        <span className="text-[9px] text-muted-foreground font-sans px-1 py-0 rounded bg-muted">
+                          10x
+                        </span>
+                      </span>
+                    </div>
+                    <div className="pt-1.5 border-t border-border/40">
+                      <span className="text-[10px] text-muted-foreground block font-sans">
+                        Position Size
+                      </span>
+                      <span
+                        className="font-semibold text-foreground text-[11px] truncate block"
+                        title={
+                          sig.positionAmount
+                            ? `${sig.positionAmount} ${sig.symbol.replace("USDT", "")} (~$${((sig.simulatedMargin ?? 10.0) * 10).toFixed(0)})`
+                            : undefined
+                        }
+                      >
+                        {sig.positionAmount
+                          ? `${sig.positionAmount < 0.01 ? sig.positionAmount.toFixed(4) : sig.positionAmount.toFixed(2)} ${sig.symbol.replace("USDT", "")}`
+                          : sig.entryPrice
+                            ? `${(((sig.simulatedMargin ?? 10.0) * 10) / sig.entryPrice).toFixed(3)} ${sig.symbol.replace("USDT", "")}`
+                            : `~$${((sig.simulatedMargin ?? 10.0) * 10).toFixed(0)}`}
                       </span>
                     </div>
                   </div>
@@ -967,23 +999,34 @@ export function PublicSignalsView() {
 
                     <div className="flex items-center gap-2">
                       {typeof displayProfitPct === "number" && (
-                        <span
-                          className={`font-mono font-bold text-xs flex items-center gap-1 ${
-                            isProfitPositive
-                              ? "text-emerald-500"
-                              : "text-rose-500"
-                          }`}
-                          title={`Simulated from 1% position ($10 risk on $1,000 capital): ${isProfitPositive ? "+" : ""}$${((10 * displayProfitPct) / 100).toFixed(2)}`}
-                        >
-                          <span>
-                            {isProfitPositive ? "+" : ""}
-                            {displayProfitPct.toFixed(2)}%
-                          </span>
-                          <span className="text-[10px] font-semibold opacity-90">
-                            ({isProfitPositive ? "+" : ""}$
-                            {((10 * displayProfitPct) / 100).toFixed(2)})
-                          </span>
-                        </span>
+                        (() => {
+                          const margin = sig.simulatedMargin ?? 10.0;
+                          const pnlUsd =
+                            typeof sig.realizedPnlUsd === "number"
+                              ? sig.realizedPnlUsd
+                              : (margin * displayProfitPct) / 100;
+                          const isUsdPositive = pnlUsd >= 0;
+
+                          return (
+                            <span
+                              className={`font-mono font-bold text-xs flex items-center gap-1 ${
+                                isProfitPositive
+                                  ? "text-emerald-500"
+                                  : "text-rose-500"
+                              }`}
+                              title={`Simulated from $${margin.toFixed(2)} margin (1% risk on $1,000 capital): ${isUsdPositive ? "+" : ""}$${pnlUsd.toFixed(2)}`}
+                            >
+                              <span>
+                                {isProfitPositive ? "+" : ""}
+                                {displayProfitPct.toFixed(2)}%
+                              </span>
+                              <span className="text-[10px] font-semibold opacity-90">
+                                ({isUsdPositive ? "+" : ""}$
+                                {pnlUsd.toFixed(2)})
+                              </span>
+                            </span>
+                          );
+                        })()
                       )}
 
                       <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
