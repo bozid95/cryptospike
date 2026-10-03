@@ -106,10 +106,15 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     const results = await this.strategyRegistry.evaluateAll(marketData);
 
     for (const { strategyKey, result } of results) {
+      // Filter Kualitas Super Strong: Hanya terbitkan sinyal dengan confidence HIGH dan score >= 80
+      if (result.confidence !== 'HIGH' || (result.score && result.score < 80)) {
+        continue;
+      }
+
       const signal = await this.signalService.createSignal({
         symbol: marketData.symbol,
         side: result.signalType,
-        strength: result.confidence === 'HIGH' ? 'STRONG' : 'NORMAL',
+        strength: 'STRONG',
         entryPrice: result.entryPrice,
         tp1: result.tp1,
         tp2: result.tp2,

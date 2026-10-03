@@ -201,14 +201,13 @@ export class Breakout1hV2Strategy implements IStrategy {
 
       const score = Math.min(98, Math.round(65 + Math.abs(priceChangePct) * 6));
 
+      // Filter Super Strong: Hanya terbitkan sinyal jika score >= 80 (momentum benar-benar masif)
+      if (score < 80) {
+        return null;
+      }
+
       const signalType = isLong ? 'LONG' : 'SHORT';
-      const signal = isLong
-        ? priceChangePct >= 4
-          ? 'STRONG BUY'
-          : 'BUY'
-        : priceChangePct <= -4
-          ? 'STRONG SELL'
-          : 'SELL';
+      const signal = isLong ? 'STRONG BUY' : 'STRONG SELL';
 
       reasons.push(`Adaptive Target: TP1 +2.0%, TP2 +3.8%, SL 1.8%`);
 
@@ -222,7 +221,7 @@ export class Breakout1hV2Strategy implements IStrategy {
         tp3,
         sl,
         score,
-        confidence: score >= 80 ? 'HIGH' : 'MEDIUM',
+        confidence: 'HIGH',
         reasons,
       };
     } catch (err: unknown) {

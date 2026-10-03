@@ -520,9 +520,9 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // ==========================================
       // 7. DECISION & RISK MANAGEMENT (1:2+ RRR)
       // ==========================================
-      // Tingkatkan standar validitas: minimal 75 poin confluence (HTF Zone + Rejection/Momentum + Trendline/EMA)
-      const isLongValid = longScore >= 75;
-      const isShortValid = shortScore >= 75;
+      // Standar Super Strong: minimal 80 poin confluence (HTF Zone + Rejection/Momentum + Trendline/EMA)
+      const isLongValid = longScore >= 80;
+      const isShortValid = shortScore >= 80;
 
       if (!isLongValid && !isShortValid) {
         return null;
@@ -532,13 +532,7 @@ export class CryptoSavageV1Strategy implements IStrategy {
       const score = Math.min(99, isLong ? longScore : shortScore);
       const reasons = isLong ? longReasons : shortReasons;
       const signalType = isLong ? 'LONG' : 'SHORT';
-      const signal = isLong
-        ? score >= 85
-          ? 'STRONG BUY'
-          : 'BUY'
-        : score >= 85
-          ? 'STRONG SELL'
-          : 'SELL';
+      const signal = isLong ? 'STRONG BUY' : 'STRONG SELL';
 
       // Hitung SL berbasis Swing Rejection Wick terbaru
       let slDistancePct: number;
@@ -609,7 +603,7 @@ export class CryptoSavageV1Strategy implements IStrategy {
         tp3,
         sl,
         score,
-        confidence: score >= 85 ? 'HIGH' : 'MEDIUM',
+        confidence: 'HIGH',
         reasons,
       };
     } catch (err: unknown) {
