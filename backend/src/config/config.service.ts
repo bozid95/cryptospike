@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -15,13 +15,10 @@ export interface TradingConfigDto {
 
 const DEFAULT_CONFIG: TradingConfigDto = {
   apiKey:
-    process.env.BINANCE_API_KEY ||
     'dhA11NTt2uFViDGybKvJv9g0IQc8PJilepPHV7uqgWH5H2opcwaJjGto1CgWiz13',
   apiSecret:
-    process.env.BINANCE_SECRET_KEY ||
     'wVVzZaysTZ3Pz4XhGDkPPRJAgvwIjw0sYJkxTlAsVHu6Q3tSP9TBpJmhCRdPBlIm',
-  environment:
-    process.env.BINANCE_TESTNET === 'false' ? 'PRODUCTION' : 'TESTNET',
+  environment: 'TESTNET',
   leverage: 10,
   marginType: 'ISOLATED',
   maxOpenPositions: 3,
@@ -30,11 +27,24 @@ const DEFAULT_CONFIG: TradingConfigDto = {
 };
 
 @Injectable()
-export class ConfigService {
+export class ConfigService implements OnModuleInit {
   private readonly logger = new Logger(ConfigService.name);
   private readonly defaultUserId = 'default-admin';
 
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    // Sinkronkan API key & Testnet dari database PostgreSQL saat backend startup
+    try {
+      const conf = await this.getConfig();
+      if (conf.apiKey) process.env.BINANCE_API_KEY = conf.apiKey;
+      if (conf.apiSecret) process.env.BINANCE_SECRET_KEY = conf.apiSecret;
+      process.env.BINANCE_TESTNET = conf.environment === 'TESTNET' ? 'true' : 'false';
+      this.logger.log(`Initialized Binance API credentials for ${conf.environment}`);
+    } catch (e: any) {
+      this.logger.warn(`Could not initialize config on startup: ${e.message}`);
+    }
+  }
 
   async getConfig(): Promise<TradingConfigDto> {
     try {

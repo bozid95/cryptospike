@@ -57,19 +57,27 @@ type RawKlineArray = [
 @Injectable()
 export class BinanceService {
   private readonly logger = new Logger(BinanceService.name);
-  private readonly baseUrl = 'https://fapi.binance.com';
+  private readonly defaultApiKey =
+    'dhA11NTt2uFViDGybKvJv9g0IQc8PJilepPHV7uqgWH5H2opcwaJjGto1CgWiz13';
+  private readonly defaultApiSecret =
+    'wVVzZaysTZ3Pz4XhGDkPPRJAgvwIjw0sYJkxTlAsVHu6Q3tSP9TBpJmhCRdPBlIm';
 
   private getFuturesBaseUrl(): string {
-    const isTestnet = process.env.BINANCE_TESTNET === 'true';
+    const isTestnet = process.env.BINANCE_TESTNET !== 'false';
     return isTestnet
       ? 'https://testnet.binancefuture.com'
       : 'https://fapi.binance.com';
   }
 
+  private getCredentials() {
+    const apiKey = process.env.BINANCE_API_KEY || this.defaultApiKey;
+    const apiSecret = process.env.BINANCE_SECRET_KEY || this.defaultApiSecret;
+    return { apiKey, apiSecret };
+  }
+
   async getAccountBalances(): Promise<BinanceBalanceItem[]> {
     try {
-      const apiKey = process.env.BINANCE_API_KEY;
-      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      const { apiKey, apiSecret } = this.getCredentials();
 
       if (!apiKey || !apiSecret) {
         this.logger.warn('Binance API key or secret is not configured.');
@@ -112,8 +120,7 @@ export class BinanceService {
     }>;
   } | null> {
     try {
-      const apiKey = process.env.BINANCE_API_KEY;
-      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      const { apiKey, apiSecret } = this.getCredentials();
       if (!apiKey || !apiSecret) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
@@ -157,8 +164,9 @@ export class BinanceService {
 
   async getTopVolumePairs(limit = 100): Promise<Binance24hTicker[]> {
     try {
+      const baseUrl = this.getFuturesBaseUrl();
       const response = await axios.get<Binance24hTicker[]>(
-        `${this.baseUrl}/fapi/v1/ticker/24hr`,
+        `${baseUrl}/fapi/v1/ticker/24hr`,
       );
       const tickers = response.data
         .filter((t) => t.symbol.endsWith('USDT'))
@@ -178,8 +186,9 @@ export class BinanceService {
     limit = 24,
   ): Promise<BinanceKline[]> {
     try {
+      const baseUrl = this.getFuturesBaseUrl();
       const response = await axios.get<RawKlineArray[]>(
-        `${this.baseUrl}/fapi/v1/klines`,
+        `${baseUrl}/fapi/v1/klines`,
         {
           params: { symbol, interval, limit },
         },
@@ -206,8 +215,7 @@ export class BinanceService {
 
   async getPositions(): Promise<any[]> {
     try {
-      const apiKey = process.env.BINANCE_API_KEY;
-      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      const { apiKey, apiSecret } = this.getCredentials();
       if (!apiKey || !apiSecret) return [];
 
       const baseUrl = this.getFuturesBaseUrl();
@@ -239,8 +247,7 @@ export class BinanceService {
 
   async setLeverage(symbol: string, leverage: number) {
     try {
-      const apiKey = process.env.BINANCE_API_KEY;
-      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      const { apiKey, apiSecret } = this.getCredentials();
       if (!apiKey || !apiSecret) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
@@ -266,8 +273,7 @@ export class BinanceService {
 
   async setMarginType(symbol: string, marginType: 'ISOLATED' | 'CROSSED') {
     try {
-      const apiKey = process.env.BINANCE_API_KEY;
-      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      const { apiKey, apiSecret } = this.getCredentials();
       if (!apiKey || !apiSecret) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
@@ -304,8 +310,7 @@ export class BinanceService {
     timeInForce?: 'GTC' | 'IOC' | 'FOK';
   }) {
     try {
-      const apiKey = process.env.BINANCE_API_KEY;
-      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      const { apiKey, apiSecret } = this.getCredentials();
       if (!apiKey || !apiSecret) throw new Error('API key/secret missing');
 
       const baseUrl = this.getFuturesBaseUrl();
@@ -359,7 +364,13 @@ export class BinanceService {
   // Cache symbol filter (tickSize, stepSize, minNotional)
   private symbolFilters = new Map<
     string,
-    { tickSize: number; stepSize: number; minNotional: number; pricePrecision: number; quantityPrecision: number }
+    {
+      tickSize: number;
+      stepSize: number;
+      minNotional: number;
+      pricePrecision: number;
+      quantityPrecision: number;
+    }
   >();
 
   async getSymbolFilters(symbol: string) {
@@ -408,7 +419,9 @@ export class BinanceService {
       return info;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Failed to fetch exchangeInfo for ${symbol}: ${message}`);
+      this.logger.warn(
+        `Failed to fetch exchangeInfo for ${symbol}: ${message}`,
+      );
       return {
         tickSize: 0.0001,
         stepSize: 0.001,
@@ -433,8 +446,7 @@ export class BinanceService {
 
   async cancelAllOpenOrders(symbol: string) {
     try {
-      const apiKey = process.env.BINANCE_API_KEY;
-      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      const { apiKey, apiSecret } = this.getCredentials();
       if (!apiKey || !apiSecret) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
@@ -478,4 +490,3 @@ export class BinanceService {
     });
   }
 }
-

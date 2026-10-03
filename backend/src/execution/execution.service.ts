@@ -89,7 +89,10 @@ export class ExecutionService {
       }
 
       let rawQuantity = notionalValue / signal.entryPrice;
-      const quantity = this.binanceService.roundStep(rawQuantity, filters.stepSize);
+      const quantity = this.binanceService.roundStep(
+        rawQuantity,
+        filters.stepSize,
+      );
 
       if (quantity <= 0) {
         this.logger.warn(
@@ -126,8 +129,14 @@ export class ExecutionService {
       const exitSide = signal.side === 'LONG' ? 'SELL' : 'BUY';
 
       // Hitung alokasi qty parsial
-      const qtyTP1 = this.binanceService.roundStep(quantity * 0.5, filters.stepSize);
-      const qtyTP2 = this.binanceService.roundStep(quantity * 0.3, filters.stepSize);
+      const qtyTP1 = this.binanceService.roundStep(
+        quantity * 0.5,
+        filters.stepSize,
+      );
+      const qtyTP2 = this.binanceService.roundStep(
+        quantity * 0.3,
+        filters.stepSize,
+      );
       const qtyTP3 = this.binanceService.roundStep(
         Math.max(0, quantity - qtyTP1 - qtyTP2),
         filters.stepSize,
@@ -135,7 +144,10 @@ export class ExecutionService {
 
       // A. Pasang TP1 (50% posisi)
       if (signal.tp1 && qtyTP1 > 0) {
-        const roundedTP1 = this.binanceService.roundTick(signal.tp1, filters.tickSize);
+        const roundedTP1 = this.binanceService.roundTick(
+          signal.tp1,
+          filters.tickSize,
+        );
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
@@ -145,16 +157,23 @@ export class ExecutionService {
             quantity: qtyTP1,
             reduceOnly: true,
           });
-          this.logger.log(`[TP1 PLACED] ${signal.symbol} 50% (${qtyTP1}) @ ${roundedTP1}`);
+          this.logger.log(
+            `[TP1 PLACED] ${signal.symbol} 50% (${qtyTP1}) @ ${roundedTP1}`,
+          );
         } catch (e: any) {
           this.logger.warn(`Failed TP1: ${e.message}`);
         }
       }
 
       // B. Pasang TP2 (30% posisi)
-      const tp2Price = signal.tp2 || (signal.side === 'LONG' ? signal.tp1 * 1.015 : signal.tp1 * 0.985);
+      const tp2Price =
+        signal.tp2 ||
+        (signal.side === 'LONG' ? signal.tp1 * 1.015 : signal.tp1 * 0.985);
       if (tp2Price && qtyTP2 > 0) {
-        const roundedTP2 = this.binanceService.roundTick(tp2Price, filters.tickSize);
+        const roundedTP2 = this.binanceService.roundTick(
+          tp2Price,
+          filters.tickSize,
+        );
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
@@ -164,16 +183,23 @@ export class ExecutionService {
             quantity: qtyTP2,
             reduceOnly: true,
           });
-          this.logger.log(`[TP2 PLACED] ${signal.symbol} 30% (${qtyTP2}) @ ${roundedTP2}`);
+          this.logger.log(
+            `[TP2 PLACED] ${signal.symbol} 30% (${qtyTP2}) @ ${roundedTP2}`,
+          );
         } catch (e: any) {
           this.logger.warn(`Failed TP2: ${e.message}`);
         }
       }
 
       // C. Pasang TP3 (20% posisi)
-      const tp3Price = signal.tp3 || (signal.side === 'LONG' ? tp2Price * 1.02 : tp2Price * 0.98);
+      const tp3Price =
+        signal.tp3 ||
+        (signal.side === 'LONG' ? tp2Price * 1.02 : tp2Price * 0.98);
       if (tp3Price && qtyTP3 > 0) {
-        const roundedTP3 = this.binanceService.roundTick(tp3Price, filters.tickSize);
+        const roundedTP3 = this.binanceService.roundTick(
+          tp3Price,
+          filters.tickSize,
+        );
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
@@ -183,7 +209,9 @@ export class ExecutionService {
             quantity: qtyTP3,
             reduceOnly: true,
           });
-          this.logger.log(`[TP3 PLACED] ${signal.symbol} 20% (${qtyTP3}) @ ${roundedTP3}`);
+          this.logger.log(
+            `[TP3 PLACED] ${signal.symbol} 20% (${qtyTP3}) @ ${roundedTP3}`,
+          );
         } catch (e: any) {
           this.logger.warn(`Failed TP3: ${e.message}`);
         }
@@ -191,7 +219,10 @@ export class ExecutionService {
 
       // D. Pasang Stop Loss Penuh Awal (STOP_MARKET)
       if (signal.sl) {
-        const roundedSL = this.binanceService.roundTick(signal.sl, filters.tickSize);
+        const roundedSL = this.binanceService.roundTick(
+          signal.sl,
+          filters.tickSize,
+        );
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
@@ -200,7 +231,9 @@ export class ExecutionService {
             stopPrice: roundedSL,
             reduceOnly: true,
           });
-          this.logger.log(`[INITIAL SL PLACED] ${signal.symbol} 100% SL @ ${roundedSL}`);
+          this.logger.log(
+            `[INITIAL SL PLACED] ${signal.symbol} 100% SL @ ${roundedSL}`,
+          );
         } catch (e: any) {
           this.logger.warn(`Failed SL: ${e.message}`);
         }

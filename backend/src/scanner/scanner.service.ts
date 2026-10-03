@@ -152,7 +152,9 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
 
       // Ambil open positions riil dari Binance
       const positions = await this.binanceService.getPositions();
-      const posMap = new Map<string, any>(positions.map((p: any) => [p.symbol, p]));
+      const posMap = new Map<string, any>(
+        positions.map((p: any) => [p.symbol, p]),
+      );
 
       for (const sig of activeSignals) {
         const livePos: any = posMap.get(sig.symbol);
@@ -190,8 +192,13 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             });
 
             // Geser SL di Binance ke harga Entry
-            const filters = await this.binanceService.getSymbolFilters(sig.symbol);
-            const breakevenSL = this.binanceService.roundTick(sig.entryPrice, filters.tickSize);
+            const filters = await this.binanceService.getSymbolFilters(
+              sig.symbol,
+            );
+            const breakevenSL = this.binanceService.roundTick(
+              sig.entryPrice,
+              filters.tickSize,
+            );
             const exitSide = isLong ? 'SELL' : 'BUY';
 
             try {
@@ -202,9 +209,13 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
                 stopPrice: breakevenSL,
                 reduceOnly: true,
               });
-              this.logger.log(`[TSL MOVED] SL moved to Breakeven ${breakevenSL} for ${sig.symbol}`);
+              this.logger.log(
+                `[TSL MOVED] SL moved to Breakeven ${breakevenSL} for ${sig.symbol}`,
+              );
             } catch (err: any) {
-              this.logger.warn(`Failed moving SL to BE for ${sig.symbol}: ${err.message}`);
+              this.logger.warn(
+                `Failed moving SL to BE for ${sig.symbol}: ${err.message}`,
+              );
             }
 
             // Broadcast ke frontend websocket
@@ -239,8 +250,13 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             });
 
             // Geser SL di Binance ke harga TP1
-            const filters = await this.binanceService.getSymbolFilters(sig.symbol);
-            const lockedSL = this.binanceService.roundTick(sig.tp1, filters.tickSize);
+            const filters = await this.binanceService.getSymbolFilters(
+              sig.symbol,
+            );
+            const lockedSL = this.binanceService.roundTick(
+              sig.tp1,
+              filters.tickSize,
+            );
             const exitSide = isLong ? 'SELL' : 'BUY';
 
             try {
@@ -251,9 +267,13 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
                 stopPrice: lockedSL,
                 reduceOnly: true,
               });
-              this.logger.log(`[TSL MOVED] SL locked at TP1 ${lockedSL} for ${sig.symbol}`);
+              this.logger.log(
+                `[TSL MOVED] SL locked at TP1 ${lockedSL} for ${sig.symbol}`,
+              );
             } catch (err: any) {
-              this.logger.warn(`Failed moving SL to TP1 for ${sig.symbol}: ${err.message}`);
+              this.logger.warn(
+                `Failed moving SL to TP1 for ${sig.symbol}: ${err.message}`,
+              );
             }
 
             this.gateway.broadcastSignalUpdate({
@@ -270,4 +290,3 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
-
