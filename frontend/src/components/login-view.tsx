@@ -1,10 +1,18 @@
 import React, { useState } from "react";
-import { ShieldAlert, Lock, User, ArrowRight, Loader2, KeyRound } from "lucide-react";
+import { ShieldAlert, ArrowRight, Loader2 } from "lucide-react";
 import { useCryptoSpike } from "@/mock/mock-context";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export function LoginView() {
   const { login } = useCryptoSpike();
@@ -35,95 +43,89 @@ export function LoginView() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950 px-4 py-12 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-zinc-950 to-zinc-950 pointer-events-none" />
-
-      <Card className="w-full max-w-md border-zinc-800 bg-zinc-900/90 backdrop-blur-md shadow-2xl relative z-10 text-zinc-100">
-        <CardHeader className="space-y-2 text-center pb-6 border-b border-zinc-800">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600/10 border border-blue-500/20 text-blue-400 mb-2">
-            <Lock className="h-7 w-7" />
+    <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 py-12">
+      <Card className="w-full max-w-sm border-border shadow-sm bg-card text-card-foreground">
+        <CardHeader className="space-y-2 text-center pb-5">
+          <div className="mx-auto flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-xs mb-1">
+            ⚡
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight text-white">
-            CryptoSpike Access
-          </CardTitle>
-          <CardDescription className="text-zinc-400 text-sm">
-            Masuk dengan kredensial Operator untuk mengakses Trading Control Panel & API Guard.
+          <div className="flex items-center justify-center gap-1.5">
+            <CardTitle className="text-xl font-bold tracking-tight">
+              CryptoSpike
+            </CardTitle>
+            <Badge
+              variant="outline"
+              className="font-mono text-[9px] px-1 py-0 h-4 border-emerald-500/40 text-emerald-600 bg-emerald-500/5 font-semibold"
+            >
+              PRO
+            </Badge>
+          </div>
+          <CardDescription className="text-xs text-muted-foreground">
+            Masuk untuk mengakses Trading Control Panel
           </CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4 pt-6">
+          <CardContent className="space-y-4 pt-1">
             {errorMessage && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400 animate-in fade-in">
-                <ShieldAlert className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
+                <ShieldAlert className="size-4 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-xs font-semibold text-zinc-300">
-                Username Operator
+            <div className="space-y-1.5">
+              <Label htmlFor="username" className="text-xs font-medium">
+                Username
               </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="admin"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={isLoading}
-                  className="pl-9 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-blue-500"
-                  autoFocus
-                  required
-                />
-              </div>
+              <Input
+                id="username"
+                type="text"
+                placeholder="admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoading}
+                className="h-9 text-sm"
+                autoFocus
+                required
+              />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs font-semibold text-zinc-300">
-                  Password
-                </Label>
-              </div>
-              <div className="relative">
-                <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                  className="pl-9 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-blue-500"
-                  required
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-xs font-medium">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                className="h-9 text-sm"
+                required
+              />
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-3 pt-2">
+          <CardFooter className="pt-2">
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium h-10 shadow-lg shadow-blue-600/20"
+              className="w-full h-9 font-medium cursor-pointer"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Mengotentikasi...
                 </>
               ) : (
                 <>
-                  Masuk Dashboard
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  Masuk
+                  <ArrowRight className="ml-2 size-4" />
                 </>
               )}
             </Button>
-            <p className="text-[11px] text-zinc-500 text-center">
-              Secured with JWT Bearer Token Guard & Dokploy Container Isolation
-            </p>
           </CardFooter>
         </form>
       </Card>
