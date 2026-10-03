@@ -5,6 +5,7 @@ import {
   Body,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -15,8 +16,8 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body: { username?: string; password?: string }) {
-    if (!body.username || !body.password) {
-      throw new Error('Username dan password wajib diisi.');
+    if (!body || !body.username || !body.password) {
+      throw new BadRequestException('Username and password are required.');
     }
     return this.authService.login(body.username, body.password);
   }
