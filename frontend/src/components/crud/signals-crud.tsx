@@ -478,41 +478,88 @@ export function SignalsCrud() {
                           )}
                         </TableCell>
 
-                        {/* 3. Target TP / SL dengan % Potensi */}
+                        {/* 3. Target TP1, TP2, TP3 & SL dengan % Potensi */}
                         <TableCell className="align-middle py-3.5 font-mono text-xs tabular-nums">
-                          <div className="flex items-center gap-2 text-emerald-600 font-medium leading-tight">
-                            <span className="text-[11px] text-muted-foreground/75 font-sans font-medium w-6">
-                              TP1
-                            </span>
-                            <span>
-                              $
-                              {sig.tp1.toLocaleString(undefined, {
-                                minimumFractionDigits: sig.tp1 < 10 ? 4 : 2,
-                                maximumFractionDigits: 4,
-                              })}
-                            </span>
-                            <span className="font-semibold text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 leading-none">
-                              {isLong
-                                ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
-                                : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(2)}%`}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-destructive font-medium mt-1.5 leading-tight">
-                            <span className="text-[11px] text-muted-foreground/75 font-sans font-medium w-6">
-                              SL
-                            </span>
-                            <span>
-                              $
-                              {sig.sl.toLocaleString(undefined, {
-                                minimumFractionDigits: sig.sl < 10 ? 4 : 2,
-                                maximumFractionDigits: 4,
-                              })}
-                            </span>
-                            <span className="font-semibold text-[10px] bg-destructive/10 px-1.5 py-0.5 rounded border border-destructive/20 leading-none">
-                              {isLong
-                                ? `-${(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(2)}%`
-                                : `-${(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`}
-                            </span>
+                          <div className="space-y-1">
+                            {/* TP1 */}
+                            <div className="flex items-center gap-1.5 text-emerald-600 font-medium leading-tight">
+                              <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
+                                TP1
+                              </span>
+                              <span>
+                                $
+                                {sig.tp1.toLocaleString(undefined, {
+                                  minimumFractionDigits: sig.tp1 < 10 ? 4 : 2,
+                                  maximumFractionDigits: 4,
+                                })}
+                              </span>
+                              <span className="font-semibold text-[10px] bg-emerald-500/10 px-1 py-0.2 rounded border border-emerald-500/20 leading-none">
+                                {isLong
+                                  ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
+                                  : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(2)}%`}
+                              </span>
+                            </div>
+
+                            {/* TP2 (jika ada) */}
+                            {sig.tp2 && (
+                              <div className="flex items-center gap-1.5 text-teal-600 font-medium leading-tight">
+                                <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
+                                  TP2
+                                </span>
+                                <span>
+                                  $
+                                  {sig.tp2.toLocaleString(undefined, {
+                                    minimumFractionDigits: sig.tp2 < 10 ? 4 : 2,
+                                    maximumFractionDigits: 4,
+                                  })}
+                                </span>
+                                <span className="font-semibold text-[10px] bg-teal-500/10 px-1 py-0.2 rounded border border-teal-500/20 leading-none">
+                                  {isLong
+                                    ? `+${(((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
+                                    : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(2)}%`}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* TP3 (jika ada) */}
+                            {sig.tp3 && (
+                              <div className="flex items-center gap-1.5 text-cyan-600 font-medium leading-tight">
+                                <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
+                                  TP3
+                                </span>
+                                <span>
+                                  $
+                                  {sig.tp3.toLocaleString(undefined, {
+                                    minimumFractionDigits: sig.tp3 < 10 ? 4 : 2,
+                                    maximumFractionDigits: 4,
+                                  })}
+                                </span>
+                                <span className="font-semibold text-[10px] bg-cyan-500/10 px-1 py-0.2 rounded border border-cyan-500/20 leading-none">
+                                  {isLong
+                                    ? `+${(((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
+                                    : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(2)}%`}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Stop Loss */}
+                            <div className="flex items-center gap-1.5 text-destructive font-medium leading-tight pt-0.5">
+                              <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
+                                SL
+                              </span>
+                              <span>
+                                $
+                                {sig.sl.toLocaleString(undefined, {
+                                  minimumFractionDigits: sig.sl < 10 ? 4 : 2,
+                                  maximumFractionDigits: 4,
+                                })}
+                              </span>
+                              <span className="font-semibold text-[10px] bg-destructive/10 px-1 py-0.2 rounded border border-destructive/20 leading-none">
+                                {isLong
+                                  ? `-${(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(2)}%`
+                                  : `-${(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`}
+                              </span>
+                            </div>
                           </div>
                         </TableCell>
 
