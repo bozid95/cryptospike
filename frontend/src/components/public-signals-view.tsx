@@ -179,7 +179,7 @@ export function PublicSignalsView() {
         <div className="max-w-7xl mx-auto space-y-5">
           <div className="text-center max-w-xl mx-auto space-y-1.5">
             <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Price Action Signals
+              Binance Live Signals
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Automated high-probability futures signals with dynamic
@@ -362,6 +362,26 @@ export function PublicSignalsView() {
               const isRunning = sig.status === "ACTIVE";
               const isProfit = (sig.profitPct ?? 0) >= 0;
 
+              // Hitung harga keluar (Exit Price) untuk sinyal yang sudah selesai jika currentPrice tidak tersimpan
+              let displayPrice = sig.currentPrice;
+              if (!displayPrice) {
+                if (sig.status === "TP1_HIT" && sig.tp1) {
+                  displayPrice = sig.tp1;
+                } else if (sig.status === "TP2_HIT" && sig.tp2) {
+                  displayPrice = sig.tp2;
+                } else if (sig.status === "TP3_HIT" && sig.tp3) {
+                  displayPrice = sig.tp3;
+                } else if (sig.status === "SL_HIT" && sig.sl) {
+                  displayPrice = sig.sl;
+                } else if (sig.status === "TSL_HIT") {
+                  displayPrice = sig.entryPrice;
+                } else if (typeof sig.profitPct === "number" && sig.entryPrice) {
+                  displayPrice = isLong
+                    ? sig.entryPrice * (1 + sig.profitPct / 100)
+                    : sig.entryPrice * (1 - sig.profitPct / 100);
+                }
+              }
+
               return (
                 <div
                   key={sig.id}
@@ -429,19 +449,19 @@ export function PublicSignalsView() {
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground block font-sans">
-                        Mark Price
+                        {isRunning ? "Mark Price" : "Exit Price"}
                       </span>
                       <span
                         className={`font-bold text-xs ${
-                          sig.currentPrice
+                          displayPrice
                             ? isProfit
                               ? "text-emerald-500"
                               : "text-rose-500"
                             : "text-foreground"
                         }`}
                       >
-                        {sig.currentPrice
-                          ? `$${formatCryptoPrice(sig.currentPrice)}`
+                        {displayPrice
+                          ? `$${formatCryptoPrice(displayPrice)}`
                           : "-"}
                       </span>
                     </div>
