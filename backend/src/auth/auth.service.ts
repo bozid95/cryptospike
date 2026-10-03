@@ -25,9 +25,10 @@ export class AuthService implements OnModuleInit {
 
   private async ensureDefaultAdmin() {
     try {
-      const adminUsername = process.env.ADMIN_USERNAME || 'cspk_operator_9x';
-      const adminPassword =
-        process.env.ADMIN_PASSWORD || 'Kx9#mQ2$vL8@wP5!Zt7&';
+      const rawUser = process.env.ADMIN_USERNAME?.trim();
+      const rawPass = process.env.ADMIN_PASSWORD?.trim();
+      const adminUsername = rawUser && rawUser.length > 0 ? rawUser : 'cspk_operator_9x';
+      const adminPassword = rawPass && rawPass.length > 0 ? rawPass : 'Kx9#mQ2$vL8@wP5!Zt7&';
 
       const existingUser = await this.prisma.user.findFirst({
         where: {

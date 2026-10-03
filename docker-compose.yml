@@ -36,9 +36,9 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-cryptospike123}@postgres:5432/${POSTGRES_DB:-cryptospike}
       BINANCE_TESTNET: ${BINANCE_TESTNET:-true}
-      JWT_SECRET: ${JWT_SECRET}
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:-cryptospike_super_secret_jwt_key_2026}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-cspk_operator_9x}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Kx9#mQ2$vL8@wP5!Zt7&}
     ports:
       - "${APP_PORT:-8080}:80"
     # Port 80 container Nginx diarahkan ke port 8080 host (atau atur APP_PORT di env Dokploy)
