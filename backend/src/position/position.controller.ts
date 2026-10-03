@@ -97,6 +97,67 @@ export class PositionController {
       body.symbol,
       signedAmt,
     );
+
+    // Dapatkan data posisi sebelum ditutup untuk disimpan ke tabel closed_positions
+    try {
+      const positions = await this.binanceService.getPositions();
+      const pos = positions.find((p) => p.symbol === body.symbol);
+      const entryPrice = pos ? parseFloat(pos.entryPrice) : 0;
+      const markPrice = pos ? parseFloat(pos.markPrice) : 0;
+      const unRealizedProfit = pos ? parseFloat(pos.unRealizedProfit) : 0;
+      const leverage = pos ? parseInt(pos.leverage, 10) : 10;
+      const notional = Math.abs(body.positionAmt * (markPrice || entryPrice));
+      const initialMargin = leverage > 0 ? notional / leverage : 0;
+      const roe =
+        initialMargin > 0 ? (unRealizedProfit / initialMargin) * 100 : 0;
+
+      await this.prisma.closedPosition.create({
+        data: {
+          symbol: body.symbol,
+          side: body.side === 'SHORT' ? 'SHORT' : 'LONG',
+          entryPrice: entryPrice || markPrice,
+          exitPrice: markPrice || entryPrice,
+          positionAmt: Math.abs(body.positionAmt),
+          realizedPnl: unRealizedProfit,
+          roe: parseFloat(roe.toFixed(2)),
+          leverage,
+          strategy: 'MANUAL',
+          closeReason: 'Manual Operator Close',
+        },
+      });
+    } catch (dbErr) {
+      this.logger.warn(
+        `Failed to persist closed position for ${body.symbol}: ${dbErr}`,
+      );
+    }
+
     return { success: true, result };
   }
+
+  @Get('history')
+  async getClosedPositionsHistory(
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    const take = limit ? parseInt(limit, 10) : 200;
+    const skip = offset ? parseInt(offset, 10) : 0;
+
+    const [items, total] = await Promise.all([
+      this.prisma.closedPosition.findMany({
+        orderBy: { closedAt: 'desc' },
+        take,
+        skip,
+      }),
+      this.prisma.closedPosition.count(),
+    ]);
+
+    return { items, total };
+  }
+
+  @Post('history/clear')
+  async clearClosedPositionsHistory() {
+    await this.prisma.closedPosition.deleteMany({});
+    return { success: true };
+  }
 }
+

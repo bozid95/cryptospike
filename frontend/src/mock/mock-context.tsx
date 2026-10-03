@@ -244,10 +244,31 @@ export function CryptoSpikeProvider({
     },
   );
 
-  const clearClosedPositions = () => {
+  const fetchClosedPositions = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/positions/history?limit=300`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.items && Array.isArray(json.items)) {
+          setClosedPositions(json.items);
+          localStorage.setItem(
+            CLOSED_POSITIONS_KEY,
+            JSON.stringify(json.items),
+          );
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch closed positions from DB API:", e);
+    }
+  };
+
+  const clearClosedPositions = async () => {
     setClosedPositions([]);
     try {
       localStorage.removeItem(CLOSED_POSITIONS_KEY);
+      await fetch(`${API_BASE_URL}/api/positions/history/clear`, {
+        method: "POST",
+      });
     } catch {
       // ignore
     }
@@ -289,7 +310,7 @@ export function CryptoSpikeProvider({
     side?: string,
   ): Promise<boolean> => {
     try {
-      // Temukan data posisi sebelum di-close untuk history
+      // Temukan data posisi sebelum di-close untuk history lokal instan
       const existingPos = positions.find((p) => p.symbol === symbol);
 
       const res = await fetch(`${API_BASE_URL}/api/positions/close`, {
@@ -298,7 +319,6 @@ export function CryptoSpikeProvider({
         body: JSON.stringify({ symbol, positionAmt, side }),
       });
       if (res.ok) {
-        // Catat ke history closed positions
         if (existingPos) {
           const closedItem: ClosedPositionItem = {
             id: `close-${Date.now()}-${symbol}`,
@@ -316,7 +336,7 @@ export function CryptoSpikeProvider({
           };
 
           setClosedPositions((prev) => {
-            const next = [closedItem, ...prev].slice(0, 100);
+            const next = [closedItem, ...prev].slice(0, 300);
             try {
               localStorage.setItem(CLOSED_POSITIONS_KEY, JSON.stringify(next));
             } catch {
@@ -328,6 +348,7 @@ export function CryptoSpikeProvider({
 
         await refreshPositions();
         await refreshBalance();
+        void fetchClosedPositions();
         return true;
       }
       return false;
@@ -511,6 +532,7 @@ export function CryptoSpikeProvider({
   useEffect(() => {
     void refreshBalance();
     void refreshPositions();
+    void fetchClosedPositions();
     const interval = setInterval(() => {
       void refreshBalance();
       void refreshPositions();

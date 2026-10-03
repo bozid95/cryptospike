@@ -380,7 +380,9 @@ export function SignalsCrud() {
                 {totalItems > 0 ? startIndex + 1 : 0}-{endIndex}
               </span>
               <span>dari</span>
-              <span className="font-semibold text-foreground">{totalItems}</span>
+              <span className="font-semibold text-foreground">
+                {totalItems}
+              </span>
               <span>sinyal</span>
             </>
           }

@@ -183,3 +183,26 @@ model Announcement {
   @@map("announcements")
 }
 
+// ═══════════════════════════════════════════
+// 10. CLOSED POSITIONS (Permanent History)
+// ═══════════════════════════════════════════
+
+model ClosedPosition {
+  id          String   @id @default(uuid())
+  symbol      String
+  side        String                              // "LONG" atau "SHORT"
+  entryPrice  Float    @map("entry_price")
+  exitPrice   Float    @map("exit_price")
+  positionAmt Float    @map("position_amt")
+  realizedPnl Float    @map("realized_pnl")
+  roe         Float
+  leverage    Int      @default(10)
+  strategy    String?
+  closeReason String?  @map("close_reason")       // "MANUAL", "TP_HIT", "SL_HIT", "LIQUIDATION"
+  closedAt    DateTime @default(now()) @map("closed_at")
+
+  @@index([symbol], name: "idx_closed_positions_symbol")
+  @@index([closedAt], name: "idx_closed_positions_closed_at")
+  @@map("closed_positions")
+}
+

@@ -12,12 +12,14 @@ import {
 
 import { useCryptoSpike } from "@/mock/mock-context";
 import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -122,6 +124,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent className="p-2 gap-2 overflow-y-auto">
         <NavMain label="Control Panel" items={mainNavItems} />
       </SidebarContent>
+
+      {/* 3. Footer: Profil Pengguna & Keluar */}
+      <SidebarFooter className="p-2 border-t border-border/60">
+        <NavUser />
+      </SidebarFooter>
     </Sidebar>
   );
 }

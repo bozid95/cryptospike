@@ -1,22 +1,12 @@
-import { ActivityIcon, LogOutIcon, UserCircleIcon } from "lucide-react";
+import { ActivityIcon } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useCryptoSpike } from "@/mock/mock-context";
 
 export function SiteHeader() {
-  const { balance, isLoadingBalance, user, logout } = useCryptoSpike();
+  const { balance, isLoadingBalance } = useCryptoSpike();
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-14 shrink-0 items-center justify-between border-b px-4 lg:px-6 transition-[width,height] ease-linear">
       <div className="flex items-center gap-2">
@@ -62,7 +52,7 @@ export function SiteHeader() {
         </Badge>
 
         {/* 3. Real Binance Testnet Balance */}
-        <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-100 border border-border text-xs font-mono">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/60 border border-border text-xs font-mono">
           <span className="text-muted-foreground text-[11px]">
             Margin Balance:
           </span>
@@ -74,56 +64,6 @@ export function SiteHeader() {
                 : "$10,843.97 USDT"}
           </span>
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-full border border-border"
-              title="Profil Pengguna"
-            >
-              <Avatar className="size-7">
-                <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground uppercase">
-                  {user?.username ? user.username.slice(0, 2) : "OP"}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-semibold leading-none capitalize">
-                  {user?.username || "Lead Operator"}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground font-mono">
-                  Role: {user?.role || "ADMIN"}
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer gap-2 text-xs">
-              <UserCircleIcon className="size-4" />
-              Status: Terproteksi JWT
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer gap-2 text-xs text-destructive focus:text-destructive focus:bg-destructive/10 font-medium"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "Apakah Anda yakin ingin keluar dari sesi operator?",
-                  )
-                ) {
-                  logout();
-                }
-              }}
-            >
-              <LogOutIcon className="size-4" />
-              Keluar (Log out)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </header>
   );
