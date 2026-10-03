@@ -413,10 +413,10 @@ export function PublicSignalsView() {
       </header>
 
       {/* Dynamic Running Text / Ticker Marquee Notice Bar (Directly below Header Navbar) */}
-      <div className="w-full border-b border-border/80 bg-amber-500/10 dark:bg-amber-500/10 py-1.5 px-3 sm:px-6">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
+      <div className="max-w-7xl mx-auto w-full px-3.5 sm:px-6 pt-3 sm:pt-4">
+        <div className="relative overflow-hidden bg-amber-500/10 dark:bg-amber-500/10 border border-slate-300 dark:border-zinc-700 rounded-2xl px-3 py-1.5 sm:py-2 flex items-center shadow-xs">
           {/* Fixed Left Badge: LIVE NOTICE */}
-          <div className="shrink-0 flex items-center gap-1.5 bg-amber-500/20 dark:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-lg border border-amber-500/30">
+          <div className="shrink-0 flex items-center gap-1.5 bg-amber-500/20 dark:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-lg border border-amber-500/30 mr-2 sm:mr-3">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
