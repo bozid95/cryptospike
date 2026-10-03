@@ -115,6 +115,22 @@ export function CryptoSpikeProvider({
     }
   };
 
+  // Load initial config dari DB backend
+  useEffect(() => {
+    const fetchDbConfig = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/config");
+        if (res.ok) {
+          const dbConfig = (await res.json()) as TradingConfig;
+          setConfig(dbConfig);
+        }
+      } catch (e) {
+        console.warn("Could not load config from DB API:", e);
+      }
+    };
+    void fetchDbConfig();
+  }, []);
+
   useEffect(() => {
     void refreshBalance();
     const interval = setInterval(() => {
@@ -205,9 +221,26 @@ export function CryptoSpikeProvider({
     setSignals((prev) => prev.filter((s) => s.id !== id));
   };
 
-  // Config operations
+  // Config operations (Tersimpan langsung ke database backend)
   const updateConfig = (updated: Partial<TradingConfig>) => {
-    setConfig((prev) => ({ ...prev, ...updated }));
+    setConfig((prev) => {
+      const merged = { ...prev, ...updated };
+      // Kirim ke backend NestJS untuk di-persist ke PostgreSQL
+      fetch("http://localhost:3001/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(merged),
+      })
+        .then(() => {
+          // Refresh saldo sesuai API key baru
+          void refreshBalance();
+        })
+        .catch((err) => {
+          console.warn("Failed to persist config to DB:", err);
+        });
+
+      return merged;
+    });
   };
 
   return (

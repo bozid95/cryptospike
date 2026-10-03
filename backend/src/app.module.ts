@@ -6,6 +6,7 @@ import { StrategyModule } from './strategy/strategy.module';
 import { SignalModule } from './signal/signal.module';
 import { ScannerModule } from './scanner/scanner.module';
 import { GatewayModule } from './gateway/gateway.module';
+import { AppConfigModule } from './config/config.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -18,6 +19,7 @@ import { AppService } from './app.service';
     SignalModule,
     ScannerModule,
     GatewayModule,
+    AppConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],
