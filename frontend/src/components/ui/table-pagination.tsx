@@ -39,7 +39,7 @@ export function TablePagination({
   const safeCurrentPage = Math.min(Math.max(1, currentPage), safeTotalPages);
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-lg border bg-muted/50 mt-2">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl border-2 border-slate-300/80 dark:border-zinc-800 bg-card shadow-xs mt-2">
       {/* Page Size & Items Count */}
       <div className="flex items-center justify-between sm:justify-start gap-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">

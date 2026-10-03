@@ -531,7 +531,7 @@ export function PublicSignalsView() {
 
           {/* Strategy Winrate Info Bar (Sleek Compact Ticker) */}
           {strategyStats.length > 0 && (
-            <div className="max-w-4xl mx-auto bg-card/60 backdrop-blur-xs border border-border/80 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+            <div className="max-w-4xl mx-auto bg-card/60 backdrop-blur-xs border-2 border-slate-300/80 dark:border-zinc-800 rounded-2xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-xs">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground shrink-0">
                 <TrophyIcon className="size-3.5 text-amber-500" />
                 <span className="tracking-tight">Winrate by Strategy</span>
@@ -553,10 +553,10 @@ export function PublicSignalsView() {
                         setSelectedStrategy(isSelected ? "ALL" : st.strategy);
                         setCurrentPage(1);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-emerald-500/15 border border-emerald-500/50 text-emerald-600 ring-1 ring-emerald-500/20 font-bold"
-                          : "bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground"
+                          ? "bg-emerald-500/15 border-2 border-emerald-500/60 text-emerald-600 ring-1 ring-emerald-500/20 font-bold"
+                          : "bg-muted/50 hover:bg-muted border-2 border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-muted-foreground hover:text-foreground"
                       }`}
                       title={`${st.hits} Win / ${st.losses} Loss from ${st.total} signals`}
                     >
@@ -598,13 +598,13 @@ export function PublicSignalsView() {
         {/* Responsive Toolbar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           {/* Filter Pills */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/80 self-start w-full sm:w-auto overflow-x-auto">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-2xl border-2 border-slate-300/80 dark:border-zinc-800 self-start w-full sm:w-auto overflow-x-auto shadow-xs">
             <button
               onClick={() => {
                 setFilter("ALL");
                 setCurrentPage(1);
               }}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                 filter === "ALL"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -617,7 +617,7 @@ export function PublicSignalsView() {
                 setFilter("RUNNING");
                 setCurrentPage(1);
               }}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 filter === "RUNNING"
                   ? "bg-background text-emerald-600 shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -631,7 +631,7 @@ export function PublicSignalsView() {
                 setFilter("CLOSED");
                 setCurrentPage(1);
               }}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                 filter === "CLOSED"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -653,7 +653,7 @@ export function PublicSignalsView() {
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger className="h-9 text-xs rounded-xl bg-card border-border/80">
+                  <SelectTrigger className="h-9 text-xs rounded-xl bg-card border-2 border-slate-300/80 dark:border-zinc-800">
                     <div className="flex items-center gap-1.5 truncate">
                       <FilterIcon className="size-3 text-muted-foreground shrink-0" />
                       <SelectValue placeholder="All Strategies" />
@@ -687,7 +687,7 @@ export function PublicSignalsView() {
                   setCurrentPage(1);
                 }}
                 placeholder="Filter pair (e.g. BTC, ETH)..."
-                className="pl-9 h-9 text-xs rounded-xl bg-card"
+                className="pl-9 h-9 text-xs rounded-xl bg-card border-2 border-slate-300/80 dark:border-zinc-800"
               />
             </div>
           </div>
@@ -695,7 +695,7 @@ export function PublicSignalsView() {
 
         {/* Signal Cards Grid */}
         {paginatedSignals.length === 0 ? (
-          <div className="p-10 text-center border rounded-2xl bg-card space-y-2">
+          <div className="p-10 text-center border-2 border-slate-300/80 dark:border-zinc-800 rounded-2xl bg-card space-y-2 shadow-xs">
             <RadioIcon className="size-8 mx-auto text-muted-foreground/60" />
             <h3 className="font-semibold text-sm text-foreground">
               No signals found
