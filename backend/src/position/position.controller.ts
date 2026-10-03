@@ -1,18 +1,38 @@
 import { Controller, Get, Post, Body, Query, Logger } from '@nestjs/common';
 import { BinanceService } from '../binance/binance.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('api/positions')
 export class PositionController {
   private readonly logger = new Logger(PositionController.name);
 
-  constructor(private readonly binanceService: BinanceService) {}
+  constructor(
+    private readonly binanceService: BinanceService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Get()
   async getOpenPositions() {
-    const [rawPositions, rawOrders] = await Promise.all([
+    const [rawPositions, rawOrders, activeSignals] = await Promise.all([
       this.binanceService.getPositions(),
       this.binanceService.getOpenOrders(),
+      this.prisma.signal.findMany({
+        where: {
+          status: {
+            in: ['ACTIVE', 'TP1_HIT', 'TP2_HIT'],
+          },
+        },
+        orderBy: { sentAt: 'desc' },
+      }),
     ]);
+
+    // Map active signal terbaru berdasarkan symbol
+    const signalMap = new Map<string, any>();
+    for (const sig of activeSignals) {
+      if (!signalMap.has(sig.symbol)) {
+        signalMap.set(sig.symbol, sig);
+      }
+    }
 
     return rawPositions.map((p) => {
       const positionAmt = parseFloat(p.positionAmt);
@@ -37,6 +57,8 @@ export class PositionController {
           reduceOnly: o.reduceOnly,
         }));
 
+      const matchedSignal = signalMap.get(p.symbol);
+
       return {
         symbol: p.symbol,
         side: positionAmt > 0 ? 'LONG' : 'SHORT',
@@ -51,6 +73,10 @@ export class PositionController {
         notional: parseFloat(notional.toFixed(2)),
         initialMargin: parseFloat(initialMargin.toFixed(2)),
         orders: matchingOrders,
+        strategy: matchedSignal?.strategy || 'MANUAL / UNKNOWN',
+        signalId: matchedSignal?.id || null,
+        signalStatus: matchedSignal?.status || null,
+        sl: matchedSignal?.sl || null,
         updateTime: p.updateTime,
       };
     });

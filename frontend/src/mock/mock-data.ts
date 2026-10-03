@@ -52,6 +52,10 @@ export interface PositionItem {
     origQty: number;
     reduceOnly: boolean;
   }>;
+  strategy?: string;
+  signalId?: string | null;
+  signalStatus?: string | null;
+  sl?: number | null;
   updateTime: number;
 }
 

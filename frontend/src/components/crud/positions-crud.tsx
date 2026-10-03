@@ -197,6 +197,13 @@ export function PositionsCrud() {
                             <span>•</span>
                             <span className="uppercase">{pos.marginType}</span>
                           </div>
+                          {pos.strategy && (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20 font-mono">
+                                {pos.strategy}
+                              </span>
+                            </div>
+                          )}
                         </TableCell>
 
                         <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
