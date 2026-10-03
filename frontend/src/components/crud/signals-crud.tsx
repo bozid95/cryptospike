@@ -97,7 +97,9 @@ export function SignalsCrud() {
     const totalTpHits = tp1Count + tp2Count + tp3Count;
     const closedCount = totalTpHits + slCount;
     const winrate =
-      closedCount > 0 ? ((totalTpHits / closedCount) * 100).toFixed(1) : "100.0";
+      closedCount > 0
+        ? ((totalTpHits / closedCount) * 100).toFixed(1)
+        : "100.0";
 
     return {
       totalSignals: signals.length,
@@ -111,7 +113,10 @@ export function SignalsCrud() {
       tp3Count,
       slCount,
       winrate,
-      avgProfitPct: closedCount > 0 ? (totalRealizedProfitPct / closedCount).toFixed(2) : "0.00",
+      avgProfitPct:
+        closedCount > 0
+          ? (totalRealizedProfitPct / closedCount).toFixed(2)
+          : "0.00",
     };
   }, [signals]);
 
@@ -254,18 +259,28 @@ export function SignalsCrud() {
               </span>
               <div className="text-xl font-bold font-mono text-foreground flex items-center gap-2">
                 <span className="text-emerald-500">{summary.longCount}L</span>
-                <span className="text-muted-foreground text-sm font-normal">/</span>
+                <span className="text-muted-foreground text-sm font-normal">
+                  /
+                </span>
                 <span className="text-rose-500">{summary.shortCount}S</span>
               </div>
               <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1 pt-0.5">
                 <span className="text-emerald-500 flex items-center gap-0.5">
                   <TrendingUpIcon className="size-3" />
-                  {((summary.longCount / Math.max(summary.totalSignals, 1)) * 100).toFixed(0)}% Long
+                  {(
+                    (summary.longCount / Math.max(summary.totalSignals, 1)) *
+                    100
+                  ).toFixed(0)}
+                  % Long
                 </span>
                 <span>•</span>
                 <span className="text-rose-500 flex items-center gap-0.5">
                   <TrendingDownIcon className="size-3" />
-                  {((summary.shortCount / Math.max(summary.totalSignals, 1)) * 100).toFixed(0)}% Short
+                  {(
+                    (summary.shortCount / Math.max(summary.totalSignals, 1)) *
+                    100
+                  ).toFixed(0)}
+                  % Short
                 </span>
               </div>
             </div>
@@ -502,15 +517,45 @@ export function SignalsCrud() {
                         </TableCell>
 
                         {/* 4. Execution State (RUNNING vs CLOSED) */}
+                        {/* 4. Execution State (RUNNING vs TP1_HIT / TP2_HIT / TP3_HIT / SL_HIT) */}
                         <TableCell className="align-middle py-3.5">
-                          {isRunning ? (
+                          {sig.status === "ACTIVE" && (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-700 font-mono text-[11px] font-semibold leading-none">
                               <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              RUNNING
+                              ACTIVE
                             </span>
-                          ) : (
+                          )}
+                          {sig.status === "TP1_HIT" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-600 font-mono text-[11px] font-bold leading-none">
+                              <span className="size-1.5 rounded-full bg-emerald-500" />
+                              TP1 HIT ✓
+                            </span>
+                          )}
+                          {sig.status === "TP2_HIT" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-teal-500/40 bg-teal-500/15 text-teal-600 font-mono text-[11px] font-bold leading-none">
+                              <span className="size-1.5 rounded-full bg-teal-500" />
+                              TP2 HIT ✓✓
+                            </span>
+                          )}
+                          {sig.status === "TP3_HIT" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-cyan-500/40 bg-cyan-500/20 text-cyan-600 font-mono text-[11px] font-bold leading-none">
+                              <span className="size-1.5 rounded-full bg-cyan-500" />
+                              TP3 HIT (MAX) 🎯
+                            </span>
+                          )}
+                          {sig.status === "TSL_HIT" && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-600 font-mono text-[11px] font-medium leading-none">
+                              TSL HIT (Locked Profit)
+                            </span>
+                          )}
+                          {sig.status === "SL_HIT" && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-600 font-mono text-[11px] font-medium leading-none">
+                              SL HIT ✗
+                            </span>
+                          )}
+                          {sig.status === "CANCELLED" && (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border bg-muted/80 text-muted-foreground font-mono text-[11px] font-medium leading-none">
-                              CLOSED ({sig.status})
+                              CANCELLED
                             </span>
                           )}
                         </TableCell>

@@ -11,7 +11,14 @@ export interface SignalItem {
   sl: number;
   strategy: string;
   triggerSource: string;
-  status: "ACTIVE" | "TP1_HIT" | "TP2_HIT" | "TP3_HIT" | "SL_HIT" | "CANCELLED";
+  status:
+    | "ACTIVE"
+    | "TP1_HIT"
+    | "TP2_HIT"
+    | "TP3_HIT"
+    | "TSL_HIT"
+    | "SL_HIT"
+    | "CANCELLED";
   profitPct?: number;
   sentAt: string;
   closedAt?: string;
