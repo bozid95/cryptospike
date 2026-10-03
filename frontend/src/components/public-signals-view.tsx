@@ -75,7 +75,8 @@ export function PublicSignalsView() {
         running: number;
         hits: number;
         losses: number;
-        totalPnl: number;
+        realizedPnlUsd: number;
+        floatingPnlUsd: number;
       }
     >();
 
@@ -88,7 +89,8 @@ export function PublicSignalsView() {
           running: 0,
           hits: 0,
           losses: 0,
-          totalPnl: 0,
+          realizedPnlUsd: 0,
+          floatingPnlUsd: 0,
         });
       }
       const item = map.get(strat)!;
@@ -101,26 +103,49 @@ export function PublicSignalsView() {
         (sig.status as string) === "CLOSED" ||
         sig.status === "CANCELLED";
 
+      const margin = sig.simulatedMargin ?? 10.0;
+
       if (!isClosed) {
         item.running++;
-      }
 
-      const hasHitTp =
-        sig.status === "TP1_HIT" ||
-        sig.status === "TP2_HIT" ||
-        sig.status === "TP3_HIT" ||
-        sig.status === "TSL_HIT";
+        // Hitung floating PnL untuk posisi yang masih running
+        const isLong = sig.side === "LONG";
+        let displayPrice = sig.currentPrice;
+        if (!displayPrice && sig.entryPrice) {
+          displayPrice = sig.entryPrice;
+        }
 
-      const isLoss =
-        sig.status === "SL_HIT" ||
-        (isClosed && typeof sig.profitPct === "number" && sig.profitPct < 0);
+        let floatingPct = typeof sig.profitPct === "number" ? sig.profitPct : 0;
+        if (displayPrice && sig.entryPrice && sig.entryPrice > 0) {
+          floatingPct = isLong
+            ? ((displayPrice - sig.entryPrice) / sig.entryPrice) * 100
+            : ((sig.entryPrice - displayPrice) / sig.entryPrice) * 100;
+        }
+        item.floatingPnlUsd += (margin * floatingPct) / 100;
+      } else {
+        // Hitung Realized PnL untuk posisi yang sudah closed
+        const hasHitTp =
+          sig.status === "TP1_HIT" ||
+          sig.status === "TP2_HIT" ||
+          sig.status === "TP3_HIT" ||
+          sig.status === "TSL_HIT";
 
-      if (hasHitTp) {
-        item.hits++;
-        item.totalPnl += sig.profitPct || 0;
-      } else if (isLoss) {
-        item.losses++;
-        item.totalPnl += sig.profitPct || 0;
+        const isLoss =
+          sig.status === "SL_HIT" ||
+          (typeof sig.profitPct === "number" && sig.profitPct < 0);
+
+        if (hasHitTp) {
+          item.hits++;
+        } else if (isLoss) {
+          item.losses++;
+        }
+
+        const pnl =
+          typeof sig.realizedPnlUsd === "number"
+            ? sig.realizedPnlUsd
+            : (margin * (sig.profitPct || 0)) / 100;
+
+        item.realizedPnlUsd += pnl;
       }
     }
 
@@ -129,13 +154,14 @@ export function PublicSignalsView() {
         const evaluated = st.hits + st.losses;
         const winrate =
           evaluated > 0 ? ((st.hits / evaluated) * 100).toFixed(1) : "0.0";
-        // Alokasi 1% per posisi ($10) dari $1,000
-        const simulatedPnlUsd = (10 * st.totalPnl) / 100;
+        const totalNetPnlUsd = st.realizedPnlUsd + st.floatingPnlUsd;
+
         return {
           ...st,
           winrate: parseFloat(winrate),
-          totalPnl: parseFloat(st.totalPnl.toFixed(2)),
-          simulatedPnlUsd: parseFloat(simulatedPnlUsd.toFixed(2)),
+          realizedPnlUsd: parseFloat(st.realizedPnlUsd.toFixed(2)),
+          floatingPnlUsd: parseFloat(st.floatingPnlUsd.toFixed(2)),
+          totalNetPnlUsd: parseFloat(totalNetPnlUsd.toFixed(2)),
           evaluated,
         };
       })
@@ -155,6 +181,8 @@ export function PublicSignalsView() {
     let hitCount = 0;
     let lossCount = 0;
     let totalRealizedProfitPct = 0;
+    let totalFloatingProfitUsd = 0;
+
     for (const sig of signals) {
       if (sig.side === "LONG") longCount++;
       else shortCount++;
@@ -166,29 +194,46 @@ export function PublicSignalsView() {
         (sig.status as string) === "CLOSED" ||
         sig.status === "CANCELLED";
 
+      const margin = sig.simulatedMargin ?? 10.0;
+
       if (!isClosed) {
         runningCount++;
+
+        // Hitung floating profit USD live
+        const isLong = sig.side === "LONG";
+        let displayPrice = sig.currentPrice;
+        if (!displayPrice && sig.entryPrice) {
+          displayPrice = sig.entryPrice;
+        }
+
+        let floatingPct = typeof sig.profitPct === "number" ? sig.profitPct : 0;
+        if (displayPrice && sig.entryPrice && sig.entryPrice > 0) {
+          floatingPct = isLong
+            ? ((displayPrice - sig.entryPrice) / sig.entryPrice) * 100
+            : ((sig.entryPrice - displayPrice) / sig.entryPrice) * 100;
+        }
+        totalFloatingProfitUsd += (margin * floatingPct) / 100;
       } else {
         closedCountOnly++;
-      }
 
-      // Hitung Win: HANYA jika SUDAH BENAR-BENAR MENYENTUH target TP (TP1/TP2/TP3/TSL)
-      const hasHitTp =
-        sig.status === "TP1_HIT" ||
-        sig.status === "TP2_HIT" ||
-        sig.status === "TP3_HIT" ||
-        sig.status === "TSL_HIT";
+        // Hitung Win: HANYA jika SUDAH BENAR-BENAR MENYENTUH target TP (TP1/TP2/TP3/TSL)
+        const hasHitTp =
+          sig.status === "TP1_HIT" ||
+          sig.status === "TP2_HIT" ||
+          sig.status === "TP3_HIT" ||
+          sig.status === "TSL_HIT";
 
-      const isLoss =
-        sig.status === "SL_HIT" ||
-        (isClosed && typeof sig.profitPct === "number" && sig.profitPct < 0);
+        const isLoss =
+          sig.status === "SL_HIT" ||
+          (typeof sig.profitPct === "number" && sig.profitPct < 0);
 
-      if (hasHitTp) {
-        hitCount++;
-        totalRealizedProfitPct += sig.profitPct || 0;
-      } else if (isLoss) {
-        lossCount++;
-        totalRealizedProfitPct += sig.profitPct || 0;
+        if (hasHitTp) {
+          hitCount++;
+          totalRealizedProfitPct += sig.profitPct || 0;
+        } else if (isLoss) {
+          lossCount++;
+          totalRealizedProfitPct += sig.profitPct || 0;
+        }
       }
     }
 
@@ -208,6 +253,7 @@ export function PublicSignalsView() {
     const simulatedProfitUsd =
       (POSITION_SIZE_USD * totalRealizedProfitPct) / 100;
     const simulatedBalanceUsd = SIMULATED_CAPITAL + simulatedProfitUsd;
+    const simulatedEquityUsd = simulatedBalanceUsd + totalFloatingProfitUsd;
     const netReturnOnCapitalPct =
       (simulatedProfitUsd / SIMULATED_CAPITAL) * 100;
 
@@ -223,6 +269,8 @@ export function PublicSignalsView() {
       positionSizeUsd: POSITION_SIZE_USD,
       simulatedProfitUsd: parseFloat(simulatedProfitUsd.toFixed(2)),
       simulatedBalanceUsd: parseFloat(simulatedBalanceUsd.toFixed(2)),
+      totalFloatingProfitUsd: parseFloat(totalFloatingProfitUsd.toFixed(2)),
+      simulatedEquityUsd: parseFloat(simulatedEquityUsd.toFixed(2)),
       netReturnOnCapitalPct: parseFloat(netReturnOnCapitalPct.toFixed(2)),
       longCount,
       shortCount,
@@ -390,11 +438,11 @@ export function PublicSignalsView() {
               </CardContent>
             </Card>
 
-            {/* Stat 3: Realized PnL (1% per Trade on $1,000 Capital) */}
+            {/* Stat 3: Realized & Floating Portfolio Performance */}
             <Card className="border-border/80 shadow-xs bg-card">
               <CardContent className="p-3 sm:p-4 space-y-1">
                 <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
-                  Realized PnL (1% Risk)
+                  Portfolio Performance
                   <FlameIcon className="size-3 sm:size-3.5 text-amber-500" />
                 </span>
                 <div
@@ -406,21 +454,27 @@ export function PublicSignalsView() {
                 >
                   {summary.simulatedProfitUsd >= 0 ? "+" : ""}$
                   {summary.simulatedProfitUsd.toFixed(2)}
+                  <span className="text-xs font-normal text-muted-foreground ml-1.5 font-sans">
+                    Realized
+                  </span>
                 </div>
-                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center justify-between">
+                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center justify-between gap-1 pt-0.5 border-t border-border/40">
                   <span
                     className={
-                      summary.netReturnOnCapitalPct >= 0
+                      summary.totalFloatingProfitUsd >= 0
                         ? "text-emerald-500 font-semibold"
                         : "text-rose-500 font-semibold"
                     }
-                    title="Net Portfolio Growth on $1,000"
+                    title="Floating Unrealized PnL across active running signals"
                   >
-                    {summary.netReturnOnCapitalPct >= 0 ? "+" : ""}
-                    {summary.netReturnOnCapitalPct.toFixed(2)}% ROI
+                    Float: {summary.totalFloatingProfitUsd >= 0 ? "+" : ""}$
+                    {summary.totalFloatingProfitUsd.toFixed(2)}
                   </span>
-                  <span title="Simulated Current Account Balance">
-                    Bal: ${summary.simulatedBalanceUsd.toFixed(2)}
+                  <span
+                    className="font-bold text-foreground"
+                    title="Current Total Equity = Cash Balance + Floating PnL"
+                  >
+                    Eq: ${summary.simulatedEquityUsd.toFixed(2)}
                   </span>
                 </div>
               </CardContent>
@@ -494,16 +548,17 @@ export function PublicSignalsView() {
                       </span>
                       <span
                         className={`text-[10px] font-semibold ${
-                          st.simulatedPnlUsd >= 0
+                          st.totalNetPnlUsd >= 0
                             ? "text-emerald-500"
                             : "text-rose-500"
                         }`}
                       >
-                        ({st.simulatedPnlUsd >= 0 ? "+" : ""}$
-                        {st.simulatedPnlUsd.toFixed(0)})
+                        ({st.totalNetPnlUsd >= 0 ? "+" : ""}$
+                        {st.totalNetPnlUsd.toFixed(2)})
                       </span>
                       <span className="text-[10px] text-muted-foreground/75 font-sans">
                         • {st.hits}W/{st.losses}L
+                        {st.running > 0 && ` (${st.running} open)`}
                       </span>
                     </button>
                   );
