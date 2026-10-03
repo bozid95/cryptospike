@@ -473,9 +473,7 @@ export function CryptoSpikeProvider({
             const wr =
               closedCount > 0
                 ? `${((hitCount / closedCount) * 100).toFixed(1)}%`
-                : totalCount > 0
-                  ? "100.0%"
-                  : "0.0%";
+                : "0.0%";
 
             // Hitung akumulasi PnL (%) yang dihasilkan oleh strategi
             let totalPnl = 0;

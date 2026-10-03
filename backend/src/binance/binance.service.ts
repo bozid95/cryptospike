@@ -76,31 +76,55 @@ export class BinanceService {
   private timeOffset = 0;
   private lastTimeSync = 0;
 
-  private async syncServerTime(): Promise<number> {
+  private async syncServerTime(force = false): Promise<number> {
     const now = Date.now();
-    // Re-sync setiap 10 menit
-    if (this.lastTimeSync && now - this.lastTimeSync < 10 * 60 * 1000) {
-      return now + this.timeOffset;
+    // Re-sync setiap 3 menit kecuali di-force
+    if (!force && this.lastTimeSync && now - this.lastTimeSync < 3 * 60 * 1000) {
+      // Kurangi buffer 1500ms: aman dalam batas recvWindow=60000ms dan mencegah error ahead of server time
+      return now + this.timeOffset - 1500;
     }
 
     try {
       const baseUrl = this.getFuturesBaseUrl();
+      const t0 = Date.now();
       const res = await axios.get<{ serverTime: number }>(
         `${baseUrl}/fapi/v1/time`,
         { timeout: 5000 },
       );
+      const t1 = Date.now();
       if (res.data?.serverTime) {
-        this.timeOffset = res.data.serverTime - now;
-        this.lastTimeSync = now;
+        const rtt = Math.max(0, t1 - t0);
+        const estimatedServerTime = res.data.serverTime + Math.floor(rtt / 2);
+        this.timeOffset = estimatedServerTime - t1;
+        this.lastTimeSync = t1;
         this.logger.debug(
-          `Binance server time synced. Offset: ${this.timeOffset}ms`,
+          `Binance server time synced. Offset: ${this.timeOffset}ms (RTT: ${rtt}ms)`,
         );
       }
     } catch (e: any) {
       this.logger.warn(`Failed to sync Binance server time: ${e.message}`);
     }
 
-    return Date.now() + this.timeOffset;
+    return Date.now() + this.timeOffset - 1500;
+  }
+
+  private handleApiError(context: string, err: any): string {
+    const errMsg =
+      err.response?.data?.msg ||
+      (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+
+    if (
+      errMsg.includes("ahead of the server's time") ||
+      errMsg.includes('INVALID_TIMESTAMP') ||
+      errMsg.includes('-1021')
+    ) {
+      this.lastTimeSync = 0;
+      this.logger.warn(
+        `Desinkronisasi waktu Binance terdeteksi pada ${context} (${errMsg}). Reset cache sync server time.`,
+      );
+    }
+
+    return errMsg;
   }
 
   private async getSignedQuery(
@@ -151,9 +175,7 @@ export class BinanceService {
       // Ambil hanya aset yang memiliki saldo > 0
       return response.data.filter((b) => parseFloat(b.balance) > 0);
     } catch (err: any) {
-      const errMsg =
-        err.response?.data?.msg ||
-        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      const errMsg = this.handleApiError('getAccountBalances', err);
       this.logger.error(`Failed to fetch Binance Futures balance: ${errMsg}`);
       return [];
     }
@@ -199,15 +221,18 @@ export class BinanceService {
         ),
       };
     } catch (err: any) {
-      const errMsg =
-        err.response?.data?.msg ||
-        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      const errMsg = this.handleApiError('getAccountDetail', err);
       this.logger.error(
         `Failed to fetch Binance Futures account detail: ${errMsg}`,
       );
       return null;
     }
   }
+
+  private klineCache = new Map<
+    string,
+    { data: BinanceKline[]; expiry: number }
+  >();
 
   async getTopVolumePairs(limit = 100): Promise<Binance24hTicker[]> {
     try {
@@ -224,7 +249,35 @@ export class BinanceService {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(`Failed to fetch 24hr tickers: ${message}`);
       return [];
+    const candidateUrls = Array.from(
+      new Set([
+        this.getFuturesBaseUrl(),
+        'https://fapi.binance.com',
+        'https://fapi.binance.info',
+      ]),
+    );
+
+    for (const baseUrl of candidateUrls) {
+      try {
+        const response = await axios.get<Binance24hTicker[]>(
+          `${baseUrl}/fapi/v1/ticker/24hr`,
+          { timeout: 6000 },
+        );
+        const tickers = response.data
+          .filter((t) => t.symbol.endsWith('USDT'))
+          .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+          .slice(0, limit);
+        return tickers;
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.debug(
+          `Failed to fetch 24hr tickers from ${baseUrl}: ${message}. Trying next candidate if available...`,
+        );
+      }
     }
+
+    this.logger.error(`Failed to fetch 24hr tickers from all available endpoints`);
+    return [];
   }
 
   async getKlines(
@@ -257,7 +310,64 @@ export class BinanceService {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(`Failed to fetch klines for ${symbol}: ${message}`);
       return [];
+    // 1. Cek memory cache (TTL 8 detik untuk mereduksi connection flood ke server)
+    const cacheKey = `${symbol}_${interval}_${limit}`;
+    const cached = this.klineCache.get(cacheKey);
+    const now = Date.now();
+    if (cached && cached.expiry > now) {
+      return cached.data;
     }
+
+    // 2. Daftar endpoint kandidat (Primary + Mirror jika testnet/primary sedang timeout/refuse)
+    const candidateUrls = Array.from(
+      new Set([
+        this.getFuturesBaseUrl(),
+        'https://fapi.binance.com',
+        'https://fapi.binance.info',
+      ]),
+    );
+
+    for (const baseUrl of candidateUrls) {
+      try {
+        const response = await axios.get<RawKlineArray[]>(
+          `${baseUrl}/fapi/v1/klines`,
+          {
+            params: { symbol, interval, limit },
+            timeout: 5000,
+          },
+        );
+
+        const mapped: BinanceKline[] = response.data.map((c: RawKlineArray) => ({
+          openTime: c[0],
+          open: parseFloat(c[1]),
+          high: parseFloat(c[2]),
+          low: parseFloat(c[3]),
+          close: parseFloat(c[4]),
+          volume: parseFloat(c[5]),
+          closeTime: c[6],
+          quoteVolume: parseFloat(c[7]),
+          trades: c[8],
+          takerBuyBaseVolume: parseFloat(c[9]),
+          takerBuyQuoteVolume: parseFloat(c[10]),
+        }));
+
+        // Simpan ke cache selama 8 detik
+        this.klineCache.set(cacheKey, {
+          data: mapped,
+          expiry: now + 8000,
+        });
+
+        return mapped;
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.debug(
+          `Klines fetch timeout/error from ${baseUrl} for ${symbol}: ${message}. Trying fallback mirror...`,
+        );
+      }
+    }
+
+    this.logger.error(`Failed to fetch klines for ${symbol} across all endpoints`);
+    return [];
   }
 
   async getPositions(): Promise<any[]> {
@@ -279,9 +389,7 @@ export class BinanceService {
       // Filter hanya posisi yang memiliki ukuran kontrak/posisi != 0
       return response.data.filter((p) => parseFloat(p.positionAmt) !== 0);
     } catch (err: any) {
-      const errMsg =
-        err.response?.data?.msg ||
-        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      const errMsg = this.handleApiError('getPositions', err);
       this.logger.error(`Failed to fetch Binance Futures positions: ${errMsg}`);
       return [];
     }
@@ -306,9 +414,7 @@ export class BinanceService {
       );
       return response.data;
     } catch (err: any) {
-      const errMsg =
-        err.response?.data?.msg ||
-        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      const errMsg = this.handleApiError('getOpenOrders', err);
       this.logger.warn(`Failed to fetch open orders: ${errMsg}`);
       return [];
     }
@@ -332,9 +438,7 @@ export class BinanceService {
       );
       return response.data;
     } catch (err: any) {
-      const errMsg =
-        err.response?.data?.msg ||
-        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      const errMsg = this.handleApiError(`setLeverage(${symbol})`, err);
       this.logger.warn(`Set leverage failed for ${symbol}: ${errMsg}`);
       return null;
     }
@@ -360,9 +464,7 @@ export class BinanceService {
     } catch (err: any) {
       // Error code -4046: "No need to change margin type" adalah normal jika sudah diset
       if (err.response?.data?.code === -4046) return null;
-      const errMsg =
-        err.response?.data?.msg ||
-        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      const errMsg = this.handleApiError(`setMarginType(${symbol})`, err);
       this.logger.warn(`Set margin type failed for ${symbol}: ${errMsg}`);
       return null;
     }
@@ -417,7 +519,7 @@ export class BinanceService {
       );
       return response.data;
     } catch (err: any) {
-      const errMsg = err.response?.data?.msg || err.message;
+      const errMsg = this.handleApiError(`placeOrder(${params.symbol})`, err);
       this.logger.error(`Place order failed for ${params.symbol}: ${errMsg}`);
       throw new Error(errMsg);
     }
@@ -523,9 +625,7 @@ export class BinanceService {
       );
       return response.data;
     } catch (err: any) {
-      const errMsg =
-        err.response?.data?.msg ||
-        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      const errMsg = this.handleApiError(`cancelAllOpenOrders(${symbol})`, err);
       this.logger.warn(`Cancel all orders failed for ${symbol}: ${errMsg}`);
       return null;
     }

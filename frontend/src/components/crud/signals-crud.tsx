@@ -139,9 +139,7 @@ export function SignalsCrud() {
     const totalTpHits = tp1Count + tp2Count + tp3Count;
     const closedCount = totalTpHits + slCount;
     const winrate =
-      closedCount > 0
-        ? ((totalTpHits / closedCount) * 100).toFixed(1)
-        : "100.0";
+      closedCount > 0 ? ((totalTpHits / closedCount) * 100).toFixed(1) : "0.0";
 
     return {
       totalSignals: signals.length,
