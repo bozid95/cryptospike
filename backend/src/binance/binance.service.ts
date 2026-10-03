@@ -230,7 +230,9 @@ export class BinanceService {
       return response.data.filter((p) => parseFloat(p.positionAmt) !== 0);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Failed to fetch Binance Futures positions: ${message}`);
+      this.logger.error(
+        `Failed to fetch Binance Futures positions: ${message}`,
+      );
       return [];
     }
   }
@@ -354,12 +356,118 @@ export class BinanceService {
     }
   }
 
+  // Cache symbol filter (tickSize, stepSize, minNotional)
+  private symbolFilters = new Map<
+    string,
+    { tickSize: number; stepSize: number; minNotional: number; pricePrecision: number; quantityPrecision: number }
+  >();
+
+  async getSymbolFilters(symbol: string) {
+    if (this.symbolFilters.has(symbol)) {
+      return this.symbolFilters.get(symbol)!;
+    }
+
+    try {
+      const baseUrl = this.getFuturesBaseUrl();
+      const res = await axios.get(`${baseUrl}/fapi/v1/exchangeInfo`);
+      const symInfo = res.data.symbols.find((s: any) => s.symbol === symbol);
+
+      if (!symInfo) {
+        return {
+          tickSize: 0.0001,
+          stepSize: 0.001,
+          minNotional: 5,
+          pricePrecision: 4,
+          quantityPrecision: 3,
+        };
+      }
+
+      let tickSize = 0.0001;
+      let stepSize = 0.001;
+      let minNotional = 5;
+
+      for (const f of symInfo.filters) {
+        if (f.filterType === 'PRICE_FILTER') {
+          tickSize = parseFloat(f.tickSize);
+        } else if (f.filterType === 'LOT_SIZE') {
+          stepSize = parseFloat(f.stepSize);
+        } else if (f.filterType === 'MIN_NOTIONAL') {
+          minNotional = parseFloat(f.notional || '5');
+        }
+      }
+
+      const info = {
+        tickSize,
+        stepSize,
+        minNotional,
+        pricePrecision: symInfo.pricePrecision ?? 4,
+        quantityPrecision: symInfo.quantityPrecision ?? 3,
+      };
+
+      this.symbolFilters.set(symbol, info);
+      return info;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Failed to fetch exchangeInfo for ${symbol}: ${message}`);
+      return {
+        tickSize: 0.0001,
+        stepSize: 0.001,
+        minNotional: 5,
+        pricePrecision: 4,
+        quantityPrecision: 3,
+      };
+    }
+  }
+
+  roundStep(value: number, stepSize: number): number {
+    const precision = Math.max(0, Math.round(-Math.log10(stepSize)));
+    const stepped = Math.floor(value / stepSize) * stepSize;
+    return parseFloat(stepped.toFixed(precision));
+  }
+
+  roundTick(price: number, tickSize: number): number {
+    const precision = Math.max(0, Math.round(-Math.log10(tickSize)));
+    const ticked = Math.round(price / tickSize) * tickSize;
+    return parseFloat(ticked.toFixed(precision));
+  }
+
+  async cancelAllOpenOrders(symbol: string) {
+    try {
+      const apiKey = process.env.BINANCE_API_KEY;
+      const apiSecret = process.env.BINANCE_SECRET_KEY;
+      if (!apiKey || !apiSecret) return null;
+
+      const baseUrl = this.getFuturesBaseUrl();
+      const timestamp = Date.now();
+      const query = `symbol=${symbol}&timestamp=${timestamp}`;
+      const signature = crypto
+        .createHmac('sha256', apiSecret)
+        .update(query)
+        .digest('hex');
+
+      const response = await axios.delete(
+        `${baseUrl}/fapi/v1/allOpenOrders?${query}&signature=${signature}`,
+        {
+          headers: { 'X-MBX-APIKEY': apiKey },
+          timeout: 8000,
+        },
+      );
+      return response.data;
+    } catch (err: any) {
+      const errMsg = err.response?.data?.msg || err.message;
+      this.logger.warn(`Cancel all orders failed for ${symbol}: ${errMsg}`);
+      return null;
+    }
+  }
+
   async closePosition(symbol: string, positionAmt: number) {
     if (positionAmt === 0) return null;
     // Jika posisi LONG (>0), maka close dengan order SELL
     // Jika posisi SHORT (<0), maka close dengan order BUY
     const side = positionAmt > 0 ? 'SELL' : 'BUY';
     const quantity = Math.abs(positionAmt);
+
+    await this.cancelAllOpenOrders(symbol);
 
     return this.placeOrder({
       symbol,
@@ -370,3 +478,4 @@ export class BinanceService {
     });
   }
 }
+

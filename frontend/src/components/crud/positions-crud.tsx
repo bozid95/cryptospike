@@ -56,7 +56,11 @@ export function PositionsCrud() {
     );
   }, [positions, searchTerm]);
 
-  const handleClose = async (symbol: string, positionAmt: number, side: string) => {
+  const handleClose = async (
+    symbol: string,
+    positionAmt: number,
+    side: string,
+  ) => {
     setClosingSymbol(symbol);
     try {
       await closePosition(symbol, positionAmt, side);
@@ -75,7 +79,8 @@ export function PositionsCrud() {
               Live Binance Futures Positions
             </CardTitle>
             <CardDescription className="text-xs">
-              Posisi aktif riil di akun Binance Futures. Eksekusi posisi otomatis menggunakan saldo margin akun.
+              Posisi aktif riil di akun Binance Futures. Eksekusi posisi
+              otomatis menggunakan saldo margin akun.
             </CardDescription>
           </div>
 
@@ -213,7 +218,10 @@ export function PositionsCrud() {
                             ${pos.initialMargin.toFixed(2)}
                           </div>
                           <div className="text-[10px] text-muted-foreground">
-                            Liq: ${pos.liquidationPrice > 0 ? pos.liquidationPrice.toLocaleString() : "0"}
+                            Liq: $
+                            {pos.liquidationPrice > 0
+                              ? pos.liquidationPrice.toLocaleString()
+                              : "0"}
                           </div>
                         </TableCell>
 
@@ -223,12 +231,14 @@ export function PositionsCrud() {
                               isProfit ? "text-emerald-600" : "text-rose-600"
                             }`}
                           >
-                            {isProfit ? "+" : ""}
-                            ${pos.unRealizedProfit.toFixed(2)}
+                            {isProfit ? "+" : ""}$
+                            {pos.unRealizedProfit.toFixed(2)}
                           </div>
                           <div
                             className={`text-[11px] font-semibold tabular-nums ${
-                              isProfit ? "text-emerald-600/80" : "text-rose-600/80"
+                              isProfit
+                                ? "text-emerald-600/80"
+                                : "text-rose-600/80"
                             }`}
                           >
                             {isProfit ? "+" : ""}
@@ -259,7 +269,8 @@ export function PositionsCrud() {
                                   <span className="font-semibold text-foreground">
                                     {pos.symbol} ({pos.side})
                                   </span>{" "}
-                                  dengan order Pasar (MARKET) di Binance Futures.
+                                  dengan order Pasar (MARKET) di Binance
+                                  Futures.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

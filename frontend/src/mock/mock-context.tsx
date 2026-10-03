@@ -48,7 +48,11 @@ interface CryptoSpikeContextType {
   positions: PositionItem[];
   isLoadingPositions: boolean;
   refreshPositions: () => Promise<void>;
-  closePosition: (symbol: string, positionAmt: number, side?: string) => Promise<boolean>;
+  closePosition: (
+    symbol: string,
+    positionAmt: number,
+    side?: string,
+  ) => Promise<boolean>;
 }
 
 const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
@@ -141,7 +145,11 @@ export function CryptoSpikeProvider({
     }
   };
 
-  const closePosition = async (symbol: string, positionAmt: number, side?: string): Promise<boolean> => {
+  const closePosition = async (
+    symbol: string,
+    positionAmt: number,
+    side?: string,
+  ): Promise<boolean> => {
     try {
       const res = await fetch("http://localhost:3001/api/positions/close", {
         method: "POST",

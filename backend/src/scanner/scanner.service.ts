@@ -12,6 +12,7 @@ import { StrategyRegistry } from '../strategy/strategy.registry';
 import { SignalService } from '../signal/signal.service';
 import { EventsGateway } from '../gateway/events.gateway';
 import { PrismaService } from '../prisma/prisma.service';
+import { BinanceService } from '../binance/binance.service';
 import { ExecutionService } from '../execution/execution.service';
 import { Subscription } from 'rxjs';
 
@@ -24,6 +25,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly binanceWs: BinanceWsService,
+    private readonly binanceService: BinanceService,
     private readonly strategyRegistry: StrategyRegistry,
     private readonly signalService: SignalService,
     private readonly gateway: EventsGateway,
@@ -138,14 +140,134 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
   private async checkActiveSignals() {
     try {
       const activeSignals = await this.prisma.signal.findMany({
-        where: { status: 'ACTIVE' },
-        take: 20,
+        where: {
+          status: {
+            in: ['ACTIVE', 'TP1_HIT', 'TP2_HIT'],
+          },
+        },
+        take: 30,
       });
 
       if (activeSignals.length === 0) return;
+
+      // Ambil open positions riil dari Binance
+      const positions = await this.binanceService.getPositions();
+      const posMap = new Map<string, any>(positions.map((p: any) => [p.symbol, p]));
+
+      for (const sig of activeSignals) {
+        const livePos: any = posMap.get(sig.symbol);
+
+        // Jika posisi sudah ditutup di Binance, update status
+        if (!livePos) {
+          // Posisi sudah di-close atau kena SL penuh
+          continue;
+        }
+
+        const markPrice = parseFloat(livePos.markPrice);
+        const isLong = sig.side === 'LONG';
+
+        // 1. Cek TP1 HIT -> Geser Stop Loss ke Breakeven (Entry Price) [Risk-Free]
+        if (sig.status === 'ACTIVE') {
+          const hitTP1 = isLong ? markPrice >= sig.tp1 : markPrice <= sig.tp1;
+
+          if (hitTP1) {
+            const profitPct = isLong
+              ? ((markPrice - sig.entryPrice) / sig.entryPrice) * 100
+              : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
+
+            this.logger.log(
+              `[TSL TRIGGER] ${sig.symbol} HIT TP1 (${sig.tp1})! Moving SL to Breakeven (${sig.entryPrice})`,
+            );
+
+            // Update database
+            await this.prisma.signal.update({
+              where: { id: sig.id },
+              data: {
+                status: 'TP1_HIT',
+                profitPct: parseFloat(profitPct.toFixed(2)),
+                hitTime: new Date(),
+              },
+            });
+
+            // Geser SL di Binance ke harga Entry
+            const filters = await this.binanceService.getSymbolFilters(sig.symbol);
+            const breakevenSL = this.binanceService.roundTick(sig.entryPrice, filters.tickSize);
+            const exitSide = isLong ? 'SELL' : 'BUY';
+
+            try {
+              await this.binanceService.placeOrder({
+                symbol: sig.symbol,
+                side: exitSide,
+                type: 'STOP_MARKET',
+                stopPrice: breakevenSL,
+                reduceOnly: true,
+              });
+              this.logger.log(`[TSL MOVED] SL moved to Breakeven ${breakevenSL} for ${sig.symbol}`);
+            } catch (err: any) {
+              this.logger.warn(`Failed moving SL to BE for ${sig.symbol}: ${err.message}`);
+            }
+
+            // Broadcast ke frontend websocket
+            this.gateway.broadcastSignalUpdate({
+              id: sig.id,
+              status: 'TP1_HIT',
+              profitPct: parseFloat(profitPct.toFixed(2)),
+            });
+          }
+        }
+
+        // 2. Cek TP2 HIT -> Geser Trailing Stop Loss ke Level TP1 [Lock Profit]
+        if (sig.status === 'TP1_HIT' && sig.tp2) {
+          const hitTP2 = isLong ? markPrice >= sig.tp2 : markPrice <= sig.tp2;
+
+          if (hitTP2) {
+            const profitPct = isLong
+              ? ((markPrice - sig.entryPrice) / sig.entryPrice) * 100
+              : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
+
+            this.logger.log(
+              `[TSL TRIGGER] ${sig.symbol} HIT TP2 (${sig.tp2})! Trailing SL locked at TP1 (${sig.tp1})`,
+            );
+
+            await this.prisma.signal.update({
+              where: { id: sig.id },
+              data: {
+                status: 'TP2_HIT',
+                profitPct: parseFloat(profitPct.toFixed(2)),
+                hitTime: new Date(),
+              },
+            });
+
+            // Geser SL di Binance ke harga TP1
+            const filters = await this.binanceService.getSymbolFilters(sig.symbol);
+            const lockedSL = this.binanceService.roundTick(sig.tp1, filters.tickSize);
+            const exitSide = isLong ? 'SELL' : 'BUY';
+
+            try {
+              await this.binanceService.placeOrder({
+                symbol: sig.symbol,
+                side: exitSide,
+                type: 'STOP_MARKET',
+                stopPrice: lockedSL,
+                reduceOnly: true,
+              });
+              this.logger.log(`[TSL MOVED] SL locked at TP1 ${lockedSL} for ${sig.symbol}`);
+            } catch (err: any) {
+              this.logger.warn(`Failed moving SL to TP1 for ${sig.symbol}: ${err.message}`);
+            }
+
+            this.gateway.broadcastSignalUpdate({
+              id: sig.id,
+              status: 'TP2_HIT',
+              profitPct: parseFloat(profitPct.toFixed(2)),
+            });
+          }
+        }
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Error monitoring signals: ${message}`);
+      this.logger.error(`Error monitoring active signals: ${message}`);
     }
   }
 }
+

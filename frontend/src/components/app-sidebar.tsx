@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/sidebar";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { signals, strategies, config, positions, setActiveTab } = useCryptoSpike();
+  const { signals, strategies, config, positions, setActiveTab } =
+    useCryptoSpike();
 
   const activeSignalsCount = signals.filter(
     (s) => s.status === "ACTIVE",
@@ -46,7 +47,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Active Positions",
       url: "#positions",
       icon: BriefcaseIcon,
-      badge: activePositionsCount > 0 ? `${activePositionsCount} Open` : undefined,
+      badge:
+        activePositionsCount > 0 ? `${activePositionsCount} Open` : undefined,
       badgeVariant: "default" as const,
     },
     {
