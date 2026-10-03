@@ -1,11 +1,6 @@
 import { useState, useMemo } from "react";
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
   RefreshCwIcon,
-  SearchIcon,
   ZapIcon,
   Code2Icon,
 } from "lucide-react";
@@ -13,6 +8,8 @@ import {
 import { useCryptoSpike } from "@/mock/mock-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { TableToolbar } from "@/components/ui/table-toolbar";
 import {
   Card,
   CardContent,
@@ -85,32 +82,26 @@ export function StrategyManagerCrud() {
           </div>
         </CardHeader>
 
-        {/* Search Bar */}
-        <div className="px-6 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-b bg-muted/50">
-          <div className="relative w-full sm:w-72">
-            <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Cari strategi, indikator, TF..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="h-9 pl-8 text-xs bg-background"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-auto text-xs text-muted-foreground font-mono">
-            <span>Menampilkan</span>
-            <span className="font-semibold text-foreground">
-              {totalItems > 0 ? startIndex + 1 : 0}-{endIndex}
-            </span>
-            <span>dari</span>
-            <span className="font-semibold text-foreground">{totalItems}</span>
-            <span>strategi backend</span>
-          </div>
-        </div>
+        {/* Sub-Navigation & Filter Bar via TableToolbar */}
+        <TableToolbar
+          searchTerm={searchTerm}
+          onSearchChange={(val) => {
+            setSearchTerm(val);
+            setCurrentPage(1);
+          }}
+          searchPlaceholder="Cari strategi, indikator, TF..."
+          rightActions={
+            <>
+              <span>Menampilkan</span>
+              <span className="font-semibold text-foreground">
+                {totalItems > 0 ? startIndex + 1 : 0}-{endIndex}
+              </span>
+              <span>dari</span>
+              <span className="font-semibold text-foreground">{totalItems}</span>
+              <span>strategi backend</span>
+            </>
+          }
+        />
 
         <CardContent className="p-6 pt-4 space-y-4">
           <div className="rounded-md border overflow-x-auto bg-card">
@@ -227,94 +218,17 @@ export function StrategyManagerCrud() {
             </Table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-lg border bg-muted/50 mt-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">
-                Baris per halaman:
-              </span>
-              <Select
-                value={`${pageSize}`}
-                onValueChange={(val) => {
-                  setPageSize(Number(val));
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="h-8 w-[76px] text-xs bg-background font-semibold">
-                  <SelectValue placeholder={pageSize} />
-                </SelectTrigger>
-                <SelectContent side="top" className="bg-popover">
-                  {[5, 10, 20].map((size) => (
-                    <SelectItem
-                      key={size}
-                      value={`${size}`}
-                      className="text-xs"
-                    >
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-foreground font-medium">
-                Halaman{" "}
-                <span className="text-foreground font-semibold font-mono">
-                  {validCurrentPage}
-                </span>{" "}
-                dari{" "}
-                <span className="text-foreground font-semibold font-mono">
-                  {totalPages}
-                </span>
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage(1)}
-                  disabled={validCurrentPage <= 1}
-                  title="Halaman Pertama"
-                >
-                  <ChevronsLeftIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={validCurrentPage <= 1}
-                  title="Halaman Sebelumnya"
-                >
-                  <ChevronLeftIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={validCurrentPage >= totalPages}
-                  title="Halaman Berikutnya"
-                >
-                  <ChevronRightIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={validCurrentPage >= totalPages}
-                  title="Halaman Terakhir"
-                >
-                  <ChevronsRightIcon className="size-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          {/* Consistent Pagination Controls */}
+          <TablePagination
+            currentPage={validCurrentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            pageSizeOptions={[5, 10, 20]}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="strategi backend"
+          />
         </CardContent>
       </Card>
     </div>

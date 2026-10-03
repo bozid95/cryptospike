@@ -2,12 +2,7 @@ import { useState, useMemo } from "react";
 import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
   RadioIcon,
-  SearchIcon,
   Trash2Icon,
   TargetIcon,
   TrendingUpIcon,
@@ -20,6 +15,8 @@ import {
 } from "lucide-react";
 
 import { useCryptoSpike } from "@/mock/mock-context";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { TableToolbar } from "@/components/ui/table-toolbar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -338,81 +335,56 @@ export function SignalsCrud() {
               (Closed) beserta perolehan Profit/Loss.
             </CardDescription>
           </div>
-
-          {/* Filter Segmented Buttons */}
-          <div className="flex items-center gap-1.5 p-1 rounded-lg border bg-muted text-xs shrink-0">
-            <button
-              onClick={() => {
-                setFilter("ALL");
-                setCurrentPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-                filter === "ALL"
-                  ? "bg-card text-foreground shadow-2xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Semua ({signals.length})
-            </button>
-            <button
-              onClick={() => {
-                setFilter("RUNNING");
-                setCurrentPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 ${
-                filter === "RUNNING"
-                  ? "bg-card text-foreground shadow-2xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              Running ({runningSignals.length})
-            </button>
-            <button
-              onClick={() => {
-                setFilter("CLOSED");
-                setCurrentPage(1);
-              }}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-                filter === "CLOSED"
-                  ? "bg-card text-foreground shadow-2xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Closed / Selesai ({closedSignals.length})
-            </button>
-          </div>
         </CardHeader>
 
-        {/* Search & Tool Bar with Solid Background */}
-        <div className="px-6 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-b bg-muted/50">
-          <div className="relative w-full sm:w-72">
-            <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Cari pair, strategi, atau arah..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="h-9 pl-8 text-xs bg-background"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-auto text-xs text-muted-foreground font-mono">
-            <span>Menampilkan</span>
-            <span className="font-semibold text-foreground">
-              {totalItems > 0 ? startIndex + 1 : 0}-{endIndex}
-            </span>
-            <span>dari</span>
-            <span className="font-semibold text-foreground">{totalItems}</span>
-            <span>sinyal</span>
-          </div>
-        </div>
+        {/* Sub-Navigation & Filter Bar via TableToolbar */}
+        <TableToolbar<"ALL" | "RUNNING" | "CLOSED">
+          tabs={[
+            {
+              id: "ALL",
+              label: "Semua",
+              count: signals.length,
+            },
+            {
+              id: "RUNNING",
+              label: "Running",
+              count: runningSignals.length,
+              badge: (
+                <span className="relative flex h-2 w-2 ml-0.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              ),
+            },
+            {
+              id: "CLOSED",
+              label: "Closed / Selesai",
+              count: closedSignals.length,
+            },
+          ]}
+          activeTab={filter}
+          onTabChange={(tabId) => {
+            setFilter(tabId);
+            setCurrentPage(1);
+          }}
+          searchTerm={searchTerm}
+          onSearchChange={(val) => {
+            setSearchTerm(val);
+            setCurrentPage(1);
+          }}
+          searchPlaceholder="Cari pair, strategi, atau arah..."
+          rightActions={
+            <>
+              <span>Menampilkan</span>
+              <span className="font-semibold text-foreground">
+                {totalItems > 0 ? startIndex + 1 : 0}-{endIndex}
+              </span>
+              <span>dari</span>
+              <span className="font-semibold text-foreground">{totalItems}</span>
+              <span>sinyal</span>
+            </>
+          }
+        />
 
         <CardContent className="p-6 pt-4 space-y-4">
           <div className="rounded-md border overflow-x-auto bg-card">
@@ -806,94 +778,16 @@ export function SignalsCrud() {
             </Table>
           </div>
 
-          {/* Standard Pagination Bar with Solid Background & Clear Padding */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-lg border bg-muted/50 mt-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">
-                Baris per halaman:
-              </span>
-              <Select
-                value={`${pageSize}`}
-                onValueChange={(val) => {
-                  setPageSize(Number(val));
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="h-8 w-[76px] text-xs bg-background font-semibold">
-                  <SelectValue placeholder={pageSize} />
-                </SelectTrigger>
-                <SelectContent side="top" className="bg-popover">
-                  {[5, 10, 20, 50].map((size) => (
-                    <SelectItem
-                      key={size}
-                      value={`${size}`}
-                      className="text-xs"
-                    >
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-foreground font-medium">
-                Halaman{" "}
-                <span className="text-foreground font-semibold font-mono">
-                  {validCurrentPage}
-                </span>{" "}
-                dari{" "}
-                <span className="text-foreground font-semibold font-mono">
-                  {totalPages}
-                </span>
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage(1)}
-                  disabled={validCurrentPage <= 1}
-                  title="Halaman Pertama"
-                >
-                  <ChevronsLeftIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={validCurrentPage <= 1}
-                  title="Halaman Sebelumnya"
-                >
-                  <ChevronLeftIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={validCurrentPage >= totalPages}
-                  title="Halaman Berikutnya"
-                >
-                  <ChevronRightIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={validCurrentPage >= totalPages}
-                  title="Halaman Terakhir"
-                >
-                  <ChevronsRightIcon className="size-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          {/* Standard Pagination Bar via TablePagination */}
+          <TablePagination
+            currentPage={validCurrentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="sinyal"
+          />
         </CardContent>
       </Card>
     </div>

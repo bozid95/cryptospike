@@ -14,14 +14,12 @@ import {
   HistoryIcon,
   ClockIcon,
   Trash2Icon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/mock/mock-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { TableToolbar } from "@/components/ui/table-toolbar";
 import {
   Select,
   SelectContent,
@@ -389,53 +387,32 @@ export function PositionsCrud() {
         </CardHeader>
 
         {/* Sub-Navigation & Filter Bar */}
-        <div className="px-6 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-b bg-muted/50">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {/* Segmented Buttons Active vs History Closed */}
-            <div className="inline-flex rounded-lg border bg-background p-0.5 text-xs">
-              <button
-                type="button"
-                onClick={() => handleTabChange("ACTIVE")}
-                className={`px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTabFilter === "ACTIVE"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <BriefcaseIcon className="size-3.5" />
-                Active ({positions.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTabChange("CLOSED")}
-                className={`px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTabFilter === "CLOSED"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <HistoryIcon className="size-3.5" />
-                History Closed ({closedPositions.length})
-              </button>
-            </div>
-
-            <div className="relative w-full sm:w-56">
-              <SearchIcon className="absolute left-2.5 top-2 size-3.5 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Cari simbol pair atau side..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="h-8 pl-8 text-xs bg-background"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 self-end sm:self-auto text-xs text-muted-foreground font-mono">
-            {activeTabFilter === "ACTIVE" ? (
+        {/* Sub-Navigation & Filter Bar via TableToolbar */}
+        <TableToolbar<"ACTIVE" | "CLOSED">
+          tabs={[
+            {
+              id: "ACTIVE",
+              label: "Active",
+              count: positions.length,
+              icon: <BriefcaseIcon className="size-3.5" />,
+            },
+            {
+              id: "CLOSED",
+              label: "History Closed",
+              count: closedPositions.length,
+              icon: <HistoryIcon className="size-3.5" />,
+            },
+          ]}
+          activeTab={activeTabFilter}
+          onTabChange={handleTabChange}
+          searchTerm={searchTerm}
+          onSearchChange={(val) => {
+            setSearchTerm(val);
+            setCurrentPage(1);
+          }}
+          searchPlaceholder="Cari simbol pair atau side..."
+          rightActions={
+            activeTabFilter === "ACTIVE" ? (
               <>
                 <span>Total Posisi Terbuka:</span>
                 <span className="font-semibold text-foreground text-sm">
@@ -466,9 +443,9 @@ export function PositionsCrud() {
                   </Button>
                 )}
               </>
-            )}
-          </div>
-        </div>
+            )
+          }
+        />
 
         <CardContent className="p-6 pt-4 space-y-4">
           <div className="rounded-md border overflow-x-auto bg-card">
@@ -839,98 +816,18 @@ export function PositionsCrud() {
             )}
           </div>
 
-          {/* Pagination Controls */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-lg border bg-muted/50 mt-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">
-                Baris per halaman:
-              </span>
-              <Select
-                value={`${pageSize}`}
-                onValueChange={(val) => {
-                  setPageSize(Number(val));
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="h-8 w-[76px] text-xs bg-background font-semibold">
-                  <SelectValue placeholder={pageSize} />
-                </SelectTrigger>
-                <SelectContent side="top" className="bg-popover">
-                  {[5, 10, 20, 50].map((size) => (
-                    <SelectItem
-                      key={size}
-                      value={`${size}`}
-                      className="text-xs"
-                    >
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-foreground font-medium">
-                Halaman{" "}
-                <span className="text-foreground font-semibold font-mono">
-                  {validCurrentPage}
-                </span>{" "}
-                dari{" "}
-                <span className="text-foreground font-semibold font-mono">
-                  {totalPages}
-                </span>
-                <span className="ml-1 text-[11px] text-muted-foreground/80">
-                  (Total {activeDatasetCount}{" "}
-                  {activeTabFilter === "ACTIVE" ? "posisi aktif" : "riwayat"})
-                </span>
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage(1)}
-                  disabled={validCurrentPage <= 1}
-                  title="Halaman Pertama"
-                >
-                  <ChevronsLeftIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={validCurrentPage <= 1}
-                  title="Halaman Sebelumnya"
-                >
-                  <ChevronLeftIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={validCurrentPage >= totalPages}
-                  title="Halaman Berikutnya"
-                >
-                  <ChevronRightIcon className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-8 bg-background hover:bg-muted"
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={validCurrentPage >= totalPages}
-                  title="Halaman Terakhir"
-                >
-                  <ChevronsRightIcon className="size-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          {/* Consistent Pagination Controls */}
+          <TablePagination
+            currentPage={validCurrentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={activeDatasetCount}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            itemLabel={
+              activeTabFilter === "ACTIVE" ? "posisi aktif" : "riwayat posisi"
+            }
+          />
         </CardContent>
       </Card>
     </div>
