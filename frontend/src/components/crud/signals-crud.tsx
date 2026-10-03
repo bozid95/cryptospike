@@ -12,11 +12,21 @@ import {
   ZapIcon,
   ClockIcon,
   RefreshCwIcon,
+  ChevronDownIcon,
+  PlayIcon,
 } from "lucide-react";
 
 import { useCryptoSpike } from "@/context/trading-context";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { TableToolbar } from "@/components/ui/table-toolbar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -183,7 +193,14 @@ export function SignalsCrud() {
 
   const handleStatusUpdate = (
     id: string,
-    status: "TP1_HIT" | "SL_HIT",
+    status:
+      | "ACTIVE"
+      | "TP1_HIT"
+      | "TP2_HIT"
+      | "TP3_HIT"
+      | "TSL_HIT"
+      | "SL_HIT"
+      | "CANCELLED",
     profit: number,
   ) => {
     updateSignalStatus(id, status, profit);
@@ -689,50 +706,173 @@ export function SignalsCrud() {
                         <TableCell className="align-middle text-right">
                           <div className="flex items-center justify-end gap-1">
                             {isRunning && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 text-xs text-emerald-600 hover:bg-emerald-50 font-medium px-2"
-                                  onClick={() =>
-                                    handleStatusUpdate(
-                                      sig.id,
-                                      "TP1_HIT",
-                                      parseFloat(
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-xs font-medium px-2 gap-1 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
+                                    title="Close or Simulate Hit Targets"
+                                  >
+                                    <TargetIcon className="size-3" />
+                                    <span>Simulate Action</span>
+                                    <ChevronDownIcon className="size-3 opacity-60" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-52">
+                                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
+                                    Simulate Profit / Loss
+                                  </DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+
+                                  {/* Hit TP1 */}
+                                  <DropdownMenuItem
+                                    className="cursor-pointer text-xs font-medium text-emerald-600 focus:text-emerald-700 focus:bg-emerald-500/10"
+                                    onClick={() => {
+                                      const pPct = parseFloat(
                                         (
                                           (Math.abs(sig.tp1 - sig.entryPrice) /
                                             sig.entryPrice) *
                                           100
                                         ).toFixed(2),
-                                      ),
-                                    )
-                                  }
-                                  title="Simulate Hit TP1"
-                                >
-                                  Hit TP1
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 text-xs text-destructive hover:bg-destructive/10 font-medium px-2"
-                                  onClick={() =>
-                                    handleStatusUpdate(
-                                      sig.id,
-                                      "SL_HIT",
-                                      -parseFloat(
+                                      );
+                                      handleStatusUpdate(sig.id, "TP1_HIT", pPct);
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <span>Hit TP1 Target</span>
+                                      <span className="font-mono text-[11px] font-bold">
+                                        +
+                                        {(
+                                          (Math.abs(sig.tp1 - sig.entryPrice) /
+                                            sig.entryPrice) *
+                                          100
+                                        ).toFixed(2)}
+                                        %
+                                      </span>
+                                    </div>
+                                  </DropdownMenuItem>
+
+                                  {/* Hit TP2 */}
+                                  {sig.tp2 && (
+                                    <DropdownMenuItem
+                                      className="cursor-pointer text-xs font-medium text-teal-600 focus:text-teal-700 focus:bg-teal-500/10"
+                                      onClick={() => {
+                                        const pPct = parseFloat(
+                                          (
+                                            (Math.abs(sig.tp2! - sig.entryPrice) /
+                                              sig.entryPrice) *
+                                            100
+                                          ).toFixed(2),
+                                        );
+                                        handleStatusUpdate(sig.id, "TP2_HIT", pPct);
+                                      }}
+                                    >
+                                      <div className="flex items-center justify-between w-full">
+                                        <span>Hit TP2 Target</span>
+                                        <span className="font-mono text-[11px] font-bold">
+                                          +
+                                          {(
+                                            (Math.abs(sig.tp2 - sig.entryPrice) /
+                                              sig.entryPrice) *
+                                            100
+                                          ).toFixed(2)}
+                                          %
+                                        </span>
+                                      </div>
+                                    </DropdownMenuItem>
+                                  )}
+
+                                  {/* Hit TP3 */}
+                                  {sig.tp3 && (
+                                    <DropdownMenuItem
+                                      className="cursor-pointer text-xs font-medium text-cyan-600 focus:text-cyan-700 focus:bg-cyan-500/10"
+                                      onClick={() => {
+                                        const pPct = parseFloat(
+                                          (
+                                            (Math.abs(sig.tp3! - sig.entryPrice) /
+                                              sig.entryPrice) *
+                                            100
+                                          ).toFixed(2),
+                                        );
+                                        handleStatusUpdate(sig.id, "TP3_HIT", pPct);
+                                      }}
+                                    >
+                                      <div className="flex items-center justify-between w-full">
+                                        <span>Hit TP3 (Max Target)</span>
+                                        <span className="font-mono text-[11px] font-bold">
+                                          +
+                                          {(
+                                            (Math.abs(sig.tp3 - sig.entryPrice) /
+                                              sig.entryPrice) *
+                                            100
+                                          ).toFixed(2)}
+                                          %
+                                        </span>
+                                      </div>
+                                    </DropdownMenuItem>
+                                  )}
+
+                                  <DropdownMenuSeparator />
+
+                                  {/* Close at Current Floating PnL */}
+                                  <DropdownMenuItem
+                                    className="cursor-pointer text-xs font-medium"
+                                    onClick={() => {
+                                      const currentPnL = sig.profitPct ?? 0;
+                                      handleStatusUpdate(
+                                        sig.id,
+                                        currentPnL >= 0 ? "TP1_HIT" : "SL_HIT",
+                                        currentPnL,
+                                      );
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <span>Close (Current PnL)</span>
+                                      <span
+                                        className={`font-mono text-[11px] font-bold ${
+                                          (sig.profitPct ?? 0) >= 0
+                                            ? "text-emerald-600"
+                                            : "text-rose-500"
+                                        }`}
+                                      >
+                                        {(sig.profitPct ?? 0) >= 0 ? "+" : ""}
+                                        {(sig.profitPct ?? 0).toFixed(2)}%
+                                      </span>
+                                    </div>
+                                  </DropdownMenuItem>
+
+                                  <DropdownMenuSeparator />
+
+                                  {/* Hit SL */}
+                                  <DropdownMenuItem
+                                    className="cursor-pointer text-xs font-medium text-rose-500 focus:text-rose-600 focus:bg-rose-500/10"
+                                    onClick={() => {
+                                      const lossPct = -parseFloat(
                                         (
                                           (Math.abs(sig.entryPrice - sig.sl) /
                                             sig.entryPrice) *
                                           100
                                         ).toFixed(2),
-                                      ),
-                                    )
-                                  }
-                                  title="Simulate Hit SL"
-                                >
-                                  Hit SL
-                                </Button>
-                              </>
+                                      );
+                                      handleStatusUpdate(sig.id, "SL_HIT", lossPct);
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between w-full">
+                                      <span>Hit Stop Loss (SL)</span>
+                                      <span className="font-mono text-[11px] font-bold">
+                                        -
+                                        {(
+                                          (Math.abs(sig.entryPrice - sig.sl) /
+                                            sig.entryPrice) *
+                                          100
+                                        ).toFixed(2)}
+                                        %
+                                      </span>
+                                    </div>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             )}
 
                             <AlertDialog>

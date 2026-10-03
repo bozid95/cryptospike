@@ -159,7 +159,9 @@ export class PositionController {
           closeReason: 'Manual Operator Close',
         },
       });
-      this.logger.log(`Persisted closed position for ${body.symbol} to database.`);
+      this.logger.log(
+        `Persisted closed position for ${body.symbol} to database.`,
+      );
     } catch (dbErr) {
       this.logger.warn(
         `Failed to persist closed position for ${body.symbol}: ${dbErr}`,
