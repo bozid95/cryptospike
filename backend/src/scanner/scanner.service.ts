@@ -78,16 +78,21 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
       });
     }
 
-    // 2. Cooldown check per symbol (minimal 20 detik antar evaluasi per symbol)
+    // 2. Cooldown & Active Signal Check per symbol
+    // Jika simbol sudah memiliki sinyal yang sedang ACTIVE di pasar, jangan spam sinyal baru untuk koin yang sama!
+    if (this.activeSignalSymbols.has(ticker.s)) {
+      return;
+    }
+
     const now = Date.now();
     const last = this.lastEvaluated.get(ticker.s) || 0;
-    if (now - last < 20000) return;
+    if (now - last < 60000) return; // Minimal 60 detik cooldown evaluasi per symbol
 
     const priceChangePct = parseFloat(ticker.P);
     const quoteVolume = parseFloat(ticker.q);
 
-    // Filter dasar trigger: hanya pergerakan momentum signifikan (>= 2.8% atau <= -2.8%) dan likuiditas minimal $100M
-    if (Math.abs(priceChangePct) < 2.8 || quoteVolume < 100000000) return;
+    // Filter dasar trigger: hanya pergerakan momentum signifikan (>= 3.0% atau <= -3.0%) dan likuiditas minimal $100M
+    if (Math.abs(priceChangePct) < 3.0 || quoteVolume < 100000000) return;
 
     this.lastEvaluated.set(ticker.s, now);
 
@@ -106,8 +111,8 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
     const results = await this.strategyRegistry.evaluateAll(marketData);
 
     for (const { strategyKey, result } of results) {
-      // Filter Kualitas Super Strong: Hanya terbitkan sinyal dengan confidence HIGH dan score >= 80
-      if (result.confidence !== 'HIGH' || (result.score && result.score < 80)) {
+      // Filter Kualitas Super Strong & Anti-Spam: Confidence HIGH dan score >= 85 (Validasi 4H + 1H Penuh)
+      if (result.confidence !== 'HIGH' || (result.score && result.score < 85)) {
         continue;
       }
 

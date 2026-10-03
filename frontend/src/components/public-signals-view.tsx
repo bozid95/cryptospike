@@ -998,7 +998,7 @@ export function PublicSignalsView() {
                     </span>
 
                     <div className="flex items-center gap-2">
-                      {typeof displayProfitPct === "number" && (
+                      {typeof displayProfitPct === "number" &&
                         (() => {
                           const margin = sig.simulatedMargin ?? 10.0;
                           const pnlUsd =
@@ -1021,13 +1021,11 @@ export function PublicSignalsView() {
                                 {displayProfitPct.toFixed(2)}%
                               </span>
                               <span className="text-[10px] font-semibold opacity-90">
-                                ({isUsdPositive ? "+" : ""}$
-                                {pnlUsd.toFixed(2)})
+                                ({isUsdPositive ? "+" : ""}${pnlUsd.toFixed(2)})
                               </span>
                             </span>
                           );
-                        })()
-                      )}
+                        })()}
 
                       <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
                         <ClockIcon className="size-3 text-muted-foreground/60" />

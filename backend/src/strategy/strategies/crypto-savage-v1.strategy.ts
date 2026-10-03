@@ -413,19 +413,39 @@ export class CryptoSavageV1Strategy implements IStrategy {
       const longReasons: string[] = [];
       const shortReasons: string[] = [];
 
+      // ==========================================
+      // MANDATORY 4H HIGHER TIMEFRAME CONFIRMATION
+      // ==========================================
+      // 1. 4H Trend Alignment:
+      // LONG: Harga di atas EMA50 4H atau EMA20 4H >= EMA50 4H (Bullish HTF Structure)
+      // SHORT: Harga di bawah EMA50 4H atau EMA20 4H <= EMA50 4H (Bearish HTF Structure)
+      const ema20_4h = this.calcEMA(closes4h, 20);
+      const lastEma20_4h = ema20_4h[ema20_4h.length - 1];
+
+      const is4hBullishStructure =
+        lastPrice >= lastEma50_4h * 0.99 || lastEma20_4h >= lastEma50_4h * 0.995;
+      const is4hBearishStructure =
+        lastPrice <= lastEma50_4h * 1.01 || lastEma20_4h <= lastEma50_4h * 1.005;
+
       // --- A. EVALUASI SETUP LONG (BULLISH) ---
-      // 1. Support Zone Interaction
+      // 1. Support Zone Interaction (Wajib dekat zona S/R 4H yang kuat)
       const nearSupport = supports.find(
-        (s) => Math.abs(lastPrice - s.level) / lastPrice <= 0.022,
+        (s) => Math.abs(lastPrice - s.level) / lastPrice <= 0.025,
       );
       if (nearSupport) {
-        longScore += 25;
+        longScore += 30;
         longReasons.push(
           `Near 4H Dynamic Support ($${nearSupport.level.toFixed(4)}) with ${nearSupport.touches} touches`,
         );
       }
 
-      // 2. Rejection Wick (Pin bar di area bawah)
+      // 2. 4H Trend Confluence
+      if (is4hBullishStructure) {
+        longScore += 20;
+        longReasons.push('4H Higher Timeframe Bullish Trend confirmed (EMA20/50 alignment)');
+      }
+
+      // 3. Rejection Wick (Pin bar di area bawah pada 1H)
       if (rejection1.isBullishRejection || rejection2.isBullishRejection) {
         longScore += 20;
         longReasons.push(
@@ -433,51 +453,77 @@ export class CryptoSavageV1Strategy implements IStrategy {
         );
       }
 
-      // 3. Momentum / Engulfing Follow-Through
+      // 4. Momentum / Engulfing Follow-Through
       if (followThrough.isBullishFollowThrough) {
-        longScore += 25;
+        longScore += 20;
         longReasons.push(
           'Bullish Engulfing/Momentum Candle confirmed follow-through',
         );
       }
 
-      // 4. EMA 50 Dynamic Support Confluence
+      // 5. EMA 50 Dynamic Support Confluence
       const aboveEma50_4h = lastPrice >= lastEma50_4h * 0.995;
       const bouncingEma50_1h =
         Math.abs(lastPrice - lastEma50_1h) / lastPrice <= 0.015 &&
         lastPrice >= lastEma50_1h;
       if (aboveEma50_4h || bouncingEma50_1h) {
-        longScore += 15;
+        longScore += 10;
         longReasons.push('50 EMA Confluence acting as Dynamic Support');
       }
 
-      // 5. RSI Divergence / Healthy RSI
+      // 6. RSI Divergence / Healthy RSI (Filter anti-pucuk: RSI 1H tidak boleh > 70)
+      const currentRsi1h = rsiArr1h[rsiArr1h.length - 1];
       if (divergence.hasBullishDiv) {
         longScore += 15;
         longReasons.push(
           `Bullish RSI Divergence confirmed (RSI: ${divergence.rsiValue.toFixed(1)})`,
         );
+      } else if (currentRsi1h >= 40 && currentRsi1h <= 65) {
+        longScore += 5;
+        longReasons.push(`1H RSI Healthy Momentum (${currentRsi1h.toFixed(1)})`);
       }
 
-      // 6. Counter-Trendline Breakout
+      // 7. Counter-Trendline Breakout
       if (this.detectCounterTrendlineBreak(klines1h, true)) {
         longScore += 15;
         longReasons.push('Counter-trendline resistance breakout confirmed');
       }
 
+      // Filter Pembatalan LONG (Anti-Spam Filter):
+      // - Wajib didukung 4H bullish structure
+      // - Wajib ada interaksi dengan 4H support zone
+      // - Wajib ada rejection wick atau engulfing follow-through
+      // - Hindari long jika RSI 1H overbought (> 72)
+      if (
+        !is4hBullishStructure ||
+        !nearSupport ||
+        (!rejection1.isBullishRejection &&
+          !rejection2.isBullishRejection &&
+          !followThrough.isBullishFollowThrough) ||
+        currentRsi1h > 72
+      ) {
+        longScore = 0;
+      }
+
       // --- B. EVALUASI SETUP SHORT (BEARISH) ---
       // 1. Resistance Zone Interaction
       const nearResistance = resistances.find(
-        (r) => Math.abs(r.level - lastPrice) / lastPrice <= 0.022,
+        (r) => Math.abs(r.level - lastPrice) / lastPrice <= 0.025,
       );
       if (nearResistance) {
-        shortScore += 25;
+        shortScore += 30;
         shortReasons.push(
           `Near 4H Dynamic Resistance ($${nearResistance.level.toFixed(4)}) with ${nearResistance.touches} touches`,
         );
       }
 
-      // 2. Rejection Wick (Pin bar di area atas)
+      // 2. 4H Trend Confluence
+      if (is4hBearishStructure) {
+        shortScore += 20;
+        shortReasons.push('4H Higher Timeframe Bearish Trend confirmed (EMA20/50 alignment)');
+      }
+
+      // 3. Rejection Wick (Pin bar di area atas pada 1H)
       if (rejection1.isBearishRejection || rejection2.isBearishRejection) {
         shortScore += 20;
         shortReasons.push(
@@ -485,44 +531,63 @@ export class CryptoSavageV1Strategy implements IStrategy {
         );
       }
 
-      // 3. Momentum / Engulfing Follow-Through
+      // 4. Momentum / Engulfing Follow-Through
       if (followThrough.isBearishFollowThrough) {
-        shortScore += 25;
+        shortScore += 20;
         shortReasons.push(
           'Bearish Engulfing/Momentum Candle confirmed follow-through',
         );
       }
 
-      // 4. EMA 50 Dynamic Resistance Confluence
+      // 5. EMA 50 Dynamic Resistance Confluence
       const belowEma50_4h = lastPrice <= lastEma50_4h * 1.005;
       const rejectingEma50_1h =
         Math.abs(lastPrice - lastEma50_1h) / lastPrice <= 0.015 &&
         lastPrice <= lastEma50_1h;
       if (belowEma50_4h || rejectingEma50_1h) {
-        shortScore += 15;
+        shortScore += 10;
         shortReasons.push('50 EMA Confluence acting as Dynamic Resistance');
       }
 
-      // 5. RSI Divergence
+      // 6. RSI Divergence / Breakdown
       if (divergence.hasBearishDiv) {
         shortScore += 15;
         shortReasons.push(
           `Bearish RSI Divergence confirmed (RSI: ${divergence.rsiValue.toFixed(1)})`,
         );
+      } else if (currentRsi1h >= 35 && currentRsi1h <= 60) {
+        shortScore += 5;
+        shortReasons.push(`1H RSI Bearish Room (${currentRsi1h.toFixed(1)})`);
       }
 
-      // 6. Counter-Trendline Breakout
+      // 7. Counter-Trendline Breakout
       if (this.detectCounterTrendlineBreak(klines1h, false)) {
         shortScore += 15;
         shortReasons.push('Counter-trendline support breakdown confirmed');
       }
 
+      // Filter Pembatalan SHORT (Anti-Spam Filter):
+      // - Wajib didukung 4H bearish structure
+      // - Wajib ada interaksi dengan 4H resistance zone
+      // - Wajib ada rejection wick atau engulfing follow-through
+      // - Hindari short jika RSI 1H oversold (< 28)
+      if (
+        !is4hBearishStructure ||
+        !nearResistance ||
+        (!rejection1.isBearishRejection &&
+          !rejection2.isBearishRejection &&
+          !followThrough.isBearishFollowThrough) ||
+        currentRsi1h < 28
+      ) {
+        shortScore = 0;
+      }
+
       // ==========================================
       // 7. DECISION & RISK MANAGEMENT (1:2+ RRR)
       // ==========================================
-      // Standar Super Strong: minimal 80 poin confluence (HTF Zone + Rejection/Momentum + Trendline/EMA)
-      const isLongValid = longScore >= 80;
-      const isShortValid = shortScore >= 80;
+      // Standar Super Strong: minimal 85 poin confluence dengan validasi HTF 4H penuh
+      const isLongValid = longScore >= 85;
+      const isShortValid = shortScore >= 85;
 
       if (!isLongValid && !isShortValid) {
         return null;
