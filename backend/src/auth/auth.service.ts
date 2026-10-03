@@ -27,8 +27,10 @@ export class AuthService implements OnModuleInit {
     try {
       const rawUser = process.env.ADMIN_USERNAME?.trim();
       const rawPass = process.env.ADMIN_PASSWORD?.trim();
-      const adminUsername = rawUser && rawUser.length > 0 ? rawUser : 'cspk_operator_9x';
-      const adminPassword = rawPass && rawPass.length > 0 ? rawPass : 'Kx9#mQ2$vL8@wP5!Zt7&';
+      const adminUsername =
+        rawUser && rawUser.length > 0 ? rawUser : 'cspk_operator_9x';
+      const adminPassword =
+        rawPass && rawPass.length > 0 ? rawPass : 'Kx9#mQ2$vL8@wP5!Zt7&';
 
       const existingUser = await this.prisma.user.findFirst({
         where: {
@@ -73,19 +75,28 @@ export class AuthService implements OnModuleInit {
   }
 
   async login(username: string, pass: string) {
+    this.logger.log(`[AUTH LOGIN ATTEMPT] Username="${username}"`);
     const user = await this.prisma.user.findUnique({
       where: { username },
     });
 
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException('Username atau password salah.');
+    if (!user) {
+      this.logger.warn(`[AUTH FAILED] User not found: "${username}"`);
+      throw new UnauthorizedException('Username tidak ditemukan.');
+    }
+
+    if (!user.isActive) {
+      this.logger.warn(`[AUTH FAILED] User is inactive: "${username}"`);
+      throw new UnauthorizedException('Akun dinonaktifkan.');
     }
 
     const isMatch = await bcrypt.compare(pass, user.passwordHash);
     if (!isMatch) {
-      throw new UnauthorizedException('Username atau password salah.');
+      this.logger.warn(`[AUTH FAILED] Password mismatch for: "${username}"`);
+      throw new UnauthorizedException('Password salah.');
     }
 
+    this.logger.log(`[AUTH SUCCESS] User logged in: "${username}"`);
     const payload = { sub: user.id, username: user.username, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
