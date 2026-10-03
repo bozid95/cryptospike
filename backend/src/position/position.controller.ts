@@ -9,8 +9,12 @@ export class PositionController {
 
   @Get()
   async getOpenPositions() {
-    const raw = await this.binanceService.getPositions();
-    return raw.map((p) => {
+    const [rawPositions, rawOrders] = await Promise.all([
+      this.binanceService.getPositions(),
+      this.binanceService.getOpenOrders(),
+    ]);
+
+    return rawPositions.map((p) => {
       const positionAmt = parseFloat(p.positionAmt);
       const entryPrice = parseFloat(p.entryPrice);
       const markPrice = parseFloat(p.markPrice);
@@ -20,6 +24,18 @@ export class PositionController {
       const initialMargin = leverage > 0 ? notional / leverage : 0;
       const roe =
         initialMargin > 0 ? (unRealizedProfit / initialMargin) * 100 : 0;
+
+      // Cari order TP/SL yang sedang terpasang di Binance untuk simbol ini
+      const matchingOrders = rawOrders
+        .filter((o) => o.symbol === p.symbol)
+        .map((o) => ({
+          orderId: o.orderId,
+          type: o.type,
+          side: o.side,
+          price: parseFloat(o.price),
+          origQty: parseFloat(o.origQty),
+          reduceOnly: o.reduceOnly,
+        }));
 
       return {
         symbol: p.symbol,
@@ -34,6 +50,7 @@ export class PositionController {
         roe: parseFloat(roe.toFixed(2)),
         notional: parseFloat(notional.toFixed(2)),
         initialMargin: parseFloat(initialMargin.toFixed(2)),
+        orders: matchingOrders,
         updateTime: p.updateTime,
       };
     });

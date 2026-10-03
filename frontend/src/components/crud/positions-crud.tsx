@@ -144,7 +144,10 @@ export function PositionsCrud() {
                   <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
                     PnL (ROE %)
                   </TableHead>
-                  <TableHead className="w-[110px] px-4 py-3 text-right font-semibold text-xs">
+                  <TableHead className="w-[190px] px-4 py-3 font-semibold text-xs">
+                    Target Orders (TP/SL)
+                  </TableHead>
+                  <TableHead className="w-[100px] px-4 py-3 text-right font-semibold text-xs">
                     Tindakan
                   </TableHead>
                 </TableRow>
@@ -244,6 +247,41 @@ export function PositionsCrud() {
                             {isProfit ? "+" : ""}
                             {pos.roe}%
                           </div>
+                        </TableCell>
+
+                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                          {pos.orders && pos.orders.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {pos.orders.map((ord, idx) => (
+                                <div
+                                  key={ord.orderId}
+                                  className="flex items-center gap-1.5 text-[11px]"
+                                >
+                                  <Badge
+                                    variant="outline"
+                                    className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                                  >
+                                    TP{idx + 1}
+                                  </Badge>
+                                  <span className="font-semibold tabular-nums">
+                                    ${ord.price.toLocaleString()}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    ({ord.origQty})
+                                  </span>
+                                </div>
+                              ))}
+                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                                <span className="text-amber-500 font-bold">●</span>
+                                <span>TSL Engine Active</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                              <span className="text-emerald-500 font-bold">●</span>
+                              <span>Engine TSL Monitored</span>
+                            </div>
+                          )}
                         </TableCell>
 
                         <TableCell className="align-middle px-4 py-3.5 text-right">

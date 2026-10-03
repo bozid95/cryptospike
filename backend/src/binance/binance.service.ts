@@ -245,6 +245,37 @@ export class BinanceService {
     }
   }
 
+  async getOpenOrders(symbol?: string): Promise<any[]> {
+    try {
+      const { apiKey, apiSecret } = this.getCredentials();
+      if (!apiKey || !apiSecret) return [];
+
+      const baseUrl = this.getFuturesBaseUrl();
+      const timestamp = Date.now();
+      const queryParts = [`timestamp=${timestamp}`];
+      if (symbol) queryParts.unshift(`symbol=${symbol}`);
+
+      const query = queryParts.join('&');
+      const signature = crypto
+        .createHmac('sha256', apiSecret)
+        .update(query)
+        .digest('hex');
+
+      const response = await axios.get<any[]>(
+        `${baseUrl}/fapi/v1/openOrders?${query}&signature=${signature}`,
+        {
+          headers: { 'X-MBX-APIKEY': apiKey },
+          timeout: 8000,
+        },
+      );
+      return response.data;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Failed to fetch open orders: ${message}`);
+      return [];
+    }
+  }
+
   async setLeverage(symbol: string, leverage: number) {
     try {
       const { apiKey, apiSecret } = this.getCredentials();

@@ -44,6 +44,14 @@ export interface PositionItem {
   roe: number;
   notional: number;
   initialMargin: number;
+  orders?: Array<{
+    orderId: number;
+    type: string;
+    side: string;
+    price: number;
+    origQty: number;
+    reduceOnly: boolean;
+  }>;
   updateTime: number;
 }
 
