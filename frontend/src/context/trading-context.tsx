@@ -119,6 +119,8 @@ export function CryptoSpikeProvider({
     }
   });
 
+  const isAuthenticated = Boolean(token);
+
   const login = async (
     username: string,
     password: string,
@@ -431,8 +433,9 @@ export function CryptoSpikeProvider({
     }
   };
 
-  // Load initial config dari DB backend
+  // Load initial config dari DB backend (Hanya jika admin login)
   useEffect(() => {
+    if (!isAuthenticated) return;
     const fetchDbConfig = async () => {
       try {
         const res = await authFetch(`${API_BASE_URL}/api/config`);
@@ -445,10 +448,11 @@ export function CryptoSpikeProvider({
       }
     };
     void fetchDbConfig();
-  }, []);
+  }, [isAuthenticated]);
 
-  // Load strategies dari backend Registry (DB PostgreSQL)
+  // Load strategies dari backend Registry (DB PostgreSQL) (Hanya jika admin login)
   const fetchDbStrategies = async (signalsData?: SignalItem[]) => {
+    if (!isAuthenticated) return;
     try {
       const res = await authFetch(`${API_BASE_URL}/api/strategies`);
       if (res.ok) {
@@ -818,6 +822,9 @@ export function CryptoSpikeProvider({
   }, []);
 
   useEffect(() => {
+    // Jangan panggil API privat (balance, positions, closed positions) jika pengunjung publik belum login
+    if (!isAuthenticated) return;
+
     void refreshBalance();
     void refreshPositions();
     void fetchClosedPositions();
@@ -826,7 +833,7 @@ export function CryptoSpikeProvider({
       void refreshPositions();
     }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     localStorage.setItem(STRATEGIES_KEY, JSON.stringify(strategies));

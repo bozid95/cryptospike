@@ -121,7 +121,10 @@ export function PublicSignalsView() {
   const totalPages = Math.max(1, Math.ceil(filteredSignals.length / pageSize));
   const validCurrentPage = Math.min(currentPage, totalPages);
   const startIndex = (validCurrentPage - 1) * pageSize;
-  const paginatedSignals = filteredSignals.slice(startIndex, startIndex + pageSize);
+  const paginatedSignals = filteredSignals.slice(
+    startIndex,
+    startIndex + pageSize,
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-emerald-500/20 selection:text-emerald-500">
@@ -191,7 +194,9 @@ export function PublicSignalsView() {
               Live Algorithmic Signals
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Sinyal trading otomatis berbasis Price Action (S/R, Trendline Breakout, Confluence) dengan target Take Profit bertahap dan Trailing Stop Loss aktif.
+              Sinyal trading otomatis berbasis Price Action (S/R, Trendline
+              Breakout, Confluence) dengan target Take Profit bertahap dan
+              Trailing Stop Loss aktif.
             </p>
           </div>
 
@@ -208,7 +213,9 @@ export function PublicSignalsView() {
                   {summary.totalSignals}
                 </div>
                 <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-emerald-500 font-semibold">{summary.runningCount} Active</span>
+                  <span className="text-emerald-500 font-semibold">
+                    {summary.runningCount} Active
+                  </span>
                   <span>•</span>
                   <span>{summary.closedCount} Completed</span>
                 </div>
@@ -226,9 +233,13 @@ export function PublicSignalsView() {
                   {summary.winrate}%
                 </div>
                 <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5">
-                  <span className="text-emerald-600 font-semibold">{summary.hitCount} Win</span>
+                  <span className="text-emerald-600 font-semibold">
+                    {summary.hitCount} Win
+                  </span>
                   <span>/</span>
-                  <span className="text-rose-500 font-semibold">{summary.lossCount} Loss</span>
+                  <span className="text-rose-500 font-semibold">
+                    {summary.lossCount} Loss
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -242,7 +253,9 @@ export function PublicSignalsView() {
                 </span>
                 <div
                   className={`text-2xl font-bold font-mono ${
-                    summary.totalRealizedProfitPct >= 0 ? "text-emerald-500" : "text-rose-500"
+                    summary.totalRealizedProfitPct >= 0
+                      ? "text-emerald-500"
+                      : "text-rose-500"
                   }`}
                 >
                   {summary.totalRealizedProfitPct >= 0 ? "+" : ""}
@@ -263,11 +276,17 @@ export function PublicSignalsView() {
                 </span>
                 <div className="text-2xl font-bold font-mono text-foreground flex items-center gap-2">
                   <span className="text-emerald-500">{summary.longCount}L</span>
-                  <span className="text-muted-foreground text-sm font-normal">/</span>
+                  <span className="text-muted-foreground text-sm font-normal">
+                    /
+                  </span>
                   <span className="text-rose-500">{summary.shortCount}S</span>
                 </div>
                 <div className="text-[11px] font-mono text-muted-foreground">
-                  {((summary.longCount / Math.max(summary.totalSignals, 1)) * 100).toFixed(0)}% Bullish Bias
+                  {(
+                    (summary.longCount / Math.max(summary.totalSignals, 1)) *
+                    100
+                  ).toFixed(0)}
+                  % Bullish Bias
                 </div>
               </CardContent>
             </Card>
@@ -342,9 +361,12 @@ export function PublicSignalsView() {
         {paginatedSignals.length === 0 ? (
           <div className="p-12 text-center border rounded-2xl bg-card space-y-3">
             <RadioIcon className="size-8 mx-auto text-muted-foreground/60" />
-            <h3 className="font-semibold text-base text-foreground">No signals found</h3>
+            <h3 className="font-semibold text-base text-foreground">
+              No signals found
+            </h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              No trading signals currently match your filter criteria or search keyword.
+              No trading signals currently match your filter criteria or search
+              keyword.
             </p>
           </div>
         ) : (
@@ -358,7 +380,9 @@ export function PublicSignalsView() {
                 <div
                   key={sig.id}
                   className={`rounded-2xl border bg-card p-4 space-y-3.5 transition-all shadow-xs hover:shadow-md hover:border-emerald-500/30 ${
-                    isRunning ? "border-emerald-500/30 ring-1 ring-emerald-500/10" : "border-border/80"
+                    isRunning
+                      ? "border-emerald-500/30 ring-1 ring-emerald-500/10"
+                      : "border-border/80"
                   }`}
                 >
                   {/* Card Header: Pair, Direction Badge & Status */}
@@ -430,7 +454,9 @@ export function PublicSignalsView() {
                             : "text-foreground"
                         }`}
                       >
-                        {sig.currentPrice ? `$${formatCryptoPrice(sig.currentPrice)}` : "-"}
+                        {sig.currentPrice
+                          ? `$${formatCryptoPrice(sig.currentPrice)}`
+                          : "-"}
                       </span>
                     </div>
                   </div>
@@ -444,14 +470,18 @@ export function PublicSignalsView() {
                       {/* TP1 */}
                       {sig.tp1 && (
                         <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-emerald-600">TP1</span>
+                          <span className="text-[10px] font-bold text-emerald-600">
+                            TP1
+                          </span>
                           <span className="font-semibold text-foreground">
                             ${formatCryptoPrice(sig.tp1)}
                           </span>
                           <span className="text-[10px] text-emerald-600 font-bold">
-                            ({isLong
+                            (
+                            {isLong
                               ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}%`})
+                              : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}%`}
+                            )
                           </span>
                         </div>
                       )}
@@ -459,14 +489,18 @@ export function PublicSignalsView() {
                       {/* TP2 */}
                       {sig.tp2 && (
                         <div className="flex items-center gap-1 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-teal-600">TP2</span>
+                          <span className="text-[10px] font-bold text-teal-600">
+                            TP2
+                          </span>
                           <span className="font-semibold text-foreground">
                             ${formatCryptoPrice(sig.tp2)}
                           </span>
                           <span className="text-[10px] text-teal-600 font-bold">
-                            ({isLong
+                            (
+                            {isLong
                               ? `+${(((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}%`})
+                              : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}%`}
+                            )
                           </span>
                         </div>
                       )}
@@ -474,14 +508,18 @@ export function PublicSignalsView() {
                       {/* TP3 */}
                       {sig.tp3 && (
                         <div className="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-cyan-600">TP3</span>
+                          <span className="text-[10px] font-bold text-cyan-600">
+                            TP3
+                          </span>
                           <span className="font-semibold text-foreground">
                             ${formatCryptoPrice(sig.tp3)}
                           </span>
                           <span className="text-[10px] text-cyan-600 font-bold">
-                            ({isLong
+                            (
+                            {isLong
                               ? `+${(((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}%`})
+                              : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}%`}
+                            )
                           </span>
                         </div>
                       )}
@@ -489,14 +527,18 @@ export function PublicSignalsView() {
                       {/* SL */}
                       {sig.sl && (
                         <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-2 py-0.5 rounded-md text-[11px]">
-                          <span className="text-[10px] font-bold text-destructive">SL</span>
+                          <span className="text-[10px] font-bold text-destructive">
+                            SL
+                          </span>
                           <span className="font-semibold text-destructive">
                             ${formatCryptoPrice(sig.sl)}
                           </span>
                           <span className="text-[10px] text-destructive font-bold">
-                            (-{isLong
+                            (-
+                            {isLong
                               ? `${Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(1)}%`
-                              : `${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`})
+                              : `${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`}
+                            )
                           </span>
                         </div>
                       )}
@@ -525,7 +567,9 @@ export function PublicSignalsView() {
 
                       <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
                         <ClockIcon className="size-3 text-muted-foreground/60" />
-                        {new Date(sig.createdAt || sig.sentAt).toLocaleTimeString("en-US", {
+                        {new Date(
+                          sig.createdAt || sig.sentAt,
+                        ).toLocaleTimeString("en-US", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -555,10 +599,12 @@ export function PublicSignalsView() {
       {/* 4. Public Footer */}
       <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground space-y-1 bg-card/40">
         <div>
-          CryptoSpike Realtime Signal Scanner • High Frequency Price Action Algorithmic Trading
+          CryptoSpike Realtime Signal Scanner • High Frequency Price Action
+          Algorithmic Trading
         </div>
         <div className="text-[11px] text-muted-foreground/75">
-          Disclaimer: Data sinyal disediakan murni untuk keperluan riset analisis teknikal dan tidak menjamin keuntungan finansial.
+          Disclaimer: Data sinyal disediakan murni untuk keperluan riset
+          analisis teknikal dan tidak menjamin keuntungan finansial.
         </div>
       </footer>
     </div>
