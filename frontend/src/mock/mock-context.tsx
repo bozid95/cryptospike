@@ -131,6 +131,29 @@ export function CryptoSpikeProvider({
     void fetchDbConfig();
   }, []);
 
+  // Load signals dari database PostgreSQL backend
+  const fetchDbSignals = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/signals?limit=100");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.items && Array.isArray(json.items) && json.items.length > 0) {
+          setSignals(json.items);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load signals from DB API:", e);
+    }
+  };
+
+  useEffect(() => {
+    void fetchDbSignals();
+    const interval = setInterval(() => {
+      void fetchDbSignals();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     void refreshBalance();
     const interval = setInterval(() => {
