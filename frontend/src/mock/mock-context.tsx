@@ -233,14 +233,16 @@ export function CryptoSpikeProvider({
   const [positions, setPositions] = useState<PositionItem[]>([]);
   const [isLoadingPositions, setIsLoadingPositions] = useState(false);
 
-  const [closedPositions, setClosedPositions] = useState<ClosedPositionItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(CLOSED_POSITIONS_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [closedPositions, setClosedPositions] = useState<ClosedPositionItem[]>(
+    () => {
+      try {
+        const saved = localStorage.getItem(CLOSED_POSITIONS_KEY);
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    },
+  );
 
   const clearClosedPositions = () => {
     setClosedPositions([]);

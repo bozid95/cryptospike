@@ -14,10 +14,21 @@ import {
   HistoryIcon,
   ClockIcon,
   Trash2Icon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/mock/mock-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -89,6 +100,16 @@ export function PositionsCrud() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [closingSymbol, setClosingSymbol] = useState<string | null>(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Reset page when switching tabs or search term
+  const handleTabChange = (tab: "ACTIVE" | "CLOSED") => {
+    setActiveTabFilter(tab);
+    setCurrentPage(1);
+  };
 
   // Summary Metrics Active
   const summary = useMemo(() => {
@@ -176,6 +197,25 @@ export function PositionsCrud() {
         (p.strategy && p.strategy.toLowerCase().includes(q)),
     );
   }, [closedPositions, searchTerm]);
+
+  // Current active dataset depending on tab
+  const activeDatasetCount =
+    activeTabFilter === "ACTIVE"
+      ? filteredPositions.length
+      : filteredClosedPositions.length;
+
+  const totalPages = Math.max(1, Math.ceil(activeDatasetCount / pageSize));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedActivePositions = useMemo(() => {
+    const start = (validCurrentPage - 1) * pageSize;
+    return filteredPositions.slice(start, start + pageSize);
+  }, [filteredPositions, validCurrentPage, pageSize]);
+
+  const paginatedClosedPositions = useMemo(() => {
+    const start = (validCurrentPage - 1) * pageSize;
+    return filteredClosedPositions.slice(start, start + pageSize);
+  }, [filteredClosedPositions, validCurrentPage, pageSize]);
 
   const handleClose = async (
     symbol: string,
@@ -355,7 +395,7 @@ export function PositionsCrud() {
             <div className="inline-flex rounded-lg border bg-background p-0.5 text-xs">
               <button
                 type="button"
-                onClick={() => setActiveTabFilter("ACTIVE")}
+                onClick={() => handleTabChange("ACTIVE")}
                 className={`px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTabFilter === "ACTIVE"
                     ? "bg-primary text-primary-foreground shadow-xs"
@@ -367,7 +407,7 @@ export function PositionsCrud() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTabFilter("CLOSED")}
+                onClick={() => handleTabChange("CLOSED")}
                 className={`px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTabFilter === "CLOSED"
                     ? "bg-primary text-primary-foreground shadow-xs"
@@ -385,7 +425,10 @@ export function PositionsCrud() {
                 type="search"
                 placeholder="Cari simbol pair atau side..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="h-8 pl-8 text-xs bg-background"
               />
             </div>
@@ -411,7 +454,9 @@ export function PositionsCrud() {
                     size="sm"
                     className="h-7 px-2 text-[11px] text-muted-foreground hover:text-destructive"
                     onClick={() => {
-                      if (window.confirm("Hapus seluruh catatan history posisi?")) {
+                      if (
+                        window.confirm("Hapus seluruh catatan history posisi?")
+                      ) {
                         clearClosedPositions();
                       }
                     }}
@@ -433,224 +478,227 @@ export function PositionsCrud() {
                   <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
                     <TableHead className="w-[180px] px-4 py-3 font-semibold text-xs">
                       Simbol & Arah
-                  </TableHead>
-                  <TableHead className="w-[120px] px-4 py-3 font-semibold text-xs">
-                    Ukuran (Size)
-                  </TableHead>
-                  <TableHead className="w-[130px] px-4 py-3 font-semibold text-xs">
-                    Entry Price
-                  </TableHead>
-                  <TableHead className="w-[130px] px-4 py-3 font-semibold text-xs">
-                    Mark Price
-                  </TableHead>
-                  <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
-                    Margin / Notional
-                  </TableHead>
-                  <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
-                    PnL (ROE %)
-                  </TableHead>
-                  <TableHead className="w-[190px] px-4 py-3 font-semibold text-xs">
-                    Target Orders (TP/SL)
-                  </TableHead>
-                  <TableHead className="w-[100px] px-4 py-3 text-right font-semibold text-xs">
-                    Tindakan
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPositions.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="h-28 text-center text-muted-foreground text-sm"
-                    >
-                      Tidak ada posisi terbuka saat ini di akun Binance Futures.
-                    </TableCell>
+                    </TableHead>
+                    <TableHead className="w-[120px] px-4 py-3 font-semibold text-xs">
+                      Ukuran (Size)
+                    </TableHead>
+                    <TableHead className="w-[130px] px-4 py-3 font-semibold text-xs">
+                      Entry Price
+                    </TableHead>
+                    <TableHead className="w-[130px] px-4 py-3 font-semibold text-xs">
+                      Mark Price
+                    </TableHead>
+                    <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
+                      Margin / Notional
+                    </TableHead>
+                    <TableHead className="w-[150px] px-4 py-3 font-semibold text-xs">
+                      PnL (ROE %)
+                    </TableHead>
+                    <TableHead className="w-[190px] px-4 py-3 font-semibold text-xs">
+                      Target Orders (TP/SL)
+                    </TableHead>
+                    <TableHead className="w-[100px] px-4 py-3 text-right font-semibold text-xs">
+                      Tindakan
+                    </TableHead>
                   </TableRow>
-                ) : (
-                  filteredPositions.map((pos) => {
-                    const isLong = pos.side === "LONG";
-                    const isProfit = pos.unRealizedProfit >= 0;
+                </TableHeader>
+                <TableBody>
+                  {filteredPositions.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="h-28 text-center text-muted-foreground text-sm"
+                      >
+                        Tidak ada posisi terbuka saat ini di akun Binance
+                        Futures.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedActivePositions.map((pos) => {
+                      const isLong = pos.side === "LONG";
+                      const isProfit = pos.unRealizedProfit >= 0;
 
-                    return (
-                      <TableRow key={pos.symbol}>
-                        <TableCell className="align-middle px-4 py-3.5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm tracking-tight">
-                              {pos.symbol}
-                            </span>
-                            <Badge
-                              variant={isLong ? "default" : "destructive"}
-                              className={`text-[10px] font-mono px-1.5 py-0 flex items-center gap-1 ${
-                                isLong
-                                  ? "bg-emerald-600 hover:bg-emerald-600"
-                                  : "bg-rose-600 hover:bg-rose-600"
+                      return (
+                        <TableRow key={pos.symbol}>
+                          <TableCell className="align-middle px-4 py-3.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm tracking-tight">
+                                {pos.symbol}
+                              </span>
+                              <Badge
+                                variant={isLong ? "default" : "destructive"}
+                                className={`text-[10px] font-mono px-1.5 py-0 flex items-center gap-1 ${
+                                  isLong
+                                    ? "bg-emerald-600 hover:bg-emerald-600"
+                                    : "bg-rose-600 hover:bg-rose-600"
+                                }`}
+                              >
+                                {isLong ? (
+                                  <TrendingUpIcon className="size-3" />
+                                ) : (
+                                  <TrendingDownIcon className="size-3" />
+                                )}
+                                {pos.side}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono mt-0.5">
+                              <span className="font-semibold text-foreground">
+                                {pos.leverage}x
+                              </span>
+                              <span>•</span>
+                              <span className="uppercase">
+                                {pos.marginType}
+                              </span>
+                            </div>
+                            {pos.strategy && (
+                              <div className="mt-1">
+                                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20 font-mono">
+                                  {pos.strategy}
+                                </span>
+                              </div>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                            <div className="font-semibold text-foreground">
+                              {pos.positionAmt}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground">
+                              ${pos.notional.toLocaleString()}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums text-foreground">
+                            ${formatCryptoPrice(pos.entryPrice)}
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums font-semibold text-foreground">
+                            ${formatCryptoPrice(pos.markPrice)}
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                            <div className="font-semibold text-foreground">
+                              ${pos.initialMargin.toFixed(2)}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground">
+                              Liq: $
+                              {pos.liquidationPrice > 0
+                                ? formatCryptoPrice(pos.liquidationPrice)
+                                : "0.00"}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="align-middle px-4 py-3.5 font-mono">
+                            <div
+                              className={`font-bold text-sm tabular-nums ${
+                                isProfit ? "text-emerald-600" : "text-rose-600"
                               }`}
                             >
-                              {isLong ? (
-                                <TrendingUpIcon className="size-3" />
-                              ) : (
-                                <TrendingDownIcon className="size-3" />
-                              )}
-                              {pos.side}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono mt-0.5">
-                            <span className="font-semibold text-foreground">
-                              {pos.leverage}x
-                            </span>
-                            <span>•</span>
-                            <span className="uppercase">{pos.marginType}</span>
-                          </div>
-                          {pos.strategy && (
-                            <div className="mt-1">
-                              <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20 font-mono">
-                                {pos.strategy}
-                              </span>
+                              {isProfit ? "+" : ""}$
+                              {pos.unRealizedProfit.toFixed(2)}
                             </div>
-                          )}
-                        </TableCell>
+                            <div
+                              className={`text-[11px] font-semibold tabular-nums ${
+                                isProfit
+                                  ? "text-emerald-600/80"
+                                  : "text-rose-600/80"
+                              }`}
+                            >
+                              {isProfit ? "+" : ""}
+                              {pos.roe}%
+                            </div>
+                          </TableCell>
 
-                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
-                          <div className="font-semibold text-foreground">
-                            {pos.positionAmt}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            ${pos.notional.toLocaleString()}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums text-foreground">
-                          ${formatCryptoPrice(pos.entryPrice)}
-                        </TableCell>
-
-                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums font-semibold text-foreground">
-                          ${formatCryptoPrice(pos.markPrice)}
-                        </TableCell>
-
-                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
-                          <div className="font-semibold text-foreground">
-                            ${pos.initialMargin.toFixed(2)}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground">
-                            Liq: $
-                            {pos.liquidationPrice > 0
-                              ? formatCryptoPrice(pos.liquidationPrice)
-                              : "0.00"}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="align-middle px-4 py-3.5 font-mono">
-                          <div
-                            className={`font-bold text-sm tabular-nums ${
-                              isProfit ? "text-emerald-600" : "text-rose-600"
-                            }`}
-                          >
-                            {isProfit ? "+" : ""}$
-                            {pos.unRealizedProfit.toFixed(2)}
-                          </div>
-                          <div
-                            className={`text-[11px] font-semibold tabular-nums ${
-                              isProfit
-                                ? "text-emerald-600/80"
-                                : "text-rose-600/80"
-                            }`}
-                          >
-                            {isProfit ? "+" : ""}
-                            {pos.roe}%
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
-                          {pos.orders && pos.orders.length > 0 ? (
-                            <div className="flex flex-col gap-1">
-                              {pos.orders.map((ord, idx) => (
-                                <div
-                                  key={ord.orderId}
-                                  className="flex items-center gap-1.5 text-[11px]"
-                                >
-                                  <Badge
-                                    variant="outline"
-                                    className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                          <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                            {pos.orders && pos.orders.length > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {pos.orders.map((ord, idx) => (
+                                  <div
+                                    key={ord.orderId}
+                                    className="flex items-center gap-1.5 text-[11px]"
                                   >
-                                    TP{idx + 1}
-                                  </Badge>
-                                  <span className="font-semibold tabular-nums">
-                                    ${ord.price.toLocaleString()}
+                                    <Badge
+                                      variant="outline"
+                                      className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                                    >
+                                      TP{idx + 1}
+                                    </Badge>
+                                    <span className="font-semibold tabular-nums">
+                                      ${ord.price.toLocaleString()}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground">
+                                      ({ord.origQty})
+                                    </span>
+                                  </div>
+                                ))}
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                                  <span className="text-amber-500 font-bold">
+                                    ●
                                   </span>
-                                  <span className="text-[10px] text-muted-foreground">
-                                    ({ord.origQty})
-                                  </span>
+                                  <span>TSL Engine Active</span>
                                 </div>
-                              ))}
-                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                <span className="text-amber-500 font-bold">
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <span className="text-emerald-500 font-bold">
                                   ●
                                 </span>
-                                <span>TSL Engine Active</span>
+                                <span>Engine TSL Monitored</span>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <span className="text-emerald-500 font-bold">
-                                ●
-                              </span>
-                              <span>Engine TSL Monitored</span>
-                            </div>
-                          )}
-                        </TableCell>
+                            )}
+                          </TableCell>
 
-                        <TableCell className="align-middle px-4 py-3.5 text-right">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-2.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
-                                disabled={closingSymbol === pos.symbol}
-                              >
-                                <XCircleIcon className="size-3.5 mr-1" />
-                                Tutup
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Tutup Posisi Pasar Sekarang?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Anda akan menutup seluruh posisi{" "}
-                                  <span className="font-semibold text-foreground">
-                                    {pos.symbol} ({pos.side})
-                                  </span>{" "}
-                                  dengan order Pasar (MARKET) di Binance
-                                  Futures.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  onClick={() =>
-                                    void handleClose(
-                                      pos.symbol,
-                                      pos.positionAmt,
-                                      pos.side,
-                                    )
-                                  }
+                          <TableCell className="align-middle px-4 py-3.5 text-right">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
+                                  disabled={closingSymbol === pos.symbol}
                                 >
-                                  Ya, Tutup Posisi
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                                  <XCircleIcon className="size-3.5 mr-1" />
+                                  Tutup
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Tutup Posisi Pasar Sekarang?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Anda akan menutup seluruh posisi{" "}
+                                    <span className="font-semibold text-foreground">
+                                      {pos.symbol} ({pos.side})
+                                    </span>{" "}
+                                    dengan order Pasar (MARKET) di Binance
+                                    Futures.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={() =>
+                                      void handleClose(
+                                        pos.symbol,
+                                        pos.positionAmt,
+                                        pos.side,
+                                      )
+                                    }
+                                  >
+                                    Ya, Tutup Posisi
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
             ) : (
               /* TAB 2: CLOSED POSITIONS HISTORY TABLE */
               <Table>
@@ -690,7 +738,7 @@ export function PositionsCrud() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredClosedPositions.map((cp) => {
+                    paginatedClosedPositions.map((cp) => {
                       const isLong = cp.side === "LONG";
                       const isProfit = cp.realizedPnl >= 0;
 
@@ -742,8 +790,7 @@ export function PositionsCrud() {
                                 isProfit ? "text-emerald-600" : "text-rose-600"
                               }`}
                             >
-                              {isProfit ? "+" : ""}$
-                              {cp.realizedPnl.toFixed(2)}
+                              {isProfit ? "+" : ""}${cp.realizedPnl.toFixed(2)}
                             </div>
                             <div
                               className={`text-[11px] font-semibold tabular-nums ${
@@ -767,15 +814,20 @@ export function PositionsCrud() {
                             <div className="flex items-center justify-end gap-1 text-[11px]">
                               <ClockIcon className="size-3 text-muted-foreground/70" />
                               <span>
-                                {new Date(cp.closedAt).toLocaleTimeString("id-ID", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                })}
+                                {new Date(cp.closedAt).toLocaleTimeString(
+                                  "id-ID",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    second: "2-digit",
+                                  },
+                                )}
                               </span>
                             </div>
                             <div className="text-[10px] text-muted-foreground/70">
-                              {new Date(cp.closedAt).toLocaleDateString("id-ID")}
+                              {new Date(cp.closedAt).toLocaleDateString(
+                                "id-ID",
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -785,6 +837,99 @@ export function PositionsCrud() {
                 </TableBody>
               </Table>
             )}
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-lg border bg-muted/50 mt-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">
+                Baris per halaman:
+              </span>
+              <Select
+                value={`${pageSize}`}
+                onValueChange={(val) => {
+                  setPageSize(Number(val));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="h-8 w-[76px] text-xs bg-background font-semibold">
+                  <SelectValue placeholder={pageSize} />
+                </SelectTrigger>
+                <SelectContent side="top" className="bg-popover">
+                  {[5, 10, 20, 50].map((size) => (
+                    <SelectItem
+                      key={size}
+                      value={`${size}`}
+                      className="text-xs"
+                    >
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-muted-foreground font-medium">
+                Halaman{" "}
+                <span className="text-foreground font-semibold font-mono">
+                  {validCurrentPage}
+                </span>{" "}
+                dari{" "}
+                <span className="text-foreground font-semibold font-mono">
+                  {totalPages}
+                </span>
+                <span className="ml-1 text-[11px] text-muted-foreground/80">
+                  (Total {activeDatasetCount}{" "}
+                  {activeTabFilter === "ACTIVE" ? "posisi aktif" : "riwayat"})
+                </span>
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-8 bg-background hover:bg-muted"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={validCurrentPage <= 1}
+                  title="Halaman Pertama"
+                >
+                  <ChevronsLeftIcon className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-8 bg-background hover:bg-muted"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={validCurrentPage <= 1}
+                  title="Halaman Sebelumnya"
+                >
+                  <ChevronLeftIcon className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-8 bg-background hover:bg-muted"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={validCurrentPage >= totalPages}
+                  title="Halaman Berikutnya"
+                >
+                  <ChevronRightIcon className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-8 bg-background hover:bg-muted"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={validCurrentPage >= totalPages}
+                  title="Halaman Terakhir"
+                >
+                  <ChevronsRightIcon className="size-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
