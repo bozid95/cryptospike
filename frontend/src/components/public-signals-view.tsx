@@ -402,7 +402,7 @@ export function PublicSignalsView() {
           </div>
 
           {/* Development & Sample Data Disclaimer Notice */}
-          <div className="max-w-2xl mx-auto bg-amber-500/10 border border-amber-500/30 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-left text-amber-600 dark:text-amber-400">
+          <div className="max-w-2xl mx-auto bg-amber-500/10 border border-amber-500/40 dark:border-amber-500/30 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5 text-left text-amber-600 dark:text-amber-400 shadow-xs">
             <AlertTriangleIcon className="size-4 shrink-0 stroke-[2.2] text-amber-500" />
             <div className="text-xs space-y-0.5">
               <span className="font-bold uppercase tracking-wider text-[11px] block">
@@ -421,7 +421,7 @@ export function PublicSignalsView() {
           {/* 4 Cards Stat Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 max-w-5xl mx-auto">
             {/* Stat 1: Total Signals */}
-            <Card className="border-border/80 shadow-xs bg-card">
+            <Card className="border border-slate-300 dark:border-zinc-700 border-t-2 border-t-emerald-500 shadow-xs bg-card rounded-2xl hover:border-emerald-500/50 transition-all">
               <CardContent className="p-3 sm:p-4 space-y-1">
                 <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
                   Total Signals
@@ -441,7 +441,7 @@ export function PublicSignalsView() {
             </Card>
 
             {/* Stat 2: Winrate */}
-            <Card className="border-border/80 shadow-xs bg-card">
+            <Card className="border border-slate-300 dark:border-zinc-700 border-t-2 border-t-teal-500 shadow-xs bg-card rounded-2xl hover:border-teal-500/50 transition-all">
               <CardContent className="p-3 sm:p-4 space-y-1">
                 <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
                   Winrate
@@ -463,7 +463,7 @@ export function PublicSignalsView() {
             </Card>
 
             {/* Stat 3: Realized & Floating Portfolio Performance */}
-            <Card className="border-border/80 shadow-xs bg-card">
+            <Card className="border border-slate-300 dark:border-zinc-700 border-t-2 border-t-amber-500 shadow-xs bg-card rounded-2xl hover:border-amber-500/50 transition-all">
               <CardContent className="p-3 sm:p-4 space-y-1">
                 <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
                   Portfolio Performance
@@ -482,7 +482,7 @@ export function PublicSignalsView() {
                     Realized
                   </span>
                 </div>
-                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center justify-between gap-1 pt-0.5 border-t border-border/40">
+                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center justify-between gap-1 pt-0.5 border-t border-slate-200 dark:border-zinc-800">
                   <span
                     className={
                       summary.totalFloatingProfitUsd >= 0
@@ -505,7 +505,7 @@ export function PublicSignalsView() {
             </Card>
 
             {/* Stat 4: Long/Short Sentiment */}
-            <Card className="border-border/80 shadow-xs bg-card">
+            <Card className="border border-slate-300 dark:border-zinc-700 border-t-2 border-t-indigo-500 shadow-xs bg-card rounded-2xl hover:border-indigo-500/50 transition-all">
               <CardContent className="p-3 sm:p-4 space-y-1">
                 <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
                   Direction Bias
@@ -531,7 +531,7 @@ export function PublicSignalsView() {
 
           {/* Strategy Winrate Info Bar (Sleek Compact Ticker) */}
           {strategyStats.length > 0 && (
-            <div className="max-w-4xl mx-auto bg-card/60 backdrop-blur-xs border-2 border-slate-300/80 dark:border-zinc-800 rounded-2xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-xs">
+            <div className="max-w-4xl mx-auto bg-card/60 backdrop-blur-xs border border-slate-300 dark:border-zinc-700 rounded-2xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-xs">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground shrink-0">
                 <TrophyIcon className="size-3.5 text-amber-500" />
                 <span className="tracking-tight">Winrate by Strategy</span>
@@ -555,8 +555,8 @@ export function PublicSignalsView() {
                       }}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-emerald-500/15 border-2 border-emerald-500/60 text-emerald-600 ring-1 ring-emerald-500/20 font-bold"
-                          : "bg-muted/50 hover:bg-muted border-2 border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-muted-foreground hover:text-foreground"
+                          ? "bg-emerald-500/15 border border-emerald-500/60 text-emerald-600 ring-1 ring-emerald-500/20 font-bold"
+                          : "bg-muted/50 hover:bg-muted border border-slate-300/80 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-600 text-muted-foreground hover:text-foreground"
                       }`}
                       title={`${st.hits} Win / ${st.losses} Loss from ${st.total} signals`}
                     >
@@ -598,7 +598,7 @@ export function PublicSignalsView() {
         {/* Responsive Toolbar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           {/* Filter Pills */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-2xl border-2 border-slate-300/80 dark:border-zinc-800 self-start w-full sm:w-auto overflow-x-auto shadow-xs">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-2xl border border-slate-300 dark:border-zinc-700 self-start w-full sm:w-auto overflow-x-auto shadow-xs">
             <button
               onClick={() => {
                 setFilter("ALL");
@@ -653,7 +653,7 @@ export function PublicSignalsView() {
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger className="h-9 text-xs rounded-xl bg-card border-2 border-slate-300/80 dark:border-zinc-800">
+                  <SelectTrigger className="h-9 text-xs rounded-xl bg-card border border-slate-300 dark:border-zinc-700">
                     <div className="flex items-center gap-1.5 truncate">
                       <FilterIcon className="size-3 text-muted-foreground shrink-0" />
                       <SelectValue placeholder="All Strategies" />
@@ -687,7 +687,7 @@ export function PublicSignalsView() {
                   setCurrentPage(1);
                 }}
                 placeholder="Filter pair (e.g. BTC, ETH)..."
-                className="pl-9 h-9 text-xs rounded-xl bg-card border-2 border-slate-300/80 dark:border-zinc-800"
+                className="pl-9 h-9 text-xs rounded-xl bg-card border border-slate-300 dark:border-zinc-700"
               />
             </div>
           </div>
@@ -695,7 +695,7 @@ export function PublicSignalsView() {
 
         {/* Signal Cards Grid */}
         {paginatedSignals.length === 0 ? (
-          <div className="p-10 text-center border-2 border-slate-300/80 dark:border-zinc-800 rounded-2xl bg-card space-y-2 shadow-xs">
+          <div className="p-10 text-center border border-slate-300 dark:border-zinc-700 rounded-2xl bg-card space-y-2 shadow-xs">
             <RadioIcon className="size-8 mx-auto text-muted-foreground/60" />
             <h3 className="font-semibold text-sm text-foreground">
               No signals found
@@ -810,13 +810,13 @@ export function PublicSignalsView() {
               return (
                 <div
                   key={sig.id}
-                  className={`rounded-2xl border-2 bg-card p-3.5 sm:p-4 space-y-3 transition-all shadow-xs hover:shadow-md ${
+                  className={`rounded-2xl border bg-card p-3.5 sm:p-4 space-y-3 transition-all shadow-xs hover:shadow-md ${
                     isRunning
-                      ? "border-emerald-500/80 dark:border-emerald-500/70 ring-2 ring-emerald-500/20 shadow-emerald-500/5"
+                      ? "border-emerald-500/60 dark:border-emerald-500/50 shadow-emerald-500/5"
                       : isProfitPositive
-                        ? "border-emerald-500/40 dark:border-emerald-500/35 hover:border-emerald-500/70"
+                        ? "border-emerald-500/35 dark:border-emerald-500/30 hover:border-emerald-500/60"
                         : sig.status === "SL_HIT" || !isProfitPositive
-                          ? "border-rose-500/40 dark:border-rose-500/35 hover:border-rose-500/70"
+                          ? "border-rose-500/35 dark:border-rose-500/30 hover:border-rose-500/60"
                           : "border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-600"
                   }`}
                 >
@@ -1144,12 +1144,13 @@ export function PublicSignalsView() {
                   <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-200 dark:border-zinc-800">
                     <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
                       <ClockIcon className="size-3 text-muted-foreground/60" />
-                      {new Date(
-                        sig.createdAt || sig.sentAt,
-                      ).toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {new Date(sig.createdAt || sig.sentAt).toLocaleTimeString(
+                        "en-US",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
                     </span>
 
                     {typeof displayProfitPct === "number" &&
