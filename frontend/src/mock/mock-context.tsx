@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import {
   INITIAL_CONFIG,
   INITIAL_SIGNALS,
@@ -180,10 +181,44 @@ export function CryptoSpikeProvider({
 
   useEffect(() => {
     void fetchDbSignals();
+
+    // Koneksi Realtime WebSocket ke Backend NestJS
+    const socket = io("http://localhost:3001", {
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => {
+      console.log("[WS Frontend] Connected to NestJS WebSocket Gateway");
+    });
+
+    // Menerima sinyal baru secara realtime (0 delay)
+    socket.on("new_signal", (newSig: SignalItem) => {
+      setSignals((prev) => {
+        if (prev.some((s) => s.id === newSig.id)) return prev;
+        return [newSig, ...prev];
+      });
+    });
+
+    // Menerima update status sinyal (TP1 hit, SL hit, close)
+    socket.on("signal_status_update", (update: { id: string; status: SignalItem["status"]; profitPct?: number }) => {
+      setSignals((prev) =>
+        prev.map((s) =>
+          s.id === update.id
+            ? { ...s, status: update.status, profitPct: update.profitPct ?? s.profitPct }
+            : s,
+        ),
+      );
+    });
+
+    // Fallback polling berkala setiap 30 detik untuk safety
     const interval = setInterval(() => {
       void fetchDbSignals();
-    }, 10000);
-    return () => clearInterval(interval);
+    }, 30000);
+
+    return () => {
+      socket.disconnect();
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
