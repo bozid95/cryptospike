@@ -865,7 +865,9 @@ export function PublicSignalsView() {
                           <div className="flex items-center gap-1.5">
                             <span
                               className={`text-[10px] font-bold ${
-                                isTp1Hit ? "text-emerald-500" : "text-emerald-600"
+                                isTp1Hit
+                                  ? "text-emerald-500"
+                                  : "text-emerald-600"
                               }`}
                             >
                               TP1
@@ -877,8 +879,16 @@ export function PublicSignalsView() {
                           <span className="text-[10px] text-emerald-600 font-bold shrink-0">
                             +
                             {isLong
-                              ? (((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)
-                              : (((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}
+                              ? (
+                                  ((sig.tp1 - sig.entryPrice) /
+                                    sig.entryPrice) *
+                                  100
+                                ).toFixed(1)
+                              : (
+                                  ((sig.entryPrice - sig.tp1) /
+                                    sig.entryPrice) *
+                                  100
+                                ).toFixed(1)}
                             %
                           </span>
                         </div>
@@ -916,8 +926,16 @@ export function PublicSignalsView() {
                           <span className="text-[10px] text-teal-600 font-bold shrink-0">
                             +
                             {isLong
-                              ? (((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)
-                              : (((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}
+                              ? (
+                                  ((sig.tp2 - sig.entryPrice) /
+                                    sig.entryPrice) *
+                                  100
+                                ).toFixed(1)
+                              : (
+                                  ((sig.entryPrice - sig.tp2) /
+                                    sig.entryPrice) *
+                                  100
+                                ).toFixed(1)}
                             %
                           </span>
                         </div>
@@ -955,8 +973,16 @@ export function PublicSignalsView() {
                           <span className="text-[10px] text-cyan-600 font-bold shrink-0">
                             +
                             {isLong
-                              ? (((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)
-                              : (((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}
+                              ? (
+                                  ((sig.tp3 - sig.entryPrice) /
+                                    sig.entryPrice) *
+                                  100
+                                ).toFixed(1)
+                              : (
+                                  ((sig.entryPrice - sig.tp3) /
+                                    sig.entryPrice) *
+                                  100
+                                ).toFixed(1)}
                             %
                           </span>
                         </div>
@@ -990,8 +1016,14 @@ export function PublicSignalsView() {
                           <span className="text-[10px] text-destructive font-bold shrink-0">
                             -
                             {isLong
-                              ? Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(1)
-                              : Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}
+                              ? Math.abs(
+                                  ((sig.entryPrice - sig.sl) / sig.entryPrice) *
+                                    100,
+                                ).toFixed(1)
+                              : Math.abs(
+                                  ((sig.sl - sig.entryPrice) / sig.entryPrice) *
+                                    100,
+                                ).toFixed(1)}
                             %
                           </span>
                         </div>
