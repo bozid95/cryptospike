@@ -38,6 +38,9 @@ export interface SignalItem {
     | "SL_HIT"
     | "CANCELLED";
   profitPct?: number;
+  positionAmount?: number;
+  simulatedMargin?: number;
+  realizedPnlUsd?: number;
   sentAt: string;
   createdAt?: string;
   updatedAt?: string;

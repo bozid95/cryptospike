@@ -205,9 +205,11 @@ export function PublicSignalsView() {
     const POSITION_SIZE_USD = SIMULATED_CAPITAL * ALLOCATION_PCT; // $10 per sinyal
 
     // Total keuntungan dollar dihitung dari akumulasi return tiap posisi $10
-    const simulatedProfitUsd = (POSITION_SIZE_USD * totalRealizedProfitPct) / 100;
+    const simulatedProfitUsd =
+      (POSITION_SIZE_USD * totalRealizedProfitPct) / 100;
     const simulatedBalanceUsd = SIMULATED_CAPITAL + simulatedProfitUsd;
-    const netReturnOnCapitalPct = (simulatedProfitUsd / SIMULATED_CAPITAL) * 100;
+    const netReturnOnCapitalPct =
+      (simulatedProfitUsd / SIMULATED_CAPITAL) * 100;
 
     return {
       totalSignals: signals.length,

@@ -15,6 +15,9 @@ export interface CreateSignalInput {
   strategy?: string;
   reasons?: string;
   triggerSource?: string;
+  positionAmount?: number;
+  simulatedMargin?: number;
+  realizedPnlUsd?: number;
 }
 
 @Injectable()
@@ -91,6 +94,9 @@ export class SignalService {
         strategy: input.strategy,
         reasons: input.reasons,
         triggerSource: input.triggerSource,
+        positionAmount: input.positionAmount,
+        simulatedMargin: input.simulatedMargin ?? 10.0,
+        realizedPnlUsd: input.realizedPnlUsd ?? 0.0,
         status: 'ACTIVE',
         sentAt: new Date(),
       },

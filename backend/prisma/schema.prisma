@@ -82,6 +82,9 @@ model Signal {
   triggerSource   String?   @map("trigger_source")    // "ticker_filter", "candle_1h", "pre_pump_scanner"
   status          String    @default("ACTIVE")        // ACTIVE, TP1_HIT, TP2_HIT, TP3_HIT, TSL_HIT, SL_HIT, CANCELLED
   profitPct       Float?    @map("profit_pct")
+  positionAmount  Float?    @map("position_amount")   // Jumlah koin/kontrak (misal: 0.05 BTC)
+  simulatedMargin Float?    @default(10.0) @map("simulated_margin") // Alokasi modal ($ USD, default $10 = 1% dari $1,000)
+  realizedPnlUsd  Float?    @map("realized_pnl_usd")  // Keuntungan/kerugian dalam $ USD
   sentAt          DateTime  @default(now()) @map("sent_at")
   hitTime         DateTime? @map("hit_time")
 

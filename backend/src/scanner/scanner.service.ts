@@ -116,6 +116,10 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         '; ',
       );
 
+      // Hitung simulasi margin ($10 = 1% dari $1,000) dan perkiraan jumlah koin (leverage 10x)
+      const simulatedMargin = 10.0;
+      const positionAmount = (simulatedMargin * 10) / result.entryPrice;
+
       const signal = await this.signalService.createSignal({
         symbol: marketData.symbol,
         side: result.signalType,
@@ -129,6 +133,9 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         strategy: strategyKey,
         reasons: enrichedReasons,
         triggerSource: 'ws_ticker',
+        simulatedMargin,
+        positionAmount: parseFloat(positionAmount.toFixed(6)),
+        realizedPnlUsd: 0.0,
       });
 
       if (signal) {
@@ -225,12 +232,18 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               `[TSL TRIGGER] ${sig.symbol} HIT TP1 (${sig.tp1})! Moving SL to Breakeven (${sig.entryPrice}) | Strategy: ${sig.strategy}`,
             );
 
+            const margin = sig.simulatedMargin ?? 10.0;
+            const realizedPnlUsd = parseFloat(
+              ((margin * profitPct) / 100).toFixed(4),
+            );
+
             // Update database
             await this.prisma.signal.update({
               where: { id: sig.id },
               data: {
                 status: 'TP1_HIT',
                 profitPct: parseFloat(profitPct.toFixed(2)),
+                realizedPnlUsd,
                 hitTime: new Date(),
               },
             });
@@ -269,6 +282,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               id: sig.id,
               status: 'TP1_HIT',
               profitPct: parseFloat(profitPct.toFixed(2)),
+              realizedPnlUsd,
             });
           }
         }
@@ -286,11 +300,17 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               `[TSL TRIGGER] ${sig.symbol} HIT TP2 (${sig.tp2})! Trailing SL locked at TP1 (${sig.tp1}) | Strategy: ${sig.strategy}`,
             );
 
+            const margin = sig.simulatedMargin ?? 10.0;
+            const realizedPnlUsd = parseFloat(
+              ((margin * profitPct) / 100).toFixed(4),
+            );
+
             await this.prisma.signal.update({
               where: { id: sig.id },
               data: {
                 status: 'TP2_HIT',
                 profitPct: parseFloat(profitPct.toFixed(2)),
+                realizedPnlUsd,
                 hitTime: new Date(),
               },
             });
@@ -299,6 +319,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               id: sig.id,
               status: 'TP2_HIT',
               profitPct: parseFloat(profitPct.toFixed(2)),
+              realizedPnlUsd,
             });
           }
         }
@@ -360,11 +381,17 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               }
             }
 
+            const margin = sig.simulatedMargin ?? 10.0;
+            const realizedPnlUsd = parseFloat(
+              ((margin * profitPct) / 100).toFixed(4),
+            );
+
             await this.prisma.signal.update({
               where: { id: sig.id },
               data: {
                 status: 'TP3_HIT',
                 profitPct: parseFloat(profitPct.toFixed(2)),
+                realizedPnlUsd,
                 hitTime: new Date(),
               },
             });
@@ -373,6 +400,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               id: sig.id,
               status: 'TP3_HIT',
               profitPct: parseFloat(profitPct.toFixed(2)),
+              realizedPnlUsd,
             });
             continue;
           }
@@ -448,12 +476,18 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             }
           }
 
+          const margin = sig.simulatedMargin ?? 10.0;
+          const realizedPnlUsd = parseFloat(
+            ((margin * finalProfitPct) / 100).toFixed(4),
+          );
+
           // Update database
           await this.prisma.signal.update({
             where: { id: sig.id },
             data: {
               status: newStatus,
               profitPct: parseFloat(finalProfitPct.toFixed(2)),
+              realizedPnlUsd,
               hitTime: new Date(),
             },
           });
@@ -463,6 +497,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             id: sig.id,
             status: newStatus,
             profitPct: parseFloat(finalProfitPct.toFixed(2)),
+            realizedPnlUsd,
           });
         }
       }

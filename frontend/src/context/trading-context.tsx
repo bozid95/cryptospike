@@ -741,6 +741,7 @@ export function CryptoSpikeProvider({
         id: string;
         status: SignalItem["status"];
         profitPct?: number;
+        realizedPnlUsd?: number;
       }) => {
         setSignals((prev) => {
           const matched = prev.find((s) => s.id === update.id);
@@ -799,6 +800,7 @@ export function CryptoSpikeProvider({
                   ...s,
                   status: update.status,
                   profitPct: update.profitPct ?? s.profitPct,
+                  realizedPnlUsd: update.realizedPnlUsd ?? s.realizedPnlUsd,
                 }
               : s,
           );
