@@ -108,7 +108,7 @@ export class Breakout1hV2Strategy implements IStrategy {
         }
 
         // 2. Validasi Breakout Nyata pada 1H: Harga saat ini harus menembus swing high candle 1H sebelumnya
-        if (klines1h.length >= 5) {
+        if (klines1h.length >= 20) {
           const prevHigh1h = Math.max(
             klines1h[klines1h.length - 2].high,
             klines1h[klines1h.length - 3].high,
@@ -117,15 +117,34 @@ export class Breakout1hV2Strategy implements IStrategy {
             // Belum terjadi breakout struktur resistance 1H
             return null;
           }
+
+          // Validasi Volume Spike (RVOL >= 1.3x): Breakout wajib didukung volume tinggi
+          const lastVol1h = klines1h[klines1h.length - 1].volume;
+          const prev20 = klines1h.slice(
+            Math.max(0, klines1h.length - 21),
+            klines1h.length - 1,
+          );
+          const avgVol =
+            prev20.length > 0
+              ? prev20.reduce((acc, k) => acc + k.volume, 0) / prev20.length
+              : lastVol1h;
+          const rvol = avgVol > 0 ? lastVol1h / avgVol : 1.0;
+
+          if (rvol < 1.3) {
+            // Tolak fake breakout tanpa volume
+            return null;
+          }
+
           reasons.push(
             `1H Structural Breakout Above Resistance ($${prevHigh1h.toFixed(4)})`,
+            `Breakout Volume Confirmed (RVOL: ${rvol.toFixed(2)}x vs 20-period avg)`,
           );
         }
 
-        // 3. Cek RSI 1H agar tidak membeli di pucuk overbought ekstrem (> 75)
+        // 3. Cek RSI 1H agar tidak membeli di pucuk overbought ekstrem (> 70)
         if (closes1h.length >= 15) {
           const rsi1h = this.calcRSI(closes1h, 14);
-          if (rsi1h !== null && (rsi1h > 75 || rsi1h < 45)) {
+          if (rsi1h !== null && (rsi1h > 70 || rsi1h < 45)) {
             return null;
           }
           if (rsi1h !== null) {
@@ -154,7 +173,7 @@ export class Breakout1hV2Strategy implements IStrategy {
         }
 
         // 2. Validasi Breakdown Nyata pada 1H: Harga saat ini menembus swing low candle 1H sebelumnya
-        if (klines1h.length >= 5) {
+        if (klines1h.length >= 20) {
           const prevLow1h = Math.min(
             klines1h[klines1h.length - 2].low,
             klines1h[klines1h.length - 3].low,
@@ -163,15 +182,34 @@ export class Breakout1hV2Strategy implements IStrategy {
             // Belum terjadi breakdown struktur support 1H
             return null;
           }
+
+          // Validasi Volume Spike (RVOL >= 1.3x): Breakdown wajib didukung volume tinggi
+          const lastVol1h = klines1h[klines1h.length - 1].volume;
+          const prev20 = klines1h.slice(
+            Math.max(0, klines1h.length - 21),
+            klines1h.length - 1,
+          );
+          const avgVol =
+            prev20.length > 0
+              ? prev20.reduce((acc, k) => acc + k.volume, 0) / prev20.length
+              : lastVol1h;
+          const rvol = avgVol > 0 ? lastVol1h / avgVol : 1.0;
+
+          if (rvol < 1.3) {
+            // Tolak breakdown sepi volume (bear trap)
+            return null;
+          }
+
           reasons.push(
             `1H Structural Breakdown Below Support ($${prevLow1h.toFixed(4)})`,
+            `Breakdown Volume Confirmed (RVOL: ${rvol.toFixed(2)}x vs 20-period avg)`,
           );
         }
 
-        // 3. Proteksi SHORT: Hindari short koin yang oversold (RSI 1H < 35) atau overbought (> 55)
+        // 3. Proteksi SHORT: Hindari short koin yang oversold (RSI 1H < 32) atau overbought (> 55)
         if (closes1h.length >= 15) {
           const rsi1h = this.calcRSI(closes1h, 14);
-          if (rsi1h !== null && (rsi1h < 35 || rsi1h > 55)) {
+          if (rsi1h !== null && (rsi1h < 32 || rsi1h > 55)) {
             return null;
           }
           if (rsi1h !== null) {
