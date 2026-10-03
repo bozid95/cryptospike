@@ -10,6 +10,8 @@ import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
+import { LoginView } from "@/components/login-view";
+
 function DashboardContent() {
   const { activeTab } = useCryptoSpike();
 
@@ -25,18 +27,30 @@ function DashboardContent() {
   );
 }
 
+function MainLayout() {
+  const { isAuthenticated } = useCryptoSpike();
+
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <SiteHeader />
+          <DashboardContent />
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <CryptoSpikeProvider>
-      <div className="min-h-screen bg-background text-foreground">
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <SiteHeader />
-            <DashboardContent />
-          </SidebarInset>
-        </SidebarProvider>
-      </div>
+      <MainLayout />
     </CryptoSpikeProvider>
   );
 }

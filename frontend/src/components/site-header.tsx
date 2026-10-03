@@ -16,7 +16,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useCryptoSpike } from "@/mock/mock-context";
 
 export function SiteHeader() {
-  const { balance, isLoadingBalance } = useCryptoSpike();
+  const { balance, isLoadingBalance, user, logout } = useCryptoSpike();
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-14 shrink-0 items-center justify-between border-b px-4 lg:px-6 transition-[width,height] ease-linear">
       <div className="flex items-center gap-2">
@@ -84,8 +84,8 @@ export function SiteHeader() {
               title="Profil Pengguna"
             >
               <Avatar className="size-7">
-                <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">
-                  OP
+                <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground uppercase">
+                  {user?.username ? user.username.slice(0, 2) : "OP"}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -93,18 +93,18 @@ export function SiteHeader() {
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-semibold leading-none">
-                  Lead Operator
+                <p className="text-sm font-semibold leading-none capitalize">
+                  {user?.username || "Lead Operator"}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground font-mono">
-                  operator@cryptospike.io
+                  Role: {user?.role || "ADMIN"}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer gap-2 text-xs">
               <UserCircleIcon className="size-4" />
-              Profil Pengguna
+              Status: Terproteksi JWT
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -115,7 +115,7 @@ export function SiteHeader() {
                     "Apakah Anda yakin ingin keluar dari sesi operator?",
                   )
                 ) {
-                  window.location.reload();
+                  logout();
                 }
               }}
             >

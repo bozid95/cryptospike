@@ -4,6 +4,7 @@ import {
   INITIAL_CONFIG,
   INITIAL_SIGNALS,
   INITIAL_STRATEGIES,
+  type AuthUser,
   type BinanceBalanceInfo,
   type PositionItem,
   type SignalItem,
@@ -12,6 +13,13 @@ import {
 } from "./mock-data";
 
 interface CryptoSpikeContextType {
+  // Authentication
+  user: AuthUser | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  logout: () => void;
+
   // Navigation active tab
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -63,6 +71,8 @@ const ACTIVE_TAB_KEY = "cryptospike_active_tab";
 const STRATEGIES_KEY = "cryptospike_mock_strategies_v2";
 const SIGNALS_KEY = "cryptospike_mock_signals_v3";
 const CONFIG_KEY = "cryptospike_mock_config_v3";
+const TOKEN_KEY = "cryptospike_jwt_token";
+const USER_KEY = "cryptospike_auth_user";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
@@ -75,6 +85,53 @@ export function CryptoSpikeProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  });
+
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem(USER_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const login = async (username: string, password: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.accessToken) {
+        return { success: false, message: data.message || "Login gagal. Cek username dan password." };
+      }
+
+      setToken(data.accessToken);
+      setUser(data.user);
+      localStorage.setItem(TOKEN_KEY, data.accessToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, message: err.message || "Gagal menghubungi server auth." };
+    }
+  };
+
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  };
+
   const [activeTab, setActiveTabState] = useState<string>(() => {
     // 1. Cek URL Hash terlebih dahulu (misal: #positions, #signals, #config)
     const hash = window.location.hash.replace("#", "").trim();
@@ -510,6 +567,11 @@ export function CryptoSpikeProvider({
   return (
     <CryptoSpikeContext.Provider
       value={{
+        user,
+        token,
+        isAuthenticated: Boolean(token),
+        login,
+        logout,
         activeTab,
         setActiveTab,
         strategies,

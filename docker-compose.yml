@@ -26,9 +26,13 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-cryptospike123}@postgres:5432/${POSTGRES_DB:-cryptospike}
       BINANCE_TESTNET: ${BINANCE_TESTNET:-true}
+      JWT_SECRET: ${JWT_SECRET:-cryptospike_jwt_super_secret_key_2026}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-cryptospike123}
     ports:
       - "80:80"
       - "3001:3001"
 
 volumes:
   postgres_data:
+

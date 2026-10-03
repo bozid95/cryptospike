@@ -8,6 +8,7 @@ import { ScannerModule } from './scanner/scanner.module';
 import { GatewayModule } from './gateway/gateway.module';
 import { AppConfigModule } from './config/config.module';
 import { ExecutionModule } from './execution/execution.module';
+import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -22,6 +23,7 @@ import { AppService } from './app.service';
     GatewayModule,
     AppConfigModule,
     ExecutionModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -45,3 +45,4 @@ RUN chmod +x /app/docker-entrypoint.sh
 EXPOSE 80 3001
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
+

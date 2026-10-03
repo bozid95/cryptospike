@@ -1,3 +1,9 @@
+export interface AuthUser {
+  id: string;
+  username: string;
+  role: string;
+}
+
 export interface SignalItem {
   id: string;
   symbol: string;
