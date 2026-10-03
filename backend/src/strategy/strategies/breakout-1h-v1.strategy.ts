@@ -42,11 +42,13 @@ export class Breakout1hV1Strategy implements IStrategy {
     // Kalkulasi TP & SL adaptif
     const tp1Pct = 0.015; // 1.5%
     const tp2Pct = 0.03; // 3.0%
+    const tp3Pct = 0.045; // 4.5%
     const slPct = 0.012; // 1.2%
 
     const entryPrice = lastPrice;
     const tp1 = isLong ? entryPrice * (1 + tp1Pct) : entryPrice * (1 - tp1Pct);
     const tp2 = isLong ? entryPrice * (1 + tp2Pct) : entryPrice * (1 - tp2Pct);
+    const tp3 = isLong ? entryPrice * (1 + tp3Pct) : entryPrice * (1 - tp3Pct);
     const sl = isLong ? entryPrice * (1 - slPct) : entryPrice * (1 + slPct);
 
     const score = Math.min(95, Math.round(50 + Math.abs(priceChangePct) * 8));
@@ -58,6 +60,7 @@ export class Breakout1hV1Strategy implements IStrategy {
       entryPrice,
       tp1,
       tp2,
+      tp3,
       sl,
       score,
       confidence: score > 75 ? 'HIGH' : 'MEDIUM',

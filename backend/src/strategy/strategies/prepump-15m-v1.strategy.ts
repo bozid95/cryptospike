@@ -38,6 +38,7 @@ export class PrePump15mV1Strategy implements IStrategy {
       const entryPrice = lastPrice;
       const tp1 = entryPrice * 1.018;
       const tp2 = entryPrice * 1.036;
+      const tp3 = entryPrice * 1.054;
       const sl = entryPrice * 0.988;
       const score = Math.round(takerRatio * 100);
 
@@ -48,6 +49,7 @@ export class PrePump15mV1Strategy implements IStrategy {
         entryPrice,
         tp1,
         tp2,
+        tp3,
         sl,
         score,
         confidence: 'HIGH',
@@ -63,6 +65,7 @@ export class PrePump15mV1Strategy implements IStrategy {
       const entryPrice = lastPrice;
       const tp1 = entryPrice * 0.982;
       const tp2 = entryPrice * 0.964;
+      const tp3 = entryPrice * 0.946;
       const sl = entryPrice * 1.012;
       const score = Math.round((1 - takerRatio) * 100);
 
@@ -73,6 +76,7 @@ export class PrePump15mV1Strategy implements IStrategy {
         entryPrice,
         tp1,
         tp2,
+        tp3,
         sl,
         score,
         confidence: 'HIGH',

@@ -109,6 +109,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         entryPrice: result.entryPrice,
         tp1: result.tp1,
         tp2: result.tp2,
+        tp3: result.tp3,
         sl: result.sl,
         score: result.score,
         strategy: strategyKey,
@@ -289,7 +290,10 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             if (livePos) {
               const positionAmt = parseFloat(livePos.positionAmt);
               if (positionAmt !== 0) {
-                await this.binanceService.closePosition(sig.symbol, positionAmt);
+                await this.binanceService.closePosition(
+                  sig.symbol,
+                  positionAmt,
+                );
               }
             }
 
