@@ -33,6 +33,9 @@ COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules/
 COPY --from=backend-builder /app/backend/dist ./backend/dist/
 COPY --from=backend-builder /app/backend/prisma ./backend/prisma/
 
+# Verifikasi file dist/main.js ada di runner stage
+RUN ls -la /app/backend/dist/ && test -f /app/backend/dist/main.js
+
 # Salin hasil build frontend ke nginx html
 COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 

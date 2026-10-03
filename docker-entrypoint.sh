@@ -7,17 +7,14 @@ echo "=== Starting CryptoSpike Stack ==="
 if [ -n "$DATABASE_URL" ]; then
   echo "Applying database schema migrations..."
   cd /app/backend
-  npx prisma db push --skip-generate || true
+  npx prisma db push --schema=./prisma/schema.prisma || true
   cd /app
 fi
 
 # 2. Start NestJS Backend di background
 echo "Starting NestJS Backend on port 3001..."
 cd /app/backend
-if [ ! -f "dist/main.js" ]; then
-  echo "dist/main.js not found! Running build on the fly..."
-  npx nest build || npm run build
-fi
+ls -la dist/ || true
 node dist/main.js &
 BACKEND_PID=$!
 
