@@ -375,10 +375,16 @@ export function PublicSignalsView() {
                   displayPrice = sig.sl;
                 } else if (sig.status === "TSL_HIT") {
                   displayPrice = sig.entryPrice;
-                } else if (typeof sig.profitPct === "number" && sig.entryPrice) {
+                } else if (
+                  typeof sig.profitPct === "number" &&
+                  sig.entryPrice
+                ) {
                   displayPrice = isLong
                     ? sig.entryPrice * (1 + sig.profitPct / 100)
                     : sig.entryPrice * (1 - sig.profitPct / 100);
+                } else if (isRunning && sig.entryPrice) {
+                  // Fallback: gunakan entryPrice sementara menunggu data ticker pertama dari WebSocket
+                  displayPrice = sig.entryPrice;
                 }
               }
 

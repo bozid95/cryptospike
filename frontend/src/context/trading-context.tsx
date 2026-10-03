@@ -538,8 +538,14 @@ export function CryptoSpikeProvider({
       if (res.ok) {
         const json = await res.json();
         if (json.items && Array.isArray(json.items) && json.items.length > 0) {
-          setSignals(json.items);
-          void fetchDbStrategies(json.items);
+          const mappedSignals: SignalItem[] = json.items.map((item: any) => ({
+            ...item,
+            currentPrice:
+              item.currentPrice ??
+              (item.status === "ACTIVE" ? item.entryPrice : undefined),
+          }));
+          setSignals(mappedSignals);
+          void fetchDbStrategies(mappedSignals);
         }
       }
     } catch (e) {
@@ -679,9 +685,13 @@ export function CryptoSpikeProvider({
 
     // Menerima sinyal baru secara realtime (0 delay)
     socket.on("new_signal", (newSig: SignalItem) => {
+      const formattedSig: SignalItem = {
+        ...newSig,
+        currentPrice: (newSig as any).currentPrice ?? newSig.entryPrice,
+      };
       setSignals((prev) => {
-        if (prev.some((s) => s.id === newSig.id)) return prev;
-        return [newSig, ...prev];
+        if (prev.some((s) => s.id === formattedSig.id)) return prev;
+        return [formattedSig, ...prev];
       });
 
       // Trigger Push Notification
