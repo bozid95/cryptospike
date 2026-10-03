@@ -659,7 +659,8 @@ export function PositionsCrud() {
                             isProfit ? "text-emerald-500" : "text-rose-500"
                           }`}
                         >
-                          {isProfit ? "+" : ""}${formatCryptoPrice(cp.realizedPnl)} (
+                          {isProfit ? "+" : ""}$
+                          {formatCryptoPrice(cp.realizedPnl)} (
                           {isProfit ? "+" : ""}
                           {cp.roe}%)
                         </span>

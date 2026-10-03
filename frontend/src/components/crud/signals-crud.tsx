@@ -576,7 +576,9 @@ export function SignalsCrud() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Signal?</AlertDialogTitle>
+                              <AlertDialogTitle>
+                                Delete Signal?
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
                                 Delete {sig.symbol} ({sig.side}) from database?
                               </AlertDialogDescription>

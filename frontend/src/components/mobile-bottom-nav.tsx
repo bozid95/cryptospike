@@ -12,7 +12,9 @@ import { Badge } from "@/components/ui/badge";
 export function MobileBottomNav() {
   const { activeTab, setActiveTab, signals, positions } = useCryptoSpike();
 
-  const activeSignalsCount = signals.filter((s) => s.status === "ACTIVE").length;
+  const activeSignalsCount = signals.filter(
+    (s) => s.status === "ACTIVE",
+  ).length;
   const activePositionsCount = positions.length;
 
   const navItems = [
@@ -65,7 +67,9 @@ export function MobileBottomNav() {
             }`}
           >
             <div className="relative">
-              <Icon className={`size-5 transition-transform ${isActive ? "scale-110" : ""}`} />
+              <Icon
+                className={`size-5 transition-transform ${isActive ? "scale-110" : ""}`}
+              />
               {item.badge !== undefined && (
                 <span
                   className={`absolute -top-1.5 -right-2.5 size-4 rounded-full text-[9px] font-mono font-bold text-white flex items-center justify-center shadow-xs ${item.badgeColor}`}
