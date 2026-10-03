@@ -7,7 +7,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import { useCryptoSpike } from "@/context/trading-context";
 
 export function SiteHeader() {
-  const { balance, isLoadingBalance } = useCryptoSpike();
+  const { balance, isLoadingBalance, isAuthenticated } = useCryptoSpike();
 
   const rawBalance =
     balance && (balance.marginBalance || balance.walletBalanceUsd)
@@ -77,18 +77,20 @@ export function SiteHeader() {
           className="hidden sm:inline-flex gap-1 font-mono text-[10px] sm:text-[11px] bg-background"
         >
           <ActivityIcon className="size-3 text-emerald-500" />
-          Testnet
+          Live Scanner
         </Badge>
 
-        {/* 3. Real Binance Testnet Balance */}
-        <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-muted/60 border border-border text-xs font-mono">
-          <span className="hidden sm:inline text-muted-foreground text-[11px]">
-            Margin:
-          </span>
-          <span className="font-semibold text-emerald-600 text-[11px] sm:text-xs">
-            {formattedBalance}
-          </span>
-        </div>
+        {/* 3. Real Binance Testnet Balance (Admin Only) */}
+        {isAuthenticated && (
+          <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-muted/60 border border-border text-xs font-mono">
+            <span className="hidden sm:inline text-muted-foreground text-[11px]">
+              Margin:
+            </span>
+            <span className="font-semibold text-emerald-600 text-[11px] sm:text-xs">
+              {formattedBalance}
+            </span>
+          </div>
+        )}
 
         {/* 4. Notification Bell Dropdown */}
         <NotificationBell />

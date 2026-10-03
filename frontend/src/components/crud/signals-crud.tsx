@@ -98,7 +98,7 @@ function formatCryptoPrice(val: number | null | undefined): string {
 }
 
 export function SignalsCrud() {
-  const { signals, updateSignalStatus, deleteSignal } = useCryptoSpike();
+  const { signals, updateSignalStatus, deleteSignal, isAuthenticated } = useCryptoSpike();
   const [filter, setFilter] = useState<"ALL" | "RUNNING" | "CLOSED">("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -501,12 +501,18 @@ export function SignalsCrud() {
                         {/* TP1 */}
                         {sig.tp1 && (
                           <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">
-                            <span className="text-[10px] font-bold text-emerald-600">TP1</span>
-                            <span className="font-semibold text-foreground">${formatCryptoPrice(sig.tp1)}</span>
+                            <span className="text-[10px] font-bold text-emerald-600">
+                              TP1
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${formatCryptoPrice(sig.tp1)}
+                            </span>
                             <span className="text-[10px] text-emerald-600">
-                              ({isLong
+                              (
+                              {isLong
                                 ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                                : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}%`})
+                                : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(1)}%`}
+                              )
                             </span>
                           </div>
                         )}
@@ -514,12 +520,18 @@ export function SignalsCrud() {
                         {/* TP2 */}
                         {sig.tp2 && (
                           <div className="flex items-center gap-1 bg-teal-500/10 border border-teal-500/20 px-1.5 py-0.5 rounded text-[11px]">
-                            <span className="text-[10px] font-bold text-teal-600">TP2</span>
-                            <span className="font-semibold text-foreground">${formatCryptoPrice(sig.tp2)}</span>
+                            <span className="text-[10px] font-bold text-teal-600">
+                              TP2
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${formatCryptoPrice(sig.tp2)}
+                            </span>
                             <span className="text-[10px] text-teal-600">
-                              ({isLong
+                              (
+                              {isLong
                                 ? `+${(((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                                : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}%`})
+                                : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(1)}%`}
+                              )
                             </span>
                           </div>
                         )}
@@ -527,12 +539,18 @@ export function SignalsCrud() {
                         {/* TP3 */}
                         {sig.tp3 && (
                           <div className="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-1.5 py-0.5 rounded text-[11px]">
-                            <span className="text-[10px] font-bold text-cyan-600">TP3</span>
-                            <span className="font-semibold text-foreground">${formatCryptoPrice(sig.tp3)}</span>
+                            <span className="text-[10px] font-bold text-cyan-600">
+                              TP3
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${formatCryptoPrice(sig.tp3)}
+                            </span>
                             <span className="text-[10px] text-cyan-600">
-                              ({isLong
+                              (
+                              {isLong
                                 ? `+${(((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`
-                                : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}%`})
+                                : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(1)}%`}
+                              )
                             </span>
                           </div>
                         )}
@@ -540,12 +558,18 @@ export function SignalsCrud() {
                         {/* SL */}
                         {sig.sl && (
                           <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-1.5 py-0.5 rounded text-[11px]">
-                            <span className="text-[10px] font-bold text-destructive">SL</span>
-                            <span className="font-semibold text-destructive">${formatCryptoPrice(sig.sl)}</span>
+                            <span className="text-[10px] font-bold text-destructive">
+                              SL
+                            </span>
+                            <span className="font-semibold text-destructive">
+                              ${formatCryptoPrice(sig.sl)}
+                            </span>
                             <span className="text-[10px] text-destructive">
-                              (-{isLong
+                              (-
+                              {isLong
                                 ? `${Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(1)}%`
-                                : `${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`})
+                                : `${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(1)}%`}
+                              )
                             </span>
                           </div>
                         )}
@@ -589,56 +613,58 @@ export function SignalsCrud() {
                         })}
                       </span>
 
-                      <div className="flex items-center gap-1.5">
-                        {isRunning && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs font-semibold px-2.5 gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
-                            onClick={() => {
-                              const currentPnL = sig.profitPct ?? 0;
-                              handleStatusUpdate(
-                                sig.id,
-                                currentPnL >= 0 ? "TP1_HIT" : "SL_HIT",
-                                currentPnL,
-                              );
-                            }}
-                          >
-                            Close Position
-                          </Button>
-                        )}
-
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                      {isAuthenticated && (
+                        <div className="flex items-center gap-1.5">
+                          {isRunning && (
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs font-semibold px-2.5 gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+                              onClick={() => {
+                                const currentPnL = sig.profitPct ?? 0;
+                                handleStatusUpdate(
+                                  sig.id,
+                                  currentPnL >= 0 ? "TP1_HIT" : "SL_HIT",
+                                  currentPnL,
+                                );
+                              }}
                             >
-                              <Trash2Icon className="size-3.5" />
+                              Close Position
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Delete Signal?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Delete {sig.symbol} ({sig.side}) from database?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-destructive text-destructive-foreground"
-                                onClick={() => handleDelete(sig.id)}
+                          )}
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 text-muted-foreground hover:text-destructive cursor-pointer"
                               >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
+                                <Trash2Icon className="size-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Delete Signal?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Delete {sig.symbol} ({sig.side}) from database?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground"
+                                  onClick={() => handleDelete(sig.id)}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -672,16 +698,18 @@ export function SignalsCrud() {
                   <TableHead className="w-[165px] px-4 py-3 font-semibold text-xs">
                     Time (Created & Updated)
                   </TableHead>
-                  <TableHead className="w-[140px] px-4 py-3 text-right font-semibold text-xs">
-                    Monitor Actions
-                  </TableHead>
+                  {isAuthenticated && (
+                    <TableHead className="w-[140px] px-4 py-3 text-right font-semibold text-xs">
+                      Monitor Actions
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedSignals.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={isAuthenticated ? 8 : 7}
                       className="h-32 text-center text-muted-foreground text-sm"
                     >
                       No signals matching current filter criteria.
@@ -958,76 +986,78 @@ export function SignalsCrud() {
                           </div>
                         </TableCell>
 
-                        {/* 8. Action / Simulasi Close */}
-                        <TableCell className="align-middle text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            {isRunning && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className={`h-7 text-xs font-semibold px-2.5 gap-1.5 transition-all ${
-                                  (sig.profitPct ?? 0) >= 0
-                                    ? "border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
-                                    : "border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
-                                }`}
-                                onClick={() => {
-                                  const currentPnL = sig.profitPct ?? 0;
-                                  // Tutup mengikuti floating PnL riil (jika profit dicatat TP_HIT, jika loss dicatat SL_HIT)
-                                  const status =
-                                    currentPnL >= 0 ? "TP1_HIT" : "SL_HIT";
-                                  handleStatusUpdate(
-                                    sig.id,
-                                    status,
-                                    currentPnL,
-                                  );
-                                }}
-                                title={`Close signal at current PnL (${(sig.profitPct ?? 0) >= 0 ? "+" : ""}${(sig.profitPct ?? 0).toFixed(2)}%)`}
-                              >
-                                <span>Close</span>
-                                <span className="font-mono text-[11px] font-bold">
-                                  {(sig.profitPct ?? 0) >= 0 ? "+" : ""}
-                                  {(sig.profitPct ?? 0).toFixed(2)}%
-                                </span>
-                              </Button>
-                            )}
-
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
+                        {/* 8. Action / Simulasi Close (Hanya jika admin login) */}
+                        {isAuthenticated && (
+                          <TableCell className="align-middle text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {isRunning && (
                                 <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                  title="Delete Signal"
+                                  variant="outline"
+                                  size="sm"
+                                  className={`h-7 text-xs font-semibold px-2.5 gap-1.5 transition-all ${
+                                    (sig.profitPct ?? 0) >= 0
+                                      ? "border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
+                                      : "border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                                  }`}
+                                  onClick={() => {
+                                    const currentPnL = sig.profitPct ?? 0;
+                                    // Tutup mengikuti floating PnL riil (jika profit dicatat TP_HIT, jika loss dicatat SL_HIT)
+                                    const status =
+                                      currentPnL >= 0 ? "TP1_HIT" : "SL_HIT";
+                                    handleStatusUpdate(
+                                      sig.id,
+                                      status,
+                                      currentPnL,
+                                    );
+                                  }}
+                                  title={`Close signal at current PnL (${(sig.profitPct ?? 0) >= 0 ? "+" : ""}${(sig.profitPct ?? 0).toFixed(2)}%)`}
                                 >
-                                  <Trash2Icon className="size-3.5" />
+                                  <span>Close</span>
+                                  <span className="font-mono text-[11px] font-bold">
+                                    {(sig.profitPct ?? 0) >= 0 ? "+" : ""}
+                                    {(sig.profitPct ?? 0).toFixed(2)}%
+                                  </span>
                                 </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Delete This Signal?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete signal{" "}
-                                    <span className="font-semibold text-foreground">
-                                      {sig.symbol} ({sig.side})
-                                    </span>{" "}
-                                    from the database logs?
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={() => handleDelete(sig.id)}
+                              )}
+
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    title="Delete Signal"
                                   >
-                                    Yes, Delete Signal
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
+                                    <Trash2Icon className="size-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Delete This Signal?
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete signal{" "}
+                                      <span className="font-semibold text-foreground">
+                                        {sig.symbol} ({sig.side})
+                                      </span>{" "}
+                                      from the database logs?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => handleDelete(sig.id)}
+                                    >
+                                      Yes, Delete Signal
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     );
                   })

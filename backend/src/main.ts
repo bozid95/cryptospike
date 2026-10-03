@@ -6,10 +6,41 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  // Aktifkan CORS untuk Dashboard React Frontend
+  // Aktifkan CORS untuk Dashboard React Frontend & Client Apps
+  const allowedOriginsEnv = process.env.ALLOWED_ORIGINS;
+  const allowedOriginsList = allowedOriginsEnv
+    ? allowedOriginsEnv.split(',').map((o) => o.trim())
+    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://localhost:4173'];
+
   app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      // Izinkan jika tidak ada origin (seperti mobile apps, curl tertentu, atau same-origin)
+      if (!origin) return callback(null, true);
+      // Izinkan jika terdapat dalam allowedOriginsList atau dalam mode development
+      const isAllowed =
+        allowedOriginsList.includes(origin) ||
+        allowedOriginsList.includes('*') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1');
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'x-cryptospike-client',
+    ],
     credentials: true,
   });
 

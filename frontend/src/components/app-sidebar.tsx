@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { signals, strategies, config, positions, setActiveTab } =
+  const { signals, strategies, config, positions, setActiveTab, isAuthenticated } =
     useCryptoSpike();
 
   const activeSignalsCount = signals.filter(
@@ -36,50 +36,63 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const activeStrategiesCount = strategies.filter((s) => s.isEnabled).length;
   const activePositionsCount = positions.length;
 
-  // Navigasi Utama: Bebas Redundansi
-  const mainNavItems = [
-    {
-      id: "overview",
-      title: "Dashboard Summary",
-      url: "#overview",
-      icon: LayoutDashboardIcon,
-    },
-    {
-      id: "positions",
-      title: "Active Positions",
-      url: "#positions",
-      icon: BriefcaseIcon,
-      badge:
-        activePositionsCount > 0 ? `${activePositionsCount} Open` : undefined,
-      badgeVariant: "default" as const,
-    },
-    {
-      id: "signals",
-      title: "Scanner & Live Signals",
-      url: "#signals",
-      icon: RadioIcon,
-      badge: activeSignalsCount,
-      badgeVariant: (activeSignalsCount > 0 ? "default" : "secondary") as
-        | "default"
-        | "secondary",
-    },
-    {
-      id: "strategies",
-      title: "Strategy Manager",
-      url: "#strategies",
-      icon: CpuIcon,
-      badge: `${activeStrategiesCount}/${strategies.length}`,
-      badgeVariant: "outline" as const,
-    },
-    {
-      id: "config",
-      title: "Configuration",
-      url: "#config",
-      icon: SlidersIcon,
-      badge: `${config.environment} • ${config.leverage}x`,
-      badgeVariant: "secondary" as const,
-    },
-  ];
+  // Navigasi Utama: Bebas Redundansi (Jika publik, hanya tampilkan Scanner)
+  const mainNavItems = isAuthenticated
+    ? [
+        {
+          id: "overview",
+          title: "Dashboard Summary",
+          url: "#overview",
+          icon: LayoutDashboardIcon,
+        },
+        {
+          id: "positions",
+          title: "Active Positions",
+          url: "#positions",
+          icon: BriefcaseIcon,
+          badge:
+            activePositionsCount > 0 ? `${activePositionsCount} Open` : undefined,
+          badgeVariant: "default" as const,
+        },
+        {
+          id: "signals",
+          title: "Scanner & Live Signals",
+          url: "#signals",
+          icon: RadioIcon,
+          badge: activeSignalsCount,
+          badgeVariant: (activeSignalsCount > 0 ? "default" : "secondary") as
+            | "default"
+            | "secondary",
+        },
+        {
+          id: "strategies",
+          title: "Strategy Manager",
+          url: "#strategies",
+          icon: CpuIcon,
+          badge: `${activeStrategiesCount}/${strategies.length}`,
+          badgeVariant: "outline" as const,
+        },
+        {
+          id: "config",
+          title: "Configuration",
+          url: "#config",
+          icon: SlidersIcon,
+          badge: `${config.environment} • ${config.leverage}x`,
+          badgeVariant: "secondary" as const,
+        },
+      ]
+    : [
+        {
+          id: "signals",
+          title: "Scanner & Live Signals",
+          url: "#signals",
+          icon: RadioIcon,
+          badge: activeSignalsCount,
+          badgeVariant: (activeSignalsCount > 0 ? "default" : "secondary") as
+            | "default"
+            | "secondary",
+        },
+      ];
 
   return (
     <Sidebar
@@ -93,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              onClick={() => setActiveTab("overview")}
+              onClick={() => setActiveTab(isAuthenticated ? "overview" : "signals")}
               className="hover:bg-transparent cursor-pointer p-0 gap-3"
             >
               <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-base shadow-xs shrink-0">
@@ -108,11 +121,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     variant="outline"
                     className="font-mono text-[9px] px-1 py-0 h-4 border-emerald-500/40 text-emerald-600 bg-emerald-500/5 font-semibold"
                   >
-                    PRO
+                    LIVE
                   </Badge>
                 </div>
                 <span className="text-[11px] text-muted-foreground">
-                  Binance Futures Engine
+                  Realtime Price Action Scanner
                 </span>
               </div>
             </SidebarMenuButton>
@@ -122,13 +135,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* 2. Content Menu: Bersih & Terfokus */}
       <SidebarContent className="p-2 gap-2 overflow-y-auto">
-        <NavMain label="Control Panel" items={mainNavItems} />
+        <NavMain label={isAuthenticated ? "Control Panel" : "Public Feeds"} items={mainNavItems} />
       </SidebarContent>
 
-      {/* 3. Footer: Profil Pengguna & Keluar */}
-      <SidebarFooter className="p-2 border-t border-border/60">
-        <NavUser />
-      </SidebarFooter>
+      {/* 3. Footer: Profil Pengguna & Keluar (Hanya jika login) */}
+      {isAuthenticated && (
+        <SidebarFooter className="p-2 border-t border-border/60">
+          <NavUser />
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

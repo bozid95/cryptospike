@@ -10,7 +10,11 @@ import { useCryptoSpike } from "@/context/trading-context";
 import { Badge } from "@/components/ui/badge";
 
 export function MobileBottomNav() {
-  const { activeTab, setActiveTab, signals, positions } = useCryptoSpike();
+  const { activeTab, setActiveTab, signals, positions, isAuthenticated } = useCryptoSpike();
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const activeSignalsCount = signals.filter(
     (s) => s.status === "ACTIVE",

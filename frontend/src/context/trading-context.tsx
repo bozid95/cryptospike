@@ -159,7 +159,7 @@ export function CryptoSpikeProvider({
     localStorage.removeItem(USER_KEY);
   };
 
-  // Helper untuk authenticated fetch yang otomatis melampirkan Bearer JWT token
+  // Helper untuk authenticated fetch yang otomatis melampirkan Bearer JWT token & Client Signature
   const authFetch = async (
     input: RequestInfo | URL,
     init?: RequestInit,
@@ -171,8 +171,11 @@ export function CryptoSpikeProvider({
     if (currentToken && !headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${currentToken}`);
     }
+    if (!headers.has("x-cryptospike-client")) {
+      headers.set("x-cryptospike-client", "cspk-client-app-v1-pub");
+    }
     const res = await fetch(input, { ...init, headers });
-    if (res.status === 401) {
+    if (res.status === 401 && currentToken) {
       logout();
     }
     return res;

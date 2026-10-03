@@ -14,12 +14,23 @@ import { LoginView } from "@/components/login-view";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { Toaster } from "@/components/ui/sonner";
 
+import { useEffect, useState } from "react";
+
 function DashboardContent() {
-  const { activeTab } = useCryptoSpike();
+  const { activeTab, isAuthenticated } = useCryptoSpike();
+
+  // Jika pengunjung publik (belum login), selalu tampilkan halaman Signals
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-3.5 sm:p-4 lg:gap-6 lg:p-6 pb-20 sm:pb-6">
+        <SignalsCrud />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-3.5 sm:p-4 lg:gap-6 lg:p-6 pb-20 sm:pb-6">
-      {/* Tampilan Konten Dinamis Berdasarkan Tab */}
+      {/* Tampilan Konten Dinamis Berdasarkan Tab bagi Admin Terotentikasi */}
       {activeTab === "overview" && <DashboardSummary />}
       {activeTab === "positions" && <PositionsCrud />}
       {activeTab === "signals" && <SignalsCrud />}
@@ -31,9 +42,36 @@ function DashboardContent() {
 
 function MainLayout() {
   const { isAuthenticated } = useCryptoSpike();
+  const [pathname, setPathname] = useState(() => window.location.pathname);
+  const [hash, setHash] = useState(() => window.location.hash);
 
-  if (!isAuthenticated) {
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setPathname(window.location.pathname);
+      setHash(window.location.hash);
+    };
+
+    window.addEventListener("popstate", handleLocationChange);
+    window.addEventListener("hashchange", handleLocationChange);
+    return () => {
+      window.removeEventListener("popstate", handleLocationChange);
+      window.removeEventListener("hashchange", handleLocationChange);
+    };
+  }, []);
+
+  const isLoginRoute =
+    pathname.includes("/login") || hash === "#login";
+
+  // Jika route adalah /login dan belum login, tampilkan halaman LoginView
+  if (isLoginRoute && !isAuthenticated) {
     return <LoginView />;
+  }
+
+  // Jika sudah login dan masih di /login, otomatis bersihkan path/hash kembali ke dashboard
+  if (isLoginRoute && isAuthenticated) {
+    if (window.location.pathname.includes("/login")) {
+      window.history.replaceState(null, "", "/");
+    }
   }
 
   return (

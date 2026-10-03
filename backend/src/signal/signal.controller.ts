@@ -9,11 +9,13 @@ import {
 } from '@nestjs/common';
 import { SignalService, CreateSignalInput } from './signal.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ClientOriginGuard } from '../common/guards/client-origin.guard';
 
 @Controller('api/signals')
 export class SignalController {
   constructor(private readonly signalService: SignalService) {}
 
+  @UseGuards(ClientOriginGuard)
   @Get()
   getSignals(
     @Query('status') status?: string,
@@ -29,11 +31,13 @@ export class SignalController {
     });
   }
 
+  @UseGuards(ClientOriginGuard)
   @Get('stats/winrate')
   getWinrateStats() {
     return this.signalService.getWinrateStats();
   }
 
+  @UseGuards(ClientOriginGuard)
   @Get(':id')
   getSignalById(@Param('id') id: string) {
     return this.signalService.getSignalById(id);
