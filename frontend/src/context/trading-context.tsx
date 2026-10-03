@@ -538,12 +538,16 @@ export function CryptoSpikeProvider({
       if (res.ok) {
         const json = await res.json();
         if (json.items && Array.isArray(json.items) && json.items.length > 0) {
-          const mappedSignals: SignalItem[] = json.items.map((item: any) => ({
-            ...item,
-            currentPrice:
-              item.currentPrice ??
-              (item.status === "ACTIVE" ? item.entryPrice : undefined),
-          }));
+          const mappedSignals: SignalItem[] = json.items.map((item: any) => {
+            const volMatch = item.reasons?.match(/Vol:\s*(\$[\d.]+M)/);
+            return {
+              ...item,
+              volume24h: item.volume24h || (volMatch ? volMatch[1] : undefined),
+              currentPrice:
+                item.currentPrice ??
+                (item.status === "ACTIVE" ? item.entryPrice : undefined),
+            };
+          });
           setSignals(mappedSignals);
           void fetchDbStrategies(mappedSignals);
         }

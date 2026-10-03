@@ -111,6 +111,9 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         continue;
       }
 
+      const volFormatted = `$${(quoteVolume / 1000000).toFixed(1)}M`;
+      const enrichedReasons = [`Vol: ${volFormatted}`, ...result.reasons].join('; ');
+
       const signal = await this.signalService.createSignal({
         symbol: marketData.symbol,
         side: result.signalType,
@@ -122,7 +125,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         sl: result.sl,
         score: result.score,
         strategy: strategyKey,
-        reasons: result.reasons.join('; '),
+        reasons: enrichedReasons,
         triggerSource: 'ws_ticker',
       });
 
@@ -130,8 +133,11 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
         // Daftarkan simbol sinyal baru ke watched set
         this.activeSignalSymbols.add(signal.symbol);
 
-        // Push sinyal realtime ke dashboard frontend via websocket
-        this.gateway.broadcastSignal(signal);
+        // Push sinyal realtime ke dashboard frontend via websocket beserta volume $M
+        this.gateway.broadcastSignal({
+          ...signal,
+          volume24h: volFormatted,
+        });
 
         // Eksekusi order posisi riil di Binance Futures memakai saldo
         void this.executionService.executeSignal({

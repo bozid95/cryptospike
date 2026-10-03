@@ -24,6 +24,9 @@ export interface SignalItem {
   tp2?: number;
   tp3?: number;
   sl: number;
+  score?: number;
+  volume24h?: string;
+  reasons?: string;
   strategy: string;
   triggerSource: string;
   status:
