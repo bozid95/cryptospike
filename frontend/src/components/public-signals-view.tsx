@@ -129,7 +129,8 @@ export function PublicSignalsView() {
         const evaluated = st.hits + st.losses;
         const winrate =
           evaluated > 0 ? ((st.hits / evaluated) * 100).toFixed(1) : "0.0";
-        const simulatedPnlUsd = (1000 * st.totalPnl) / 100;
+        // Alokasi 1% per posisi ($10) dari $1,000
+        const simulatedPnlUsd = (10 * st.totalPnl) / 100;
         return {
           ...st,
           winrate: parseFloat(winrate),
@@ -198,11 +199,15 @@ export function PublicSignalsView() {
         ? ((hitCount / evaluatedCount) * 100).toFixed(1)
         : "0.0";
 
-    // Simulasi Modal $1,000 USD (Sample Portfolio Benchmark)
+    // Simulasi Modal $1,000 USD dengan 1% Position Allocation ($10 per Signal)
     const SIMULATED_CAPITAL = 1000;
-    const simulatedProfitUsd =
-      (SIMULATED_CAPITAL * totalRealizedProfitPct) / 100;
+    const ALLOCATION_PCT = 0.01; // 1% alokasi per posisi
+    const POSITION_SIZE_USD = SIMULATED_CAPITAL * ALLOCATION_PCT; // $10 per sinyal
+
+    // Total keuntungan dollar dihitung dari akumulasi return tiap posisi $10
+    const simulatedProfitUsd = (POSITION_SIZE_USD * totalRealizedProfitPct) / 100;
     const simulatedBalanceUsd = SIMULATED_CAPITAL + simulatedProfitUsd;
+    const netReturnOnCapitalPct = (simulatedProfitUsd / SIMULATED_CAPITAL) * 100;
 
     return {
       totalSignals: signals.length,
@@ -213,8 +218,10 @@ export function PublicSignalsView() {
       winrate,
       totalRealizedProfitPct: parseFloat(totalRealizedProfitPct.toFixed(2)),
       simulatedCapital: SIMULATED_CAPITAL,
+      positionSizeUsd: POSITION_SIZE_USD,
       simulatedProfitUsd: parseFloat(simulatedProfitUsd.toFixed(2)),
       simulatedBalanceUsd: parseFloat(simulatedBalanceUsd.toFixed(2)),
+      netReturnOnCapitalPct: parseFloat(netReturnOnCapitalPct.toFixed(2)),
       longCount,
       shortCount,
     };
@@ -328,7 +335,11 @@ export function PublicSignalsView() {
                 Development Phase & Sample Data Testing
               </span>
               <p className="text-[11px] opacity-90 leading-relaxed font-sans">
-                The system is currently in <strong>development & collecting sample signals</strong> for algorithm strategy testing. These signals are purely for technical evaluation, <strong>not financial advice, and do not follow them</strong>.
+                The system is currently in{" "}
+                <strong>development & collecting sample signals</strong> for
+                algorithm strategy testing. These signals are purely for
+                technical evaluation,{" "}
+                <strong>not financial advice, and do not follow them</strong>.
               </p>
             </div>
           </div>
@@ -377,11 +388,11 @@ export function PublicSignalsView() {
               </CardContent>
             </Card>
 
-            {/* Stat 3: Realized PnL ($1,000 Simulation) */}
+            {/* Stat 3: Realized PnL (1% per Trade on $1,000 Capital) */}
             <Card className="border-border/80 shadow-xs bg-card">
               <CardContent className="p-3 sm:p-4 space-y-1">
                 <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
-                  Realized PnL ($1K Test)
+                  Realized PnL (1% Risk)
                   <FlameIcon className="size-3 sm:size-3.5 text-amber-500" />
                 </span>
                 <div
@@ -397,15 +408,18 @@ export function PublicSignalsView() {
                 <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center justify-between">
                   <span
                     className={
-                      summary.totalRealizedProfitPct >= 0
+                      summary.netReturnOnCapitalPct >= 0
                         ? "text-emerald-500 font-semibold"
                         : "text-rose-500 font-semibold"
                     }
+                    title="Net Portfolio Growth on $1,000"
                   >
-                    {summary.totalRealizedProfitPct >= 0 ? "+" : ""}
-                    {summary.totalRealizedProfitPct.toFixed(1)}%
+                    {summary.netReturnOnCapitalPct >= 0 ? "+" : ""}
+                    {summary.netReturnOnCapitalPct.toFixed(2)}% ROI
                   </span>
-                  <span>Bal: ${summary.simulatedBalanceUsd.toFixed(0)}</span>
+                  <span title="Simulated Current Account Balance">
+                    Bal: ${summary.simulatedBalanceUsd.toFixed(2)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -957,7 +971,7 @@ export function PublicSignalsView() {
                               ? "text-emerald-500"
                               : "text-rose-500"
                           }`}
-                          title={`Simulated from $1,000 test position: ${isProfitPositive ? "+" : ""}$${((1000 * displayProfitPct) / 100).toFixed(2)}`}
+                          title={`Simulated from 1% position ($10 risk on $1,000 capital): ${isProfitPositive ? "+" : ""}$${((10 * displayProfitPct) / 100).toFixed(2)}`}
                         >
                           <span>
                             {isProfitPositive ? "+" : ""}
@@ -965,7 +979,7 @@ export function PublicSignalsView() {
                           </span>
                           <span className="text-[10px] font-semibold opacity-90">
                             ({isProfitPositive ? "+" : ""}$
-                            {((1000 * displayProfitPct) / 100).toFixed(1)})
+                            {((10 * displayProfitPct) / 100).toFixed(2)})
                           </span>
                         </span>
                       )}
