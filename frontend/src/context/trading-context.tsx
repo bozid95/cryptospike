@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { toast } from "sonner";
 import {
@@ -604,14 +604,34 @@ export function CryptoSpikeProvider({
     }
   };
 
+  const lastNotifKeyRef = useRef<Map<string, number>>(new Map());
+
   const sendPushNotification = (
     title: string,
     body: string,
     type: "new_signal" | "tp" | "sl" | "info" = "info",
   ) => {
+    // Cegah notifikasi duplikat kembar identik dalam rentang 4 detik
+    const notifKey = `${type}_${title}_${body}`;
+    const nowMs = Date.now();
+    const lastTriggered = lastNotifKeyRef.current.get(notifKey);
+    if (lastTriggered && nowMs - lastTriggered < 4000) {
+      return;
+    }
+    lastNotifKeyRef.current.set(notifKey, nowMs);
+
+    // Bersihkan entri lama agar memory efisien
+    if (lastNotifKeyRef.current.size > 50) {
+      for (const [k, v] of lastNotifKeyRef.current.entries()) {
+        if (nowMs - v > 10000) {
+          lastNotifKeyRef.current.delete(k);
+        }
+      }
+    }
+
     // 0. Simpan ke history notifikasi (maksimal 100)
     const newNotifItem: AppNotification = {
-      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      id: `notif-${nowMs}-${Math.random().toString(36).substring(2, 7)}`,
       title,
       message: body,
       type,
