@@ -9,6 +9,12 @@ import {
   RadioIcon,
   SearchIcon,
   Trash2Icon,
+  TargetIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  CheckCircle2Icon,
+  ShieldAlertIcon,
+  ZapIcon,
 } from "lucide-react";
 
 import { useCryptoSpike } from "@/mock/mock-context";
@@ -56,6 +62,59 @@ export function SignalsCrud() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
+  // Scanner & Signals Summary Metrics
+  const summary = useMemo(() => {
+    let longCount = 0;
+    let shortCount = 0;
+    let runningCount = 0;
+    let tp1Count = 0;
+    let tp2Count = 0;
+    let tp3Count = 0;
+    let slCount = 0;
+    let totalRealizedProfitPct = 0;
+
+    for (const sig of signals) {
+      if (sig.side === "LONG") longCount++;
+      else shortCount++;
+
+      if (sig.status === "ACTIVE") {
+        runningCount++;
+      } else if (sig.status === "TP1_HIT") {
+        tp1Count++;
+        totalRealizedProfitPct += sig.profitPct ?? 0;
+      } else if (sig.status === "TP2_HIT") {
+        tp2Count++;
+        totalRealizedProfitPct += sig.profitPct ?? 0;
+      } else if (sig.status === "TP3_HIT") {
+        tp3Count++;
+        totalRealizedProfitPct += sig.profitPct ?? 0;
+      } else if (sig.status === "SL_HIT") {
+        slCount++;
+        totalRealizedProfitPct += sig.profitPct ?? 0;
+      }
+    }
+
+    const totalTpHits = tp1Count + tp2Count + tp3Count;
+    const closedCount = totalTpHits + slCount;
+    const winrate =
+      closedCount > 0 ? ((totalTpHits / closedCount) * 100).toFixed(1) : "100.0";
+
+    return {
+      totalSignals: signals.length,
+      longCount,
+      shortCount,
+      runningCount,
+      closedCount,
+      totalTpHits,
+      tp1Count,
+      tp2Count,
+      tp3Count,
+      slCount,
+      winrate,
+      avgProfitPct: closedCount > 0 ? (totalRealizedProfitPct / closedCount).toFixed(2) : "0.00",
+    };
+  }, [signals]);
+
   const runningSignals = signals.filter((s) => s.status === "ACTIVE");
   const closedSignals = signals.filter((s) => s.status !== "ACTIVE");
 
@@ -99,6 +158,124 @@ export function SignalsCrud() {
 
   return (
     <div className="space-y-4">
+      {/* 4 Standalone Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Card 1: Total Sinyal & Scanner Output */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Total Sinyal Terdeteksi
+              </span>
+              <div className="text-xl font-bold font-mono text-foreground">
+                {summary.totalSignals}
+              </div>
+              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-0.5">
+                <span className="text-emerald-500 font-semibold font-mono">
+                  {summary.runningCount} Active
+                </span>
+                <span>•</span>
+                <span className="text-muted-foreground font-mono">
+                  {summary.closedCount} Closed
+                </span>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-full bg-emerald-500/10 text-emerald-500">
+              <RadioIcon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Winrate & Target Hit */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Winrate Target (TP1+)
+              </span>
+              <div className="text-xl font-bold font-mono text-emerald-500">
+                {summary.winrate}%
+              </div>
+              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-0.5">
+                <span className="text-emerald-500 font-semibold font-mono">
+                  {summary.totalTpHits} TP Hit
+                </span>
+                <span>•</span>
+                <span className="text-rose-500 font-semibold font-mono">
+                  {summary.slCount} SL Hit
+                </span>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-full bg-emerald-500/10 text-emerald-500">
+              <TargetIcon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 3: Rincian Target TP1 / TP2 / TP3 */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Distribusi Target TP
+              </span>
+              <div className="text-xl font-bold font-mono text-foreground flex items-center gap-1.5">
+                <span>{summary.totalTpHits}</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  Target Hit
+                </span>
+              </div>
+              <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1 pt-0.5">
+                <span className="text-emerald-600 font-medium">
+                  TP1: {summary.tp1Count}
+                </span>
+                <span>•</span>
+                <span className="text-teal-600 font-medium">
+                  TP2: {summary.tp2Count}
+                </span>
+                <span>•</span>
+                <span className="text-cyan-600 font-medium">
+                  TP3: {summary.tp3Count}
+                </span>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-full bg-blue-500/10 text-blue-500">
+              <CheckCircle2Icon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 4: Long vs Short Ratio */}
+        <Card className="border-border shadow-xs bg-card">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground font-medium">
+                Rasio Arah Sinyal
+              </span>
+              <div className="text-xl font-bold font-mono text-foreground flex items-center gap-2">
+                <span className="text-emerald-500">{summary.longCount}L</span>
+                <span className="text-muted-foreground text-sm font-normal">/</span>
+                <span className="text-rose-500">{summary.shortCount}S</span>
+              </div>
+              <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-1 pt-0.5">
+                <span className="text-emerald-500 flex items-center gap-0.5">
+                  <TrendingUpIcon className="size-3" />
+                  {((summary.longCount / Math.max(summary.totalSignals, 1)) * 100).toFixed(0)}% Long
+                </span>
+                <span>•</span>
+                <span className="text-rose-500 flex items-center gap-0.5">
+                  <TrendingDownIcon className="size-3" />
+                  {((summary.shortCount / Math.max(summary.totalSignals, 1)) * 100).toFixed(0)}% Short
+                </span>
+              </div>
+            </div>
+            <div className="p-2.5 rounded-full bg-indigo-500/10 text-indigo-500">
+              <ZapIcon className="size-5" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="border-border shadow-xs">
         <CardHeader className="p-6 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
