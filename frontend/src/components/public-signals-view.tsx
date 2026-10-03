@@ -200,7 +200,8 @@ export function PublicSignalsView() {
 
     // Simulasi Modal $1,000 USD (Sample Portfolio Benchmark)
     const SIMULATED_CAPITAL = 1000;
-    const simulatedProfitUsd = (SIMULATED_CAPITAL * totalRealizedProfitPct) / 100;
+    const simulatedProfitUsd =
+      (SIMULATED_CAPITAL * totalRealizedProfitPct) / 100;
     const simulatedBalanceUsd = SIMULATED_CAPITAL + simulatedProfitUsd;
 
     return {
@@ -324,14 +325,10 @@ export function PublicSignalsView() {
             <AlertTriangleIcon className="size-4 shrink-0 stroke-[2.2] text-amber-500" />
             <div className="text-xs space-y-0.5">
               <span className="font-bold uppercase tracking-wider text-[11px] block">
-                Tahap Development & Uji Coba Sample Data
+                Development Phase & Sample Data Testing
               </span>
               <p className="text-[11px] opacity-90 leading-relaxed font-sans">
-                Sistem saat ini sedang dalam{" "}
-                <strong>tahap development & collecting sample signal</strong>{" "}
-                untuk pengujian strategi algoritma. Sinyal ini murni untuk
-                evaluasi teknis,{" "}
-                <strong>bukan saran finansial dan jangan diikuti</strong>.
+                The system is currently in <strong>development & collecting sample signals</strong> for algorithm strategy testing. These signals are purely for technical evaluation, <strong>not financial advice, and do not follow them</strong>.
               </p>
             </div>
           </div>
@@ -394,7 +391,8 @@ export function PublicSignalsView() {
                       : "text-rose-500"
                   }`}
                 >
-                  {summary.simulatedProfitUsd >= 0 ? "+" : ""}${summary.simulatedProfitUsd.toFixed(2)}
+                  {summary.simulatedProfitUsd >= 0 ? "+" : ""}$
+                  {summary.simulatedProfitUsd.toFixed(2)}
                 </div>
                 <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center justify-between">
                   <span
@@ -485,7 +483,8 @@ export function PublicSignalsView() {
                             : "text-rose-500"
                         }`}
                       >
-                        ({st.simulatedPnlUsd >= 0 ? "+" : ""}${st.simulatedPnlUsd.toFixed(0)})
+                        ({st.simulatedPnlUsd >= 0 ? "+" : ""}$
+                        {st.simulatedPnlUsd.toFixed(0)})
                       </span>
                       <span className="text-[10px] text-muted-foreground/75 font-sans">
                         • {st.hits}W/{st.losses}L
