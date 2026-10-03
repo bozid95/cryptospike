@@ -223,7 +223,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
 
         const isLong = sig.side === 'LONG';
 
-        // 1. Cek TP1 HIT -> Geser Stop Loss ke Breakeven (Entry Price) [Risk-Free]
+        // 1. Cek TP1 HIT -> Kunci 50% Partial Take Profit & Geser Stop Loss ke Breakeven (Entry Price) [Risk-Free]
         if (sig.status === 'ACTIVE') {
           const hitTP1 = isLong ? markPrice >= sig.tp1 : markPrice <= sig.tp1;
 
@@ -233,12 +233,13 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
 
             this.logger.log(
-              `[TSL TRIGGER] ${sig.symbol} HIT TP1 (${sig.tp1})! Moving SL to Breakeven (${sig.entryPrice}) | Strategy: ${sig.strategy}`,
+              `[TSL TRIGGER] ${sig.symbol} HIT TP1 (${sig.tp1})! Locking 50% partial profit & moving SL to Breakeven (${sig.entryPrice}) | Strategy: ${sig.strategy}`,
             );
 
             const margin = sig.simulatedMargin ?? 10.0;
-            const realizedPnlUsd = parseFloat(
-              ((margin * profitPct) / 100).toFixed(4),
+            // 50% posisi terealisasi profitnya saat TP1 tersentuh
+            const partialRealizedPnlUsd = parseFloat(
+              (((margin * 0.5) * profitPct) / 100).toFixed(4),
             );
 
             // Update database
@@ -247,13 +248,45 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               data: {
                 status: 'TP1_HIT',
                 profitPct: parseFloat(profitPct.toFixed(2)),
-                realizedPnlUsd,
+                realizedPnlUsd: partialRealizedPnlUsd,
                 hitTime: new Date(),
               },
             });
 
-            // Geser SL di Binance ke harga Entry (jika posisi nyata ada di exchange)
+            // Eksekusi penutupan parsial 50% di Binance jika ada livePos
             if (livePos) {
+              const positionAmt = parseFloat(livePos.positionAmt);
+              if (positionAmt !== 0) {
+                const filters = await this.binanceService.getSymbolFilters(
+                  sig.symbol,
+                );
+                const halfQty = this.binanceService.roundStep(
+                  Math.abs(positionAmt) * 0.5,
+                  filters.stepSize,
+                );
+                const exitSide = positionAmt > 0 ? 'SELL' : 'BUY';
+
+                if (halfQty * markPrice >= filters.minNotional) {
+                  try {
+                    await this.binanceService.placeOrder({
+                      symbol: sig.symbol,
+                      side: exitSide,
+                      type: 'MARKET',
+                      quantity: halfQty,
+                      reduceOnly: true,
+                    });
+                    this.logger.log(
+                      `[PARTIAL TP1] Closed 50% position (${halfQty}) for ${sig.symbol}`,
+                    );
+                  } catch (pErr: any) {
+                    this.logger.warn(
+                      `Failed closing 50% at TP1 for ${sig.symbol}: ${pErr.message}`,
+                    );
+                  }
+                }
+              }
+
+              // Geser SL di Binance ke harga Entry (Breakeven)
               const filters = await this.binanceService.getSymbolFilters(
                 sig.symbol,
               );
@@ -264,6 +297,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               const exitSide = isLong ? 'SELL' : 'BUY';
 
               try {
+                await this.binanceService.cancelAllOpenOrders(sig.symbol);
                 await this.binanceService.placeOrder({
                   symbol: sig.symbol,
                   side: exitSide,
@@ -286,7 +320,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               id: sig.id,
               status: 'TP1_HIT',
               profitPct: parseFloat(profitPct.toFixed(2)),
-              realizedPnlUsd,
+              realizedPnlUsd: partialRealizedPnlUsd,
             });
           }
         }
@@ -304,9 +338,46 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               `[TSL TRIGGER] ${sig.symbol} HIT TP2 (${sig.tp2})! Trailing SL locked at TP1 (${sig.tp1}) | Strategy: ${sig.strategy}`,
             );
 
+            // Geser SL di Binance ke level TP1
+            if (livePos) {
+              const filters = await this.binanceService.getSymbolFilters(
+                sig.symbol,
+              );
+              const tp1SL = this.binanceService.roundTick(
+                sig.tp1,
+                filters.tickSize,
+              );
+              const exitSide = isLong ? 'SELL' : 'BUY';
+
+              try {
+                await this.binanceService.cancelAllOpenOrders(sig.symbol);
+                await this.binanceService.placeOrder({
+                  symbol: sig.symbol,
+                  side: exitSide,
+                  type: 'STOP_MARKET',
+                  stopPrice: tp1SL,
+                  reduceOnly: true,
+                });
+                this.logger.log(
+                  `[TSL MOVED] SL moved to TP1 ${tp1SL} for ${sig.symbol}`,
+                );
+              } catch (err: any) {
+                this.logger.warn(
+                  `Failed moving SL to TP1 for ${sig.symbol}: ${err.message}`,
+                );
+              }
+            }
+
             const margin = sig.simulatedMargin ?? 10.0;
+            const tp1ProfitPct = sig.tp1
+              ? (isLong
+                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
+              : (profitPct * 0.5);
+
+            // Realized so far: 50% di TP1
             const realizedPnlUsd = parseFloat(
-              ((margin * profitPct) / 100).toFixed(4),
+              (((margin * 0.5) * tp1ProfitPct) / 100).toFixed(4),
             );
 
             await this.prisma.signal.update({
@@ -333,15 +404,24 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
           const hitTP3 = isLong ? markPrice >= sig.tp3 : markPrice <= sig.tp3;
 
           if (hitTP3) {
-            const profitPct = isLong
+            const tp3ProfitPct = isLong
               ? ((markPrice - sig.entryPrice) / sig.entryPrice) * 100
               : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
 
+            const tp1ProfitPct = sig.tp1
+              ? (isLong
+                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
+              : (tp3ProfitPct * 0.5);
+
+            // Blended: 50% di TP1 + 50% di TP3
+            const finalProfitPct = (tp1ProfitPct * 0.5) + (tp3ProfitPct * 0.5);
+
             this.logger.log(
-              `[TARGET HIT] ${sig.symbol} HIT TP3 (${sig.tp3})! Full target reached. Status: TP3_HIT | Strategy: ${sig.strategy}`,
+              `[TARGET HIT] ${sig.symbol} HIT TP3 (${sig.tp3})! Full target reached. Blended Profit: ${finalProfitPct.toFixed(2)}% | Status: TP3_HIT | Strategy: ${sig.strategy}`,
             );
 
-            // Jika ada posisi riil di Binance, tutup posisi
+            // Jika ada posisi riil di Binance, tutup sisa posisi
             if (livePos) {
               const positionAmt = parseFloat(livePos.positionAmt);
               if (positionAmt !== 0) {
@@ -387,14 +467,14 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
 
             const margin = sig.simulatedMargin ?? 10.0;
             const realizedPnlUsd = parseFloat(
-              ((margin * profitPct) / 100).toFixed(4),
+              ((margin * finalProfitPct) / 100).toFixed(4),
             );
 
             await this.prisma.signal.update({
               where: { id: sig.id },
               data: {
                 status: 'TP3_HIT',
-                profitPct: parseFloat(profitPct.toFixed(2)),
+                profitPct: parseFloat(finalProfitPct.toFixed(2)),
                 realizedPnlUsd,
                 hitTime: new Date(),
               },
@@ -403,7 +483,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             this.gateway.broadcastSignalUpdate({
               id: sig.id,
               status: 'TP3_HIT',
-              profitPct: parseFloat(profitPct.toFixed(2)),
+              profitPct: parseFloat(finalProfitPct.toFixed(2)),
               realizedPnlUsd,
             });
             continue;
@@ -425,7 +505,7 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
           : markPrice >= slThreshold;
 
         if (hitSL) {
-          const finalProfitPct = isLong
+          const exitProfitPct = isLong
             ? ((markPrice - sig.entryPrice) / sig.entryPrice) * 100
             : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
 
@@ -433,8 +513,32 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
             sig.status === 'TP1_HIT' || sig.status === 'TP2_HIT';
           const newStatus = isBreakevenOrProfit ? 'TSL_HIT' : 'SL_HIT';
 
+          let finalProfitPct = exitProfitPct;
+
+          if (sig.status === 'TP1_HIT') {
+            // 50% posisi sudah terkunci cuan di TP1!
+            const tp1ProfitPct = sig.tp1
+              ? (isLong
+                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
+              : (sig.profitPct ?? 0);
+
+            // Sisa 50% keluar di Breakeven. Floor ke 0% agar slippage tipis tidak menyebabkan kerugian
+            const beProfitPct = Math.max(0, exitProfitPct);
+            finalProfitPct = (tp1ProfitPct * 0.5) + (beProfitPct * 0.5);
+          } else if (sig.status === 'TP2_HIT') {
+            // 50% pertama cuan di TP1, dan 50% kedua terkunci di level TP1
+            const tp1ProfitPct = sig.tp1
+              ? (isLong
+                  ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                  : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100)
+              : (sig.profitPct ?? 0);
+
+            finalProfitPct = (tp1ProfitPct * 0.5) + (Math.max(tp1ProfitPct, exitProfitPct) * 0.5);
+          }
+
           this.logger.log(
-            `[STOP LOSS HIT] ${sig.symbol} hit threshold ${slThreshold} (Mark: ${markPrice}). Status: ${newStatus} | Strategy: ${sig.strategy}`,
+            `[STOP LOSS HIT] ${sig.symbol} hit threshold ${slThreshold} (Mark: ${markPrice}). Status: ${newStatus} | Blended Profit: ${finalProfitPct.toFixed(2)}% | Strategy: ${sig.strategy}`,
           );
 
           // Tutup posisi riil di Binance hanya jika posisi nyata ada

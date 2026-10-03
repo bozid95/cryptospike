@@ -117,9 +117,21 @@ export function PublicSignalsView() {
 
         let floatingPct = typeof sig.profitPct === "number" ? sig.profitPct : 0;
         if (displayPrice && sig.entryPrice && sig.entryPrice > 0) {
-          floatingPct = isLong
+          const currentMovePct = isLong
             ? ((displayPrice - sig.entryPrice) / sig.entryPrice) * 100
             : ((sig.entryPrice - displayPrice) / sig.entryPrice) * 100;
+
+          if (
+            (sig.status === "TP1_HIT" || sig.status === "TP2_HIT") &&
+            sig.tp1
+          ) {
+            const tp1Pct = isLong
+              ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+              : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100;
+            floatingPct = tp1Pct * 0.5 + currentMovePct * 0.5;
+          } else {
+            floatingPct = currentMovePct;
+          }
         }
         item.floatingPnlUsd += (margin * floatingPct) / 100;
       } else {
@@ -208,9 +220,21 @@ export function PublicSignalsView() {
 
         let floatingPct = typeof sig.profitPct === "number" ? sig.profitPct : 0;
         if (displayPrice && sig.entryPrice && sig.entryPrice > 0) {
-          floatingPct = isLong
+          const currentMovePct = isLong
             ? ((displayPrice - sig.entryPrice) / sig.entryPrice) * 100
             : ((sig.entryPrice - displayPrice) / sig.entryPrice) * 100;
+
+          if (
+            (sig.status === "TP1_HIT" || sig.status === "TP2_HIT") &&
+            sig.tp1
+          ) {
+            const tp1Pct = isLong
+              ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+              : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100;
+            floatingPct = tp1Pct * 0.5 + currentMovePct * 0.5;
+          } else {
+            floatingPct = currentMovePct;
+          }
         }
         totalFloatingProfitUsd += (margin * floatingPct) / 100;
       } else {
@@ -716,15 +740,33 @@ export function PublicSignalsView() {
                 }
               }
 
-              // Hitung PnL secara dinamis: jika sinyal belum memiliki profitPct tersimpan di DB
+              // Hitung PnL secara dinamis: jika sinyal masih RUNNING atau belum memiliki profitPct final
               let displayProfitPct = sig.profitPct;
-              if (typeof displayProfitPct !== "number") {
+              if (isRunning) {
+                if (displayPrice && sig.entryPrice && sig.entryPrice > 0) {
+                  const currentMovePct = isLong
+                    ? ((displayPrice - sig.entryPrice) / sig.entryPrice) * 100
+                    : ((sig.entryPrice - displayPrice) / sig.entryPrice) * 100;
+
+                  if (
+                    (sig.status === "TP1_HIT" || sig.status === "TP2_HIT") &&
+                    sig.tp1
+                  ) {
+                    const tp1Pct = isLong
+                      ? ((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100
+                      : ((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100;
+                    displayProfitPct = tp1Pct * 0.5 + currentMovePct * 0.5;
+                  } else {
+                    displayProfitPct = currentMovePct;
+                  }
+                } else {
+                  displayProfitPct = 0.0;
+                }
+              } else if (typeof displayProfitPct !== "number") {
                 if (displayPrice && sig.entryPrice && sig.entryPrice > 0) {
                   displayProfitPct = isLong
                     ? ((displayPrice - sig.entryPrice) / sig.entryPrice) * 100
                     : ((sig.entryPrice - displayPrice) / sig.entryPrice) * 100;
-                } else if (isRunning) {
-                  displayProfitPct = 0.0;
                 }
               }
               const isProfitPositive = (displayProfitPct ?? 0) >= 0;
