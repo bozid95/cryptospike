@@ -1044,7 +1044,9 @@ export function PublicSignalsView() {
                           // Jika sinyal sudah selesai (CLOSED/TP/SL), gunakan nilai riil dari DB (sig.realizedPnlUsd)
                           // Jika masih RUNNING/ACTIVE, selalu hitung floating PnL dinamis dari displayProfitPct live
                           const pnlUsd =
-                            !isRunning && typeof sig.realizedPnlUsd === "number" && sig.realizedPnlUsd !== 0
+                            !isRunning &&
+                            typeof sig.realizedPnlUsd === "number" &&
+                            sig.realizedPnlUsd !== 0
                               ? sig.realizedPnlUsd
                               : (margin * displayProfitPct) / 100;
                           const isUsdPositive = pnlUsd >= 0;
