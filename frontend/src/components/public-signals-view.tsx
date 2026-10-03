@@ -414,42 +414,54 @@ export function PublicSignalsView() {
             </Card>
           </div>
 
-          {/* Strategy Winrate Info Bar (Compact Inline Pills - Just Info) */}
+          {/* Strategy Winrate Info Bar (Sleek Compact Ticker) */}
           {strategyStats.length > 0 && (
-            <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-1 text-[11px]">
-              <span className="text-muted-foreground flex items-center gap-1 font-medium mr-0.5">
-                <TrophyIcon className="size-3 text-amber-500" />
-                Winrate by Strategy:
-              </span>
-              {strategyStats.map((st) => {
-                const isSelected = selectedStrategy === st.strategy;
-                return (
-                  <button
-                    key={st.strategy}
-                    type="button"
-                    onClick={() => {
-                      setSelectedStrategy(isSelected ? "ALL" : st.strategy);
-                      setCurrentPage(1);
-                    }}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-mono transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-emerald-500/15 border-emerald-500/60 text-emerald-600 font-bold shadow-2xs"
-                        : "bg-background/80 hover:bg-muted/80 border-border/80 text-foreground"
-                    }`}
-                    title={`Click to filter: ${st.hits}W / ${st.losses}L (${st.total} Total)`}
-                  >
-                    <span className="font-sans font-medium text-muted-foreground">
-                      {st.strategy}:
-                    </span>
-                    <span className="text-emerald-600 font-bold">
-                      {st.winrate}%
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-sans">
-                      ({st.hits}W/{st.losses}L)
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="max-w-4xl mx-auto bg-card/60 backdrop-blur-xs border border-border/80 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground shrink-0">
+                <TrophyIcon className="size-3.5 text-amber-500" />
+                <span className="tracking-tight">Winrate by Strategy</span>
+                <span className="text-[10px] text-muted-foreground font-normal">
+                  (Live Audit)
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                {strategyStats.map((st) => {
+                  const isSelected = selectedStrategy === st.strategy;
+                  const isPositive = st.winrate >= 50;
+
+                  return (
+                    <button
+                      key={st.strategy}
+                      type="button"
+                      onClick={() => {
+                        setSelectedStrategy(isSelected ? "ALL" : st.strategy);
+                        setCurrentPage(1);
+                      }}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-emerald-500/15 border border-emerald-500/50 text-emerald-600 ring-1 ring-emerald-500/20 font-bold"
+                          : "bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground"
+                      }`}
+                      title={`${st.hits} Win / ${st.losses} Loss from ${st.total} signals`}
+                    >
+                      <span className="font-sans font-medium text-[11px] text-foreground">
+                        {st.strategy}
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          isPositive ? "text-emerald-500" : "text-amber-500"
+                        }`}
+                      >
+                        {st.winrate}%
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/75 font-sans">
+                        • {st.hits}W/{st.losses}L
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
