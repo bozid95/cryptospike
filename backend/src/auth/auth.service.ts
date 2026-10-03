@@ -38,10 +38,9 @@ export class AuthService implements OnModuleInit {
         },
       });
 
-      const salt = await bcrypt.genSalt(10);
-      const hash = await bcrypt.hash(adminPassword, salt);
-
       if (!existingUser) {
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(adminPassword, salt);
         await this.prisma.user.create({
           data: {
             username: adminUsername,
@@ -52,25 +51,16 @@ export class AuthService implements OnModuleInit {
           },
         });
         this.logger.log(
-          `[AUTH INIT] Admin user created: username="${adminUsername}"`,
+          `[AUTH INIT] Default admin user initialized: username="${adminUsername}"`,
         );
       } else {
-        // Update user admin agar kredensial selalu tersinkron jika diubah via env
-        await this.prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            username: adminUsername,
-            passwordSalt: salt,
-            passwordHash: hash,
-            isActive: true,
-          },
-        });
+        // User admin sudah ada di DB; jangan timpa password atau data yang sudah ada
         this.logger.log(
-          `[AUTH INIT] Admin user synced/updated: username="${adminUsername}"`,
+          `[AUTH INIT] Existing admin user retained in DB: username="${existingUser.username}"`,
         );
       }
     } catch (err: any) {
-      this.logger.warn(`Could not initialize/sync admin user: ${err.message}`);
+      this.logger.warn(`Could not initialize admin user: ${err.message}`);
     }
   }
 

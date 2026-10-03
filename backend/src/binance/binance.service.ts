@@ -155,9 +155,7 @@ export class BinanceService {
     } catch (err: any) {
       const errMsg =
         err.response?.data?.msg ||
-        (err.response?.data
-          ? JSON.stringify(err.response.data)
-          : err.message);
+        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
       this.logger.error(`Failed to fetch Binance Futures balance: ${errMsg}`);
       return [];
     }
@@ -205,9 +203,7 @@ export class BinanceService {
     } catch (err: any) {
       const errMsg =
         err.response?.data?.msg ||
-        (err.response?.data
-          ? JSON.stringify(err.response.data)
-          : err.message);
+        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
       this.logger.error(
         `Failed to fetch Binance Futures account detail: ${errMsg}`,
       );
@@ -287,12 +283,8 @@ export class BinanceService {
     } catch (err: any) {
       const errMsg =
         err.response?.data?.msg ||
-        (err.response?.data
-          ? JSON.stringify(err.response.data)
-          : err.message);
-      this.logger.error(
-        `Failed to fetch Binance Futures positions: ${errMsg}`,
-      );
+        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
+      this.logger.error(`Failed to fetch Binance Futures positions: ${errMsg}`);
       return [];
     }
   }
@@ -318,9 +310,7 @@ export class BinanceService {
     } catch (err: any) {
       const errMsg =
         err.response?.data?.msg ||
-        (err.response?.data
-          ? JSON.stringify(err.response.data)
-          : err.message);
+        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
       this.logger.warn(`Failed to fetch open orders: ${errMsg}`);
       return [];
     }
@@ -346,9 +336,7 @@ export class BinanceService {
     } catch (err: any) {
       const errMsg =
         err.response?.data?.msg ||
-        (err.response?.data
-          ? JSON.stringify(err.response.data)
-          : err.message);
+        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
       this.logger.warn(`Set leverage failed for ${symbol}: ${errMsg}`);
       return null;
     }
@@ -376,9 +364,7 @@ export class BinanceService {
       if (err.response?.data?.code === -4046) return null;
       const errMsg =
         err.response?.data?.msg ||
-        (err.response?.data
-          ? JSON.stringify(err.response.data)
-          : err.message);
+        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
       this.logger.warn(`Set margin type failed for ${symbol}: ${errMsg}`);
       return null;
     }
@@ -541,9 +527,7 @@ export class BinanceService {
     } catch (err: any) {
       const errMsg =
         err.response?.data?.msg ||
-        (err.response?.data
-          ? JSON.stringify(err.response.data)
-          : err.message);
+        (err.response?.data ? JSON.stringify(err.response.data) : err.message);
       this.logger.warn(`Cancel all orders failed for ${symbol}: ${errMsg}`);
       return null;
     }
