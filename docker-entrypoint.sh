@@ -7,8 +7,9 @@ echo "=== Starting CryptoSpike Stack ==="
 if [ -n "$DATABASE_URL" ]; then
   echo "Applying database schema migrations safely (prisma migrate deploy)..."
   cd /app/backend
-  npx prisma generate --schema=./prisma/schema.prisma
-  npx prisma migrate deploy --schema=./prisma/schema.prisma
+  export DATABASE_URL="$DATABASE_URL"
+  npx prisma generate --schema=./prisma/schema.prisma --config=./prisma.config.ts
+  npx prisma migrate deploy --schema=./prisma/schema.prisma --config=./prisma.config.ts || npx prisma db push --schema=./prisma/schema.prisma
   cd /app
 fi
 
