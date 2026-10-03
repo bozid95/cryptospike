@@ -403,7 +403,11 @@ export function PublicSignalsView() {
                       All Strategies
                     </SelectItem>
                     {availableStrategies.map((strat) => (
-                      <SelectItem key={strat} value={strat} className="text-xs font-mono">
+                      <SelectItem
+                        key={strat}
+                        value={strat}
+                        className="text-xs font-mono"
+                      >
                         {strat}
                       </SelectItem>
                     ))}
