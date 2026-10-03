@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export interface NavItem {
@@ -29,6 +30,14 @@ export function NavMain({
   items: NavItem[];
 }) {
   const { activeTab, setActiveTab } = useCryptoSpike();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleSelect = (tabId: string) => {
+    setActiveTab(tabId);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <SidebarGroup>
@@ -46,7 +55,7 @@ export function NavMain({
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 isActive={isActive}
-                onClick={() => setActiveTab(tabId)}
+                onClick={() => handleSelect(tabId)}
                 tooltip={item.title}
                 className={`h-9 px-2.5 font-medium transition-all ${
                   isActive

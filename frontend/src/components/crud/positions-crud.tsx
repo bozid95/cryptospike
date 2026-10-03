@@ -448,8 +448,241 @@ export function PositionsCrud() {
           }
         />
 
-        <CardContent className="p-6 pt-4 space-y-4">
-          <div className="rounded-md border overflow-x-auto bg-card">
+        <CardContent className="p-3.5 sm:p-6 pt-3 sm:pt-4 space-y-4">
+          {/* 1. Mobile Cards View (Visible on Mobile only) */}
+          <div className="block md:hidden space-y-3">
+            {activeTabFilter === "ACTIVE" ? (
+              paginatedActivePositions.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-sm border rounded-xl bg-card">
+                  No active positions on Binance Futures account.
+                </div>
+              ) : (
+                paginatedActivePositions.map((pos) => {
+                  const isLong = pos.side === "LONG";
+                  const isProfit = pos.unRealizedProfit >= 0;
+
+                  return (
+                    <div
+                      key={pos.symbol}
+                      className="p-3.5 rounded-xl border bg-card shadow-xs space-y-3 transition-all"
+                    >
+                      {/* Header Card: Symbol, Side, Leverage, Margin Type */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold font-mono text-base tracking-tight text-foreground">
+                            {pos.symbol}
+                          </span>
+                          <Badge
+                            variant={isLong ? "default" : "destructive"}
+                            className="text-[10px] font-mono px-1.5 py-0 font-semibold"
+                          >
+                            {pos.side}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-mono px-1 py-0 border-amber-500/30 text-amber-500"
+                          >
+                            {pos.leverage}x
+                          </Badge>
+                        </div>
+                        <span className="text-[10px] font-mono text-muted-foreground uppercase bg-muted/60 px-1.5 py-0.5 rounded border">
+                          {pos.marginType}
+                        </span>
+                      </div>
+
+                      {/* Pricing & Size 2-Column Grid */}
+                      <div className="grid grid-cols-2 gap-2 text-xs font-mono p-2.5 rounded-lg bg-muted/40 border border-border/50">
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block font-sans">
+                            Position Size
+                          </span>
+                          <span className="font-semibold text-foreground text-xs">
+                            {pos.positionAmt} ({pos.symbol.replace("USDT", "")})
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block font-sans">
+                            Margin Used
+                          </span>
+                          <span className="font-semibold text-foreground text-xs">
+                            ${formatCryptoPrice(pos.initialMargin)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block font-sans">
+                            Entry Price
+                          </span>
+                          <span className="font-semibold text-foreground text-xs">
+                            ${formatCryptoPrice(pos.entryPrice)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground block font-sans">
+                            Mark Price
+                          </span>
+                          <span className="font-semibold text-foreground text-xs">
+                            ${formatCryptoPrice(pos.markPrice)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* PnL & Liq Price Bar */}
+                      <div className="flex items-center justify-between text-xs pt-0.5">
+                        <div className="text-[11px] font-mono text-muted-foreground">
+                          Liq:{" "}
+                          <span className="text-amber-500 font-semibold">
+                            {pos.liquidationPrice > 0
+                              ? `$${formatCryptoPrice(pos.liquidationPrice)}`
+                              : "-"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1 font-mono font-bold text-xs">
+                          <span
+                            className={
+                              isProfit ? "text-emerald-500" : "text-rose-500"
+                            }
+                          >
+                            {isProfit ? "+" : ""}$
+                            {formatCryptoPrice(pos.unRealizedProfit)} (
+                            {isProfit ? "+" : ""}
+                            {pos.roe}%)
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Actions Bar */}
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                        <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                          <ClockIcon className="size-3 text-muted-foreground/60" />
+                          {new Date(
+                            pos.createdAt || pos.updateTime || Date.now(),
+                          ).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs font-semibold px-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 cursor-pointer"
+                              disabled={closingSymbol === pos.symbol}
+                            >
+                              <XCircleIcon className="size-3 mr-1" />
+                              Close Market
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Close Market Position?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Close {pos.symbol} ({pos.side}) with an instant
+                                MARKET order on Binance Futures?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-rose-600 hover:bg-rose-700"
+                                onClick={() =>
+                                  handleClose(
+                                    pos.symbol,
+                                    pos.positionAmt,
+                                    pos.side,
+                                  )
+                                }
+                              >
+                                Close Now
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  );
+                })
+              )
+            ) : paginatedClosedPositions.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm border rounded-xl bg-card">
+                No closed positions recorded.
+              </div>
+            ) : (
+              paginatedClosedPositions.map((cp) => {
+                const isLong = cp.side === "LONG";
+                const isProfit = cp.realizedPnl >= 0;
+
+                return (
+                  <div
+                    key={cp.id}
+                    className="p-3.5 rounded-xl border bg-card shadow-xs space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold font-mono text-base tracking-tight text-foreground">
+                          {cp.symbol}
+                        </span>
+                        <Badge
+                          variant={isLong ? "default" : "destructive"}
+                          className="text-[10px] font-mono px-1.5 py-0 font-semibold"
+                        >
+                          {cp.side}
+                        </Badge>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] font-mono px-1.5 py-0 border-blue-500/30 text-blue-500"
+                      >
+                        {cp.strategy || "MANUAL"}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-mono p-2 rounded-lg bg-muted/40 border border-border/50">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block font-sans">
+                          Close Price
+                        </span>
+                        <span className="font-semibold text-foreground text-xs">
+                          ${formatCryptoPrice(cp.exitPrice)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-muted-foreground block font-sans">
+                          Realized PnL
+                        </span>
+                        <span
+                          className={`font-semibold text-xs ${
+                            isProfit ? "text-emerald-500" : "text-rose-500"
+                          }`}
+                        >
+                          {isProfit ? "+" : ""}${formatCryptoPrice(cp.realizedPnl)} (
+                          {isProfit ? "+" : ""}
+                          {cp.roe}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-1">
+                      <span>Reason: {cp.closeReason || "CLOSED"}</span>
+                      <span>
+                        {new Date(cp.closedAt).toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* 2. Desktop Table View (Visible on Tablet/Desktop only) */}
+          <div className="hidden md:block rounded-md border overflow-x-auto bg-card">
             {activeTabFilter === "ACTIVE" ? (
               <Table>
                 <TableHeader>

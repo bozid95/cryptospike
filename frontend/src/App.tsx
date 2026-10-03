@@ -11,13 +11,14 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 import { LoginView } from "@/components/login-view";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { Toaster } from "@/components/ui/sonner";
 
 function DashboardContent() {
   const { activeTab } = useCryptoSpike();
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    <div className="flex flex-1 flex-col gap-4 p-3.5 sm:p-4 lg:gap-6 lg:p-6 pb-20 sm:pb-6">
       {/* Tampilan Konten Dinamis Berdasarkan Tab */}
       {activeTab === "overview" && <DashboardSummary />}
       {activeTab === "positions" && <PositionsCrud />}
@@ -42,6 +43,7 @@ function MainLayout() {
         <SidebarInset>
           <SiteHeader />
           <DashboardContent />
+          <MobileBottomNav />
         </SidebarInset>
       </SidebarProvider>
     </div>

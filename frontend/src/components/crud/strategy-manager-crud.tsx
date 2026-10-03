@@ -108,8 +108,106 @@ export function StrategyManagerCrud() {
           }
         />
 
-        <CardContent className="p-6 pt-4 space-y-4">
-          <div className="rounded-md border overflow-x-auto bg-card">
+        <CardContent className="p-3.5 sm:p-6 pt-3 sm:pt-4 space-y-4">
+          {/* 1. Mobile Cards View (Visible on Mobile only) */}
+          <div className="block md:hidden space-y-3">
+            {paginatedStrategies.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm border rounded-xl bg-card">
+                No strategies registered in the engine.
+              </div>
+            ) : (
+              paginatedStrategies.map((strat) => (
+                <div
+                  key={strat.strategyId}
+                  className={`p-3.5 rounded-xl border bg-card shadow-xs space-y-3 transition-all ${
+                    strat.isEnabled
+                      ? "border-emerald-500/30 bg-emerald-500/[0.02]"
+                      : "border-border"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="font-semibold text-sm leading-snug text-foreground flex items-center gap-1.5">
+                        <Code2Icon className="size-4 text-primary shrink-0" />
+                        <span>{strat.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          ID: {strat.strategyId}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-[9px] px-1 py-0 border-muted"
+                        >
+                          TF {strat.timeframe}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Switch
+                        checked={strat.isEnabled}
+                        onCheckedChange={() => handleToggle(strat.strategyId)}
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                    {strat.description}
+                  </p>
+
+                  {strat.indicators && strat.indicators.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {strat.indicators.map((ind) => (
+                        <Badge
+                          key={ind}
+                          variant="secondary"
+                          className="font-mono text-[9px] px-1.5 py-0 bg-muted text-muted-foreground"
+                        >
+                          {ind}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Stats Row */}
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs font-mono">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-foreground">
+                        {strat.totalSignals ?? 0}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        signals
+                      </span>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-emerald-600 font-bold">
+                        {strat.winrate || "0.0%"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground font-sans">
+                        PnL:
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          (strat.totalPnlPct ?? 0) >= 0
+                            ? "text-emerald-600"
+                            : "text-rose-600"
+                        }`}
+                      >
+                        {(strat.totalPnlPct ?? 0) >= 0 ? "+" : ""}
+                        {strat.totalPnlPct ?? 0}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* 2. Desktop Table View (Visible on Tablet/Desktop only) */}
+          <div className="hidden md:block rounded-md border overflow-x-auto bg-card">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">

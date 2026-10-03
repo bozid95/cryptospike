@@ -403,8 +403,205 @@ export function SignalsCrud() {
           }
         />
 
-        <CardContent className="p-6 pt-4 space-y-4">
-          <div className="rounded-md border overflow-x-auto bg-card">
+        <CardContent className="p-3.5 sm:p-6 pt-3 sm:pt-4 space-y-4">
+          {/* 1. Mobile Cards View (Visible on Mobile only) */}
+          <div className="block md:hidden space-y-3">
+            {paginatedSignals.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm border rounded-xl bg-card">
+                No signals matching current filter criteria.
+              </div>
+            ) : (
+              paginatedSignals.map((sig) => {
+                const isLong = sig.side === "LONG";
+                const isRunning = sig.status === "ACTIVE";
+                const isProfit = (sig.profitPct ?? 0) >= 0;
+
+                return (
+                  <div
+                    key={sig.id}
+                    className={`p-3.5 rounded-xl border bg-card shadow-xs space-y-3 transition-all ${
+                      isRunning
+                        ? "border-emerald-500/30 bg-emerald-500/[0.02]"
+                        : "border-border"
+                    }`}
+                  >
+                    {/* Header Card: Symbol, Side, Status, Time */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold font-mono text-base tracking-tight text-foreground">
+                          {sig.symbol}
+                        </span>
+                        <Badge
+                          variant={isLong ? "default" : "destructive"}
+                          className="text-[10px] font-mono px-1.5 py-0 font-semibold"
+                        >
+                          {sig.side}
+                        </Badge>
+                        {sig.strength === "STRONG" && (
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] px-1 py-0 border-amber-500/30 text-amber-500 font-mono"
+                          >
+                            STRONG
+                          </Badge>
+                        )}
+                      </div>
+
+                      <Badge
+                        variant="outline"
+                        className={`font-mono text-[10px] px-2 py-0.5 flex items-center gap-1 ${
+                          isRunning
+                            ? "border-emerald-500/40 text-emerald-500 bg-emerald-500/10"
+                            : sig.status.includes("TP")
+                              ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/5"
+                              : sig.status === "SL_HIT"
+                                ? "border-rose-500/30 text-rose-600 bg-rose-500/5"
+                                : "border-muted text-muted-foreground"
+                        }`}
+                      >
+                        {isRunning && (
+                          <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        )}
+                        {sig.status.replace("_HIT", "")}
+                      </Badge>
+                    </div>
+
+                    {/* Pricing & Targets 2-Column Grid */}
+                    <div className="grid grid-cols-2 gap-2 text-xs font-mono p-2.5 rounded-lg bg-muted/40 border border-border/50">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block font-sans">
+                          Entry Price
+                        </span>
+                        <span className="font-semibold text-foreground text-xs">
+                          ${formatCryptoPrice(sig.entryPrice)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block font-sans">
+                          Current Price
+                        </span>
+                        <span
+                          className={`font-semibold text-xs ${
+                            isProfit ? "text-emerald-500" : "text-rose-500"
+                          }`}
+                        >
+                          {sig.currentPrice
+                            ? `$${formatCryptoPrice(sig.currentPrice)}`
+                            : "-"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block font-sans">
+                          Target TP1
+                        </span>
+                        <span className="font-semibold text-emerald-600 text-xs">
+                          ${formatCryptoPrice(sig.tp1)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block font-sans">
+                          Stop Loss (SL)
+                        </span>
+                        <span className="font-semibold text-destructive text-xs">
+                          ${formatCryptoPrice(sig.sl)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Strategy & PnL Bar */}
+                    <div className="flex items-center justify-between text-xs pt-0.5">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <span className="font-mono text-[11px] font-medium text-foreground/80 truncate max-w-[170px]">
+                          {sig.strategy}
+                        </span>
+                      </div>
+
+                      {typeof sig.profitPct === "number" && (
+                        <div className="flex items-center gap-1 font-mono font-bold text-xs">
+                          <span
+                            className={
+                              isProfit ? "text-emerald-600" : "text-rose-600"
+                            }
+                          >
+                            {isProfit ? "+" : ""}
+                            {sig.profitPct.toFixed(2)}%
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-sans font-normal">
+                            ({isRunning ? "Floating" : "Closed"})
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions Bar */}
+                    <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                      <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                        <ClockIcon className="size-3 text-muted-foreground/60" />
+                        {new Date(
+                          sig.createdAt || sig.sentAt,
+                        ).toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+
+                      <div className="flex items-center gap-1.5">
+                        {isRunning && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs font-semibold px-2.5 gap-1 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+                            onClick={() => {
+                              const currentPnL = sig.profitPct ?? 0;
+                              handleStatusUpdate(
+                                sig.id,
+                                currentPnL >= 0 ? "TP1_HIT" : "SL_HIT",
+                                currentPnL,
+                              );
+                            }}
+                          >
+                            Close Position
+                          </Button>
+                        )}
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                            >
+                              <Trash2Icon className="size-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Signal?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Delete {sig.symbol} ({sig.side}) from database?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground"
+                                onClick={() => handleDelete(sig.id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* 2. Desktop Table View (Visible on Tablet/Desktop only) */}
+          <div className="hidden md:block rounded-md border overflow-x-auto bg-card">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">

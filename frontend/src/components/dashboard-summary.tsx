@@ -57,48 +57,48 @@ export function DashboardSummary() {
   return (
     <div className="space-y-6">
       {/* 1. Header Banner Summary */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl border bg-card shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xl shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-xl border bg-card shadow-xs">
+        <div className="flex items-center gap-3 sm:gap-3.5">
+          <div className="flex size-10 sm:size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground text-lg sm:text-xl shadow-xs shrink-0">
             ⚡
           </div>
           <div>
-            <h2 className="text-xl font-bold tracking-tight">
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight">
               CryptoSpike System Overview
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-none">
               Automated performance tracking, real-time signals, and Binance
               execution bot status.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setActiveTab("positions")}
-            className="text-xs gap-1.5 font-medium border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
+            className="flex-1 sm:flex-none text-xs gap-1.5 font-medium border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10 justify-center h-8"
           >
             <BriefcaseIcon className="size-3.5" />
-            Active Positions ({positions.length})
+            <span>Positions ({positions.length})</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setActiveTab("signals")}
-            className="text-xs gap-1.5 font-medium"
+            className="flex-1 sm:flex-none text-xs gap-1.5 font-medium justify-center h-8"
           >
             <RadioIcon className="size-3.5 text-emerald-600" />
-            Live Signals ({activeSignals.length})
+            <span>Signals ({activeSignals.length})</span>
           </Button>
           <Button
             size="sm"
             onClick={() => setActiveTab("strategies")}
-            className="text-xs gap-1.5 font-medium"
+            className="w-full sm:w-auto text-xs gap-1.5 font-medium justify-center h-8"
           >
             <CpuIcon className="size-3.5" />
-            Manage Strategies
+            <span>Strategies</span>
           </Button>
         </div>
       </div>
@@ -375,8 +375,79 @@ export function DashboardSummary() {
             Open Full Signals &rarr;
           </Button>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-md border overflow-x-auto">
+        <CardContent className="p-3.5 sm:p-6 pt-3 sm:pt-4 space-y-3">
+          {/* Mobile Recent Signal Cards */}
+          <div className="block md:hidden space-y-2.5">
+            {signals.slice(0, 5).map((sig) => {
+              const isLong = sig.side === "LONG";
+              const isRunning = sig.status === "ACTIVE";
+              const isProfit = (sig.profitPct ?? 0) >= 0;
+
+              return (
+                <div
+                  key={sig.id}
+                  className={`p-3 rounded-lg border bg-muted/40 space-y-2 text-xs font-mono transition-all ${
+                    isRunning ? "border-emerald-500/30" : "border-border/60"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-sm text-foreground">
+                        {sig.symbol}
+                      </span>
+                      <Badge
+                        variant={isLong ? "default" : "destructive"}
+                        className="text-[9px] px-1 py-0"
+                      >
+                        {sig.side}
+                      </Badge>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] px-1.5 py-0 ${
+                        isRunning
+                          ? "border-emerald-500/40 text-emerald-500 bg-emerald-500/10"
+                          : "border-muted text-muted-foreground"
+                      }`}
+                    >
+                      {sig.status.replace("_HIT", "")}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground font-sans">
+                      Entry: ${sig.entryPrice}
+                    </span>
+                    <span className="text-emerald-600 font-semibold">
+                      TP1: ${sig.tp1}
+                    </span>
+                    <span className="text-destructive font-semibold">
+                      SL: ${sig.sl}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] pt-1 border-t border-border/40 font-sans text-muted-foreground">
+                    <span className="truncate max-w-[150px] font-mono">
+                      {sig.strategy}
+                    </span>
+                    {typeof sig.profitPct === "number" && (
+                      <span
+                        className={`font-mono font-bold ${
+                          isProfit ? "text-emerald-600" : "text-rose-600"
+                        }`}
+                      >
+                        {isProfit ? "+" : ""}
+                        {sig.profitPct.toFixed(2)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30">

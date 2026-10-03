@@ -14,18 +14,27 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export function NavStrategies() {
-  const { strategies, toggleStrategy, setActiveTab } = useCryptoSpike();
+  const { strategies, setActiveTab } = useCryptoSpike();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleOpenStrategies = () => {
+    setActiveTab("strategies");
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80 px-2 flex items-center justify-between mb-0.5">
         <span>Strategies ({strategies.length})</span>
         <button
-          onClick={() => setActiveTab("strategies")}
-          className="hover:text-foreground text-[10px] font-normal lowercase tracking-normal text-muted-foreground transition-colors"
+          onClick={handleOpenStrategies}
+          className="hover:text-foreground text-[10px] font-normal lowercase tracking-normal text-muted-foreground transition-colors cursor-pointer"
         >
           kelola
         </button>
@@ -34,7 +43,7 @@ export function NavStrategies() {
         {strategies.map((strat) => (
           <SidebarMenuItem key={strat.strategyId}>
             <SidebarMenuButton
-              onClick={() => setActiveTab("strategies")}
+              onClick={handleOpenStrategies}
               className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground justify-between group/strat"
             >
               <div className="flex items-center gap-2 truncate">

@@ -118,10 +118,12 @@ describe('CryptoSavageV1Strategy', () => {
       takerBuyQuoteVolume: 6000000,
     });
 
-    (binanceServiceMock.getKlines as jest.Mock).mockImplementation((_sym, interval) => {
-      if (interval === '4h') return Promise.resolve(klines4h);
-      return Promise.resolve(klines1h);
-    });
+    (binanceServiceMock.getKlines as jest.Mock).mockImplementation(
+      (_sym, interval) => {
+        if (interval === '4h') return Promise.resolve(klines4h);
+        return Promise.resolve(klines1h);
+      },
+    );
 
     const marketData: MarketData = {
       symbol: 'BTCUSDT',

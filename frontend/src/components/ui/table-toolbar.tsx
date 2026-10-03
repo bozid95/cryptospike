@@ -35,14 +35,14 @@ export function TableToolbar<T extends string = string>({
   return (
     <div
       className={cn(
-        "px-6 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-b bg-muted/50",
+        "px-3.5 sm:px-6 py-2.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 border-b bg-muted/50",
         className,
       )}
     >
-      <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-        {/* Consistent Segmented Tabs Pill */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+        {/* Consistent Segmented Tabs Pill with horizontal scroll on mobile */}
         {tabs && tabs.length > 0 && onTabChange && (
-          <div className="inline-flex rounded-lg border bg-background p-0.5 text-xs">
+          <div className="inline-flex max-w-full overflow-x-auto rounded-lg border bg-background p-0.5 text-xs shrink-0 no-scrollbar">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -51,7 +51,7 @@ export function TableToolbar<T extends string = string>({
                   type="button"
                   onClick={() => onTabChange(tab.id)}
                   className={cn(
-                    "px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 text-xs",
+                    "px-2.5 sm:px-3 py-1 font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 text-xs whitespace-nowrap shrink-0",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                       : "text-muted-foreground hover:text-foreground",
@@ -87,7 +87,7 @@ export function TableToolbar<T extends string = string>({
               placeholder={searchPlaceholder}
               value={searchTerm || ""}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="h-8 pl-8 text-xs bg-background"
+              className="h-8 pl-8 text-xs bg-background w-full"
             />
           </div>
         )}
