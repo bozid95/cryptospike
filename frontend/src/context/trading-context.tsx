@@ -445,7 +445,7 @@ export function CryptoSpikeProvider({
     }
   };
 
-  // Load initial config dari DB backend (Hanya jika admin login)
+  // Load initial config & strategies dari DB backend (Hanya jika admin login)
   useEffect(() => {
     if (!isAuthenticated) return;
     const fetchDbConfig = async () => {
@@ -460,6 +460,7 @@ export function CryptoSpikeProvider({
       }
     };
     void fetchDbConfig();
+    void fetchDbStrategies();
   }, [isAuthenticated]);
 
   // Load strategies dari backend Registry (DB PostgreSQL) (Hanya jika admin login)
