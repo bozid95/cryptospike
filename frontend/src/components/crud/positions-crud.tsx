@@ -597,8 +597,10 @@ export function PositionsCrud() {
                                   const diffPct =
                                     pos.entryPrice > 0
                                       ? (isLong
-                                          ? (ord.price - pos.entryPrice) / pos.entryPrice
-                                          : (pos.entryPrice - ord.price) / pos.entryPrice) * 100
+                                          ? (ord.price - pos.entryPrice) /
+                                            pos.entryPrice
+                                          : (pos.entryPrice - ord.price) /
+                                            pos.entryPrice) * 100
                                       : 0;
                                   return (
                                     <div
@@ -615,7 +617,9 @@ export function PositionsCrud() {
                                         ${formatCryptoPrice(ord.price)}
                                       </span>
                                       <span className="font-bold text-[10px] bg-emerald-500/10 text-emerald-600 px-1 py-0.5 rounded border border-emerald-500/20 leading-none">
-                                        {diffPct >= 0 ? `+${diffPct.toFixed(2)}%` : `${diffPct.toFixed(2)}%`}
+                                        {diffPct >= 0
+                                          ? `+${diffPct.toFixed(2)}%`
+                                          : `${diffPct.toFixed(2)}%`}
                                       </span>
                                     </div>
                                   );
@@ -627,7 +631,7 @@ export function PositionsCrud() {
                                   <span>TSL Engine Active</span>
                                 </div>
                               </div>
-                            ) : (pos.tp1 || pos.tp2 || pos.tp3) ? (
+                            ) : pos.tp1 || pos.tp2 || pos.tp3 ? (
                               <div className="flex flex-col gap-1">
                                 {pos.tp1 && (
                                   <div className="flex items-center gap-1.5 text-[11px]">
@@ -723,7 +727,10 @@ export function PositionsCrud() {
                                 <ClockIcon className="size-3 text-muted-foreground/60 shrink-0" />
                                 <span className="text-foreground text-[11px] font-medium">
                                   {new Date(
-                                    pos.createdAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                    pos.createdAt ||
+                                      (pos.updateTime
+                                        ? pos.updateTime
+                                        : Date.now()),
                                   ).toLocaleTimeString("id-ID", {
                                     hour: "2-digit",
                                     minute: "2-digit",
@@ -732,7 +739,10 @@ export function PositionsCrud() {
                                 </span>
                                 <span className="text-[10px] text-muted-foreground/70">
                                   {new Date(
-                                    pos.createdAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                    pos.createdAt ||
+                                      (pos.updateTime
+                                        ? pos.updateTime
+                                        : Date.now()),
                                   ).toLocaleDateString("id-ID")}
                                 </span>
                               </div>
@@ -745,7 +755,10 @@ export function PositionsCrud() {
                                 <RefreshCwIcon className="size-2.5 text-primary/70 shrink-0" />
                                 <span className="text-foreground text-[11px] font-medium">
                                   {new Date(
-                                    pos.updatedAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                    pos.updatedAt ||
+                                      (pos.updateTime
+                                        ? pos.updateTime
+                                        : Date.now()),
                                   ).toLocaleTimeString("id-ID", {
                                     hour: "2-digit",
                                     minute: "2-digit",
@@ -754,7 +767,10 @@ export function PositionsCrud() {
                                 </span>
                                 <span className="text-[10px] text-muted-foreground/70">
                                   {new Date(
-                                    pos.updatedAt || (pos.updateTime ? pos.updateTime : Date.now())
+                                    pos.updatedAt ||
+                                      (pos.updateTime
+                                        ? pos.updateTime
+                                        : Date.now()),
                                   ).toLocaleDateString("id-ID")}
                                 </span>
                               </div>

@@ -393,21 +393,34 @@ export function CryptoSpikeProvider({
                 (s.id && sig.strategy?.startsWith(s.id)),
             );
             const totalCount = stratSignals.length;
-            const hitCount = stratSignals.filter((sig) =>
-              sig.status?.includes("TP"),
-            ).length;
-            const closedCount = stratSignals.filter(
+            const hitCount = stratSignals.filter(
               (sig) =>
                 sig.status?.includes("TP") ||
-                sig.status === "SL_HIT" ||
-                sig.status === "TSL_HIT",
+                (typeof sig.profitPct === "number" && sig.profitPct > 0),
             ).length;
+            const lossCount = stratSignals.filter(
+              (sig) =>
+                sig.status === "SL_HIT" ||
+                (typeof sig.profitPct === "number" && sig.profitPct < 0),
+            ).length;
+            const closedCount = hitCount + lossCount;
             const wr =
               closedCount > 0
                 ? `${((hitCount / closedCount) * 100).toFixed(1)}%`
                 : totalCount > 0
                   ? "100.0%"
                   : "0.0%";
+
+            // Hitung akumulasi PnL (%) yang dihasilkan oleh strategi
+            let totalPnl = 0;
+            for (const sig of stratSignals) {
+              if (typeof sig.profitPct === "number" && !isNaN(sig.profitPct)) {
+                totalPnl += sig.profitPct;
+              }
+            }
+
+            const avgPnl =
+              closedCount > 0 ? totalPnl / closedCount : 0;
 
             return {
               strategyId: key,
@@ -420,6 +433,10 @@ export function CryptoSpikeProvider({
               indicators: Array.isArray(s.indicators) ? s.indicators : [],
               winrate: wr,
               totalSignals: totalCount,
+              winSignals: hitCount,
+              lossSignals: lossCount,
+              totalPnlPct: parseFloat(totalPnl.toFixed(2)),
+              avgProfitPct: parseFloat(avgPnl.toFixed(2)),
               updatedAt: new Date().toISOString(),
             };
           });

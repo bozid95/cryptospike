@@ -1,5 +1,12 @@
 import { useState, useMemo } from "react";
-import { RefreshCwIcon, ZapIcon, Code2Icon } from "lucide-react";
+import {
+  RefreshCwIcon,
+  ZapIcon,
+  Code2Icon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  TargetIcon,
+} from "lucide-react";
 
 import { useCryptoSpike } from "@/mock/mock-context";
 import { Badge } from "@/components/ui/badge";
@@ -106,19 +113,22 @@ export function StrategyManagerCrud() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/60 hover:bg-muted/60 border-b">
-                  <TableHead className="w-[300px] px-4 py-3 font-semibold text-xs">
+                  <TableHead className="w-[260px] px-4 py-3 font-semibold text-xs">
                     ID & Nama Algoritma
                   </TableHead>
-                  <TableHead className="w-[100px] px-4 py-3 font-semibold text-xs">
+                  <TableHead className="w-[90px] px-4 py-3 font-semibold text-xs">
                     Timeframe
                   </TableHead>
-                  <TableHead className="w-[200px] px-4 py-3 font-semibold text-xs">
+                  <TableHead className="w-[170px] px-4 py-3 font-semibold text-xs">
                     Indikator Teknis
                   </TableHead>
-                  <TableHead className="w-[120px] px-4 py-3 font-semibold text-xs">
-                    Versi
+                  <TableHead className="w-[160px] px-4 py-3 font-semibold text-xs">
+                    Sinyal & Winrate
                   </TableHead>
-                  <TableHead className="w-[160px] px-4 py-3 text-right font-semibold text-xs">
+                  <TableHead className="w-[140px] px-4 py-3 font-semibold text-xs">
+                    PnL Dihasilkan
+                  </TableHead>
+                  <TableHead className="w-[140px] px-4 py-3 text-right font-semibold text-xs">
                     Status Eksekusi
                   </TableHead>
                 </TableRow>
@@ -127,7 +137,7 @@ export function StrategyManagerCrud() {
                 {paginatedStrategies.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="h-28 text-center text-muted-foreground text-sm"
                     >
                       Tidak ada strategi yang terdaftar di engine.
@@ -181,14 +191,76 @@ export function StrategyManagerCrud() {
                         </div>
                       </TableCell>
 
-                      <TableCell className="align-middle px-4 py-3.5">
-                        <Badge
-                          variant="secondary"
-                          className="font-mono text-[11px] px-2 py-0.5 font-semibold text-muted-foreground"
-                        >
-                          {strat.version || "v1"}
-                        </Badge>
-                      </TableCell>
+                        {/* Sinyal Tergenerate & Winrate */}
+                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-foreground text-xs">
+                                {strat.totalSignals ?? 0}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                sinyal
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                •
+                              </span>
+                              <span className="text-emerald-600 font-semibold text-[11px]">
+                                {strat.winrate || "0.0%"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <span className="text-emerald-600 font-medium">
+                                {strat.winSignals ?? 0} Win
+                              </span>
+                              <span>/</span>
+                              <span className="text-rose-600 font-medium">
+                                {strat.lossSignals ?? 0} Loss
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        {/* Akumulasi PnL Dihasilkan */}
+                        <TableCell className="align-middle px-4 py-3.5 font-mono">
+                          {typeof strat.totalPnlPct === "number" ? (
+                            <div className="space-y-0.5">
+                              <div
+                                className={`font-bold text-xs tabular-nums flex items-center gap-1 ${
+                                  strat.totalPnlPct >= 0
+                                    ? "text-emerald-600"
+                                    : "text-rose-600"
+                                }`}
+                              >
+                                {strat.totalPnlPct >= 0 ? (
+                                  <TrendingUpIcon className="size-3.5" />
+                                ) : (
+                                  <TrendingDownIcon className="size-3.5" />
+                                )}
+                                <span>
+                                  {strat.totalPnlPct >= 0 ? "+" : ""}
+                                  {strat.totalPnlPct.toFixed(2)}%
+                                </span>
+                              </div>
+                              <div className="text-[10px] text-muted-foreground font-mono">
+                                Avg:{" "}
+                                <span
+                                  className={
+                                    (strat.avgProfitPct ?? 0) >= 0
+                                      ? "text-emerald-600/90 font-semibold"
+                                      : "text-rose-600/90 font-semibold"
+                                  }
+                                >
+                                  {(strat.avgProfitPct ?? 0) >= 0 ? "+" : ""}
+                                  {(strat.avgProfitPct ?? 0).toFixed(2)}%
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs font-mono">
+                              0.00%
+                            </span>
+                          )}
+                        </TableCell>
 
                       <TableCell className="align-middle px-4 py-3.5 text-right">
                         <div className="inline-flex items-center gap-2.5">

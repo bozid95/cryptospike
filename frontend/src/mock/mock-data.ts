@@ -44,6 +44,10 @@ export interface StrategyItem {
   indicators?: string[];
   winrate?: string;
   totalSignals?: number;
+  winSignals?: number;
+  lossSignals?: number;
+  totalPnlPct?: number;
+  avgProfitPct?: number;
   updatedAt?: string;
 }
 
@@ -132,6 +136,10 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     isEnabled: true,
     winrate: "66.7%",
     totalSignals: 54,
+    winSignals: 36,
+    lossSignals: 18,
+    totalPnlPct: 78.4,
+    avgProfitPct: 1.45,
     updatedAt: new Date().toISOString(),
   },
   {
@@ -143,6 +151,10 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     isEnabled: false,
     winrate: "72.4%",
     totalSignals: 38,
+    winSignals: 27,
+    lossSignals: 11,
+    totalPnlPct: 92.1,
+    avgProfitPct: 2.42,
     updatedAt: new Date().toISOString(),
   },
   {
@@ -154,6 +166,10 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     isEnabled: true,
     winrate: "68.2%",
     totalSignals: 88,
+    winSignals: 60,
+    lossSignals: 28,
+    totalPnlPct: 142.8,
+    avgProfitPct: 1.62,
     updatedAt: new Date().toISOString(),
   },
   {
@@ -165,6 +181,10 @@ export const INITIAL_STRATEGIES: StrategyItem[] = [
     isEnabled: true,
     winrate: "77.5%",
     totalSignals: 29,
+    winSignals: 22,
+    lossSignals: 7,
+    totalPnlPct: 61.2,
+    avgProfitPct: 2.11,
     updatedAt: new Date().toISOString(),
   },
 ];
