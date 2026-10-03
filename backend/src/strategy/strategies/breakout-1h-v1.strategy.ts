@@ -23,8 +23,8 @@ export class Breakout1hV1Strategy implements IStrategy {
   evaluate(data: MarketData): Promise<StrategyResult | null> {
     const { symbol, lastPrice, priceChangePct, quoteVolume } = data;
 
-    // Minimum volume check ($50M quote volume)
-    if (quoteVolume < 50000000) return Promise.resolve(null);
+    // Minimum volume check ($100M quote volume)
+    if (quoteVolume < 100000000) return Promise.resolve(null);
 
     // Deteksi jika pergerakan >= 2.5% atau <= -2.5%
     if (Math.abs(priceChangePct) < 2.5) return Promise.resolve(null);

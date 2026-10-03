@@ -359,8 +359,8 @@ export class CryptoSavageV1Strategy implements IStrategy {
   async evaluate(data: MarketData): Promise<StrategyResult | null> {
     const { symbol, lastPrice, quoteVolume } = data;
 
-    // 1. Likuiditas minimum filter ($50M quote volume untuk menghindari koin illiquid / manipulatif)
-    if (quoteVolume < 50000000) return null;
+    // 1. Likuiditas minimum filter ($100M quote volume untuk memastikan chart presisi dan eksekusi instan)
+    if (quoteVolume < 100000000) return null;
 
     try {
       // 2. Ambil data Multi-Timeframe:

@@ -66,8 +66,8 @@ export class Breakout1hV2Strategy implements IStrategy {
   async evaluate(data: MarketData): Promise<StrategyResult | null> {
     const { symbol, lastPrice, priceChangePct, quoteVolume } = data;
 
-    // 1. Minimum volume filter ($50M quote volume)
-    if (quoteVolume < 50000000) return null;
+    // 1. Minimum volume filter ($100M quote volume - Bluechip & High Liquidity only)
+    if (quoteVolume < 100000000) return null;
 
     // 2. Trigger awal pergerakan breakout signifikan (+2.5% atau -2.5%)
     if (Math.abs(priceChangePct) < 2.5) return null;
