@@ -231,7 +231,9 @@ export function CryptoSpikeProvider({
         const parsed: StrategyItem[] = JSON.parse(saved);
         // Merge with INITIAL_STRATEGIES to ensure newly added strategies exist
         const existingIds = new Set(parsed.map((s) => s.strategyId));
-        const missing = INITIAL_STRATEGIES.filter((s) => !existingIds.has(s.strategyId));
+        const missing = INITIAL_STRATEGIES.filter(
+          (s) => !existingIds.has(s.strategyId),
+        );
         return [...parsed, ...missing];
       }
       return INITIAL_STRATEGIES;
