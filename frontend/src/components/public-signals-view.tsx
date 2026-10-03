@@ -97,13 +97,12 @@ export function PublicSignalsView() {
         closedCountOnly++;
       }
 
-      // Hitung Win & PnL: jika sudah pernah menyentuh TP1, TP2, TP3, atau profitPct > 0 (walaupun masih running)
+      // Hitung Win: HANYA jika SUDAH BENAR-BENAR MENYENTUH target TP (TP1/TP2/TP3/TSL)
       const hasHitTp =
         sig.status === "TP1_HIT" ||
         sig.status === "TP2_HIT" ||
         sig.status === "TP3_HIT" ||
-        sig.status === "TSL_HIT" ||
-        (typeof sig.profitPct === "number" && sig.profitPct > 0);
+        sig.status === "TSL_HIT";
 
       const isLoss =
         sig.status === "SL_HIT" ||
