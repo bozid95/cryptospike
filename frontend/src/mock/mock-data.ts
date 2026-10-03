@@ -23,9 +23,12 @@ export interface StrategyItem {
   timeframe: string;
   description: string;
   isEnabled: boolean;
-  winrate: string;
-  totalSignals: number;
-  updatedAt: string;
+  version?: string;
+  author?: string;
+  indicators?: string[];
+  winrate?: string;
+  totalSignals?: number;
+  updatedAt?: string;
 }
 
 export interface BinanceBalanceInfo {

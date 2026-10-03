@@ -213,7 +213,7 @@ export function DashboardSummary() {
           <CardContent>
             <div className="space-y-4">
               {strategies.map((strat) => {
-                const numericWinrate = parseFloat(strat.winrate) || 0;
+                const numericWinrate = parseFloat(strat.winrate ?? "0") || 0;
                 return (
                   <div
                     key={strat.strategyId}
