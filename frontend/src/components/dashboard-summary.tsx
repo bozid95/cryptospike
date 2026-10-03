@@ -15,7 +15,7 @@ import {
   ZapIcon,
 } from "lucide-react";
 
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

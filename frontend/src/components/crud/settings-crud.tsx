@@ -6,7 +6,7 @@ import {
   SlidersIcon,
 } from "lucide-react";
 
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {

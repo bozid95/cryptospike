@@ -8,7 +8,7 @@ import {
   TargetIcon,
 } from "lucide-react";
 
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TablePagination } from "@/components/ui/table-pagination";
@@ -191,76 +191,76 @@ export function StrategyManagerCrud() {
                         </div>
                       </TableCell>
 
-                        {/* Sinyal Tergenerate & Winrate */}
-                        <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-foreground text-xs">
-                                {strat.totalSignals ?? 0}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                sinyal
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">
-                                •
-                              </span>
-                              <span className="text-emerald-600 font-semibold text-[11px]">
-                                {strat.winrate || "0.0%"}
+                      {/* Sinyal Tergenerate & Winrate */}
+                      <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-foreground text-xs">
+                              {strat.totalSignals ?? 0}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              sinyal
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              •
+                            </span>
+                            <span className="text-emerald-600 font-semibold text-[11px]">
+                              {strat.winrate || "0.0%"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <span className="text-emerald-600 font-medium">
+                              {strat.winSignals ?? 0} Win
+                            </span>
+                            <span>/</span>
+                            <span className="text-rose-600 font-medium">
+                              {strat.lossSignals ?? 0} Loss
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* Akumulasi PnL Dihasilkan */}
+                      <TableCell className="align-middle px-4 py-3.5 font-mono">
+                        {typeof strat.totalPnlPct === "number" ? (
+                          <div className="space-y-0.5">
+                            <div
+                              className={`font-bold text-xs tabular-nums flex items-center gap-1 ${
+                                strat.totalPnlPct >= 0
+                                  ? "text-emerald-600"
+                                  : "text-rose-600"
+                              }`}
+                            >
+                              {strat.totalPnlPct >= 0 ? (
+                                <TrendingUpIcon className="size-3.5" />
+                              ) : (
+                                <TrendingDownIcon className="size-3.5" />
+                              )}
+                              <span>
+                                {strat.totalPnlPct >= 0 ? "+" : ""}
+                                {strat.totalPnlPct.toFixed(2)}%
                               </span>
                             </div>
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                              <span className="text-emerald-600 font-medium">
-                                {strat.winSignals ?? 0} Win
-                              </span>
-                              <span>/</span>
-                              <span className="text-rose-600 font-medium">
-                                {strat.lossSignals ?? 0} Loss
+                            <div className="text-[10px] text-muted-foreground font-mono">
+                              Avg:{" "}
+                              <span
+                                className={
+                                  (strat.avgProfitPct ?? 0) >= 0
+                                    ? "text-emerald-600/90 font-semibold"
+                                    : "text-rose-600/90 font-semibold"
+                                }
+                              >
+                                {(strat.avgProfitPct ?? 0) >= 0 ? "+" : ""}
+                                {(strat.avgProfitPct ?? 0).toFixed(2)}%
                               </span>
                             </div>
                           </div>
-                        </TableCell>
-
-                        {/* Akumulasi PnL Dihasilkan */}
-                        <TableCell className="align-middle px-4 py-3.5 font-mono">
-                          {typeof strat.totalPnlPct === "number" ? (
-                            <div className="space-y-0.5">
-                              <div
-                                className={`font-bold text-xs tabular-nums flex items-center gap-1 ${
-                                  strat.totalPnlPct >= 0
-                                    ? "text-emerald-600"
-                                    : "text-rose-600"
-                                }`}
-                              >
-                                {strat.totalPnlPct >= 0 ? (
-                                  <TrendingUpIcon className="size-3.5" />
-                                ) : (
-                                  <TrendingDownIcon className="size-3.5" />
-                                )}
-                                <span>
-                                  {strat.totalPnlPct >= 0 ? "+" : ""}
-                                  {strat.totalPnlPct.toFixed(2)}%
-                                </span>
-                              </div>
-                              <div className="text-[10px] text-muted-foreground font-mono">
-                                Avg:{" "}
-                                <span
-                                  className={
-                                    (strat.avgProfitPct ?? 0) >= 0
-                                      ? "text-emerald-600/90 font-semibold"
-                                      : "text-rose-600/90 font-semibold"
-                                  }
-                                >
-                                  {(strat.avgProfitPct ?? 0) >= 0 ? "+" : ""}
-                                  {(strat.avgProfitPct ?? 0).toFixed(2)}%
-                                </span>
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-xs font-mono">
-                              0.00%
-                            </span>
-                          )}
-                        </TableCell>
+                        ) : (
+                          <span className="text-muted-foreground text-xs font-mono">
+                            0.00%
+                          </span>
+                        )}
+                      </TableCell>
 
                       <TableCell className="align-middle px-4 py-3.5 text-right">
                         <div className="inline-flex items-center gap-2.5">

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ShieldAlert, ArrowRight, Loader2 } from "lucide-react";
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 import {
   Card,
   CardContent,

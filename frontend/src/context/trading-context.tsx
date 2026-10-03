@@ -11,7 +11,7 @@ import {
   type SignalItem,
   type StrategyItem,
   type TradingConfig,
-} from "./mock-data";
+} from "@/types/trading";
 
 interface CryptoSpikeContextType {
   // Authentication
@@ -419,8 +419,7 @@ export function CryptoSpikeProvider({
               }
             }
 
-            const avgPnl =
-              closedCount > 0 ? totalPnl / closedCount : 0;
+            const avgPnl = closedCount > 0 ? totalPnl / closedCount : 0;
 
             return {
               strategyId: key,
@@ -730,3 +729,7 @@ export function useCryptoSpike() {
   }
   return context;
 }
+
+export const useTrading = useCryptoSpike;
+export const TradingProvider = CryptoSpikeProvider;
+

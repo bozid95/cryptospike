@@ -7,7 +7,7 @@ import {
   SlidersIcon,
 } from "lucide-react";
 
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 import { Badge } from "@/components/ui/badge";
 import {
   SidebarGroup,

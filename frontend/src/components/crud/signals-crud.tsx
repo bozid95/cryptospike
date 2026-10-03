@@ -14,7 +14,7 @@ import {
   RefreshCwIcon,
 } from "lucide-react";
 
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import {

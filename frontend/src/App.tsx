@@ -1,4 +1,4 @@
-import { CryptoSpikeProvider, useCryptoSpike } from "@/mock/mock-context";
+import { CryptoSpikeProvider, useCryptoSpike } from "@/context/trading-context";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { PositionsCrud } from "@/components/crud/positions-crud";

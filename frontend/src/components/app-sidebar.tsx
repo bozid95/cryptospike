@@ -10,7 +10,7 @@ import {
   SlidersIcon,
 } from "lucide-react";
 
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";

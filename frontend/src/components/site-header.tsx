@@ -3,7 +3,7 @@ import { ActivityIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useCryptoSpike } from "@/mock/mock-context";
+import { useCryptoSpike } from "@/context/trading-context";
 
 export function SiteHeader() {
   const { balance, isLoadingBalance } = useCryptoSpike();
