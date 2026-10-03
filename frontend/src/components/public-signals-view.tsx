@@ -168,7 +168,7 @@ export function PublicSignalsView() {
               }}
             >
               <LockIcon className="size-3.5 text-muted-foreground" />
-              <span className="hidden sm:inline">Operator</span> Login
+              Login
             </Button>
           </div>
         </div>

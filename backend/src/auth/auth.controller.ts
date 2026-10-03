@@ -25,7 +25,10 @@ export class AuthController {
     try {
       return await this.authService.login(body.username, body.password);
     } catch (err: any) {
-      this.logger.error(`Login error for user "${body?.username}": ${err.message}`, err.stack);
+      this.logger.error(
+        `Login error for user "${body?.username}": ${err.message}`,
+        err.stack,
+      );
       throw err;
     }
   }
