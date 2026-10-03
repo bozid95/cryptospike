@@ -15,6 +15,7 @@ export interface SignalItem {
   profitPct?: number;
   sentAt: string;
   closedAt?: string;
+  hitTime?: string | null;
 }
 
 export interface StrategyItem {
