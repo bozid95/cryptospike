@@ -403,6 +403,25 @@ export class CryptoSavageV1Strategy implements IStrategy {
         0.02,
       );
 
+      // Hitung Relative Volume (RVOL) 1H:
+      // Bandingkan volume 1H terkini dengan rata-rata volume 20 candle sebelumnya
+      const prev20Klines1h = klines1h.slice(
+        Math.max(0, klines1h.length - 21),
+        klines1h.length - 1,
+      );
+      const avgVolume20 =
+        prev20Klines1h.length > 0
+          ? prev20Klines1h.reduce((sum, k) => sum + k.volume, 0) /
+            prev20Klines1h.length
+          : lastCandle1h.volume;
+
+      const currentCandleVolume = Math.max(
+        lastCandle1h.volume,
+        prevCandle1h.volume,
+      );
+      const rvol = avgVolume20 > 0 ? currentCandleVolume / avgVolume20 : 1.0;
+      const isVolumeSpike = rvol >= 1.25; // Lonjakan volume minimal 1.25x (25% di atas rata-rata)
+
       // RSI Array & Divergence
       const rsiArr1h = this.calcRSIArray(closes1h, 14);
       const divergence = this.detectRSIDivergence(klines1h, rsiArr1h);
@@ -432,7 +451,8 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // --- A. EVALUASI SETUP LONG (BULLISH) ---
       // 1. Support Zone Interaction (Wajib zona S/R 4H teruji: minimal 2 touches)
       const nearSupport = supports.find(
-        (s) => Math.abs(lastPrice - s.level) / lastPrice <= 0.02 && s.touches >= 2,
+        (s) =>
+          Math.abs(lastPrice - s.level) / lastPrice <= 0.02 && s.touches >= 2,
       );
       if (nearSupport) {
         longScore += 30;
@@ -489,7 +509,15 @@ export class CryptoSavageV1Strategy implements IStrategy {
         );
       }
 
-      // 7. Counter-Trendline Breakout
+      // 7. Volume Expansion / RVOL Spike (Institusi / Whale Confirmation)
+      if (isVolumeSpike) {
+        longScore += 15;
+        longReasons.push(
+          `Volume Expansion Confirmed (RVOL: ${rvol.toFixed(2)}x vs 20-period avg)`,
+        );
+      }
+
+      // 8. Counter-Trendline Breakout
       if (this.detectCounterTrendlineBreak(klines1h, true)) {
         longScore += 15;
         longReasons.push('Counter-trendline resistance breakout confirmed');
@@ -499,6 +527,7 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // - Wajib didukung 4H bullish structure
       // - Wajib ada interaksi dengan zona Support 4H (minimal 2 touches)
       // - Wajib ada Rejection Wick ATAU Engulfing Follow-Through
+      // - Wajib didukung konfirmasi lonjakan volume (RVOL >= 1.25x)
       // - Hindari long jika RSI 1H overbought (> 68) atau oversold ekstrem (< 30)
       if (
         !is4hBullishStructure ||
@@ -506,6 +535,7 @@ export class CryptoSavageV1Strategy implements IStrategy {
         (!rejection1.isBullishRejection &&
           !rejection2.isBullishRejection &&
           !followThrough.isBullishFollowThrough) ||
+        !isVolumeSpike ||
         currentRsi1h > 68 ||
         currentRsi1h < 30
       ) {
@@ -515,7 +545,8 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // --- B. EVALUASI SETUP SHORT (BEARISH) ---
       // 1. Resistance Zone Interaction (Wajib zona S/R 4H teruji: minimal 2 touches)
       const nearResistance = resistances.find(
-        (r) => Math.abs(r.level - lastPrice) / lastPrice <= 0.02 && r.touches >= 2,
+        (r) =>
+          Math.abs(r.level - lastPrice) / lastPrice <= 0.02 && r.touches >= 2,
       );
       if (nearResistance) {
         shortScore += 30;
@@ -569,7 +600,15 @@ export class CryptoSavageV1Strategy implements IStrategy {
         shortReasons.push(`1H RSI Bearish Room (${currentRsi1h.toFixed(1)})`);
       }
 
-      // 7. Counter-Trendline Breakout
+      // 7. Volume Expansion / RVOL Spike (Institusi / Whale Confirmation)
+      if (isVolumeSpike) {
+        shortScore += 15;
+        shortReasons.push(
+          `Volume Expansion Confirmed (RVOL: ${rvol.toFixed(2)}x vs 20-period avg)`,
+        );
+      }
+
+      // 8. Counter-Trendline Breakout
       if (this.detectCounterTrendlineBreak(klines1h, false)) {
         shortScore += 15;
         shortReasons.push('Counter-trendline support breakdown confirmed');
@@ -579,6 +618,7 @@ export class CryptoSavageV1Strategy implements IStrategy {
       // - Wajib didukung 4H bearish structure
       // - Wajib ada interaksi dengan zona Resistance 4H (minimal 2 touches)
       // - Wajib ada Rejection Wick ATAU Engulfing Follow-Through
+      // - Wajib didukung konfirmasi lonjakan volume (RVOL >= 1.25x)
       // - Hindari short jika RSI 1H oversold (< 32) atau overbought ekstrem (> 70)
       if (
         !is4hBearishStructure ||
@@ -586,6 +626,7 @@ export class CryptoSavageV1Strategy implements IStrategy {
         (!rejection1.isBearishRejection &&
           !rejection2.isBearishRejection &&
           !followThrough.isBearishFollowThrough) ||
+        !isVolumeSpike ||
         currentRsi1h < 32 ||
         currentRsi1h > 70
       ) {
