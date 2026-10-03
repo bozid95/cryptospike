@@ -12,6 +12,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cryptospike}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
 
   # All-in-One Service (Frontend + Backend + Nginx Reverse Proxy)
   app:
@@ -21,7 +26,8 @@ services:
     container_name: cryptospike-app
     restart: always
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-cryptospike123}@postgres:5432/${POSTGRES_DB:-cryptospike}
