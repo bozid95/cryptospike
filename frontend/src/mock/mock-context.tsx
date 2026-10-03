@@ -64,6 +64,12 @@ const STRATEGIES_KEY = "cryptospike_mock_strategies_v2";
 const SIGNALS_KEY = "cryptospike_mock_signals_v3";
 const CONFIG_KEY = "cryptospike_mock_config_v3";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== "undefined" && window.location.hostname !== "localhost"
+    ? ""
+    : "http://localhost:3001");
+
 export function CryptoSpikeProvider({
   children,
 }: {
@@ -155,7 +161,7 @@ export function CryptoSpikeProvider({
   const refreshBalance = async () => {
     try {
       setIsLoadingBalance(true);
-      const res = await fetch("http://localhost:3001/api/binance/balance");
+      const res = await fetch(`${API_BASE_URL}/api/binance/balance`);
       if (res.ok) {
         const data = (await res.json()) as BinanceBalanceInfo;
         setBalance(data);
@@ -170,7 +176,7 @@ export function CryptoSpikeProvider({
   const refreshPositions = async () => {
     try {
       setIsLoadingPositions(true);
-      const res = await fetch("http://localhost:3001/api/positions");
+      const res = await fetch(`${API_BASE_URL}/api/positions`);
       if (res.ok) {
         const data = (await res.json()) as PositionItem[];
         setPositions(data);
@@ -188,7 +194,7 @@ export function CryptoSpikeProvider({
     side?: string,
   ): Promise<boolean> => {
     try {
-      const res = await fetch("http://localhost:3001/api/positions/close", {
+      const res = await fetch(`${API_BASE_URL}/api/positions/close`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symbol, positionAmt, side }),
@@ -209,7 +215,7 @@ export function CryptoSpikeProvider({
   useEffect(() => {
     const fetchDbConfig = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/config");
+        const res = await fetch(`${API_BASE_URL}/api/config`);
         if (res.ok) {
           const dbConfig = (await res.json()) as TradingConfig;
           setConfig(dbConfig);
@@ -224,7 +230,7 @@ export function CryptoSpikeProvider({
   // Load strategies dari backend Registry (DB PostgreSQL)
   const fetchDbStrategies = async (signalsData?: SignalItem[]) => {
     try {
-      const res = await fetch("http://localhost:3001/api/strategies");
+      const res = await fetch(`${API_BASE_URL}/api/strategies`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -242,7 +248,10 @@ export function CryptoSpikeProvider({
               sig.status?.includes("TP"),
             ).length;
             const closedCount = stratSignals.filter(
-              (sig) => sig.status?.includes("TP") || sig.status === "SL_HIT",
+              (sig) =>
+                sig.status?.includes("TP") ||
+                sig.status === "SL_HIT" ||
+                sig.status === "TSL_HIT",
             ).length;
             const wr =
               closedCount > 0
@@ -276,7 +285,7 @@ export function CryptoSpikeProvider({
   // Load signals dari database PostgreSQL backend
   const fetchDbSignals = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/signals?limit=500");
+      const res = await fetch(`${API_BASE_URL}/api/signals?limit=500`);
       if (res.ok) {
         const json = await res.json();
         if (json.items && Array.isArray(json.items) && json.items.length > 0) {
@@ -293,7 +302,7 @@ export function CryptoSpikeProvider({
     void fetchDbSignals();
 
     // Koneksi Realtime WebSocket ke Backend NestJS
-    const socket = io("http://localhost:3001", {
+    const socket = io(API_BASE_URL || window.location.origin, {
       transports: ["websocket", "polling"],
     });
 
@@ -402,7 +411,7 @@ export function CryptoSpikeProvider({
         if (s.strategyId === strategyId) {
           const nextState = !s.isEnabled;
           // Kirim ke backend untuk di-update di memory & DB
-          fetch(`http://localhost:3001/api/strategies/${strategyId}/toggle`, {
+          fetch(`${API_BASE_URL}/api/strategies/${strategyId}/toggle`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ isEnabled: nextState }),
@@ -481,7 +490,7 @@ export function CryptoSpikeProvider({
     setConfig((prev) => {
       const merged = { ...prev, ...updated };
       // Kirim ke backend NestJS untuk di-persist ke PostgreSQL
-      fetch("http://localhost:3001/api/config", {
+      fetch(`${API_BASE_URL}/api/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(merged),

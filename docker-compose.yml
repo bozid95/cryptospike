@@ -1,0 +1,34 @@
+services:
+  # Database PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: cryptospike-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cryptospike123}
+      POSTGRES_DB: ${POSTGRES_DB:-cryptospike}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # All-in-One Service (Frontend + Backend + Nginx Reverse Proxy)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cryptospike-app
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-cryptospike123}@postgres:5432/${POSTGRES_DB:-cryptospike}
+      BINANCE_TESTNET: ${BINANCE_TESTNET:-true}
+    ports:
+      - "80:80"
+      - "3001:3001"
+
+volumes:
+  postgres_data:

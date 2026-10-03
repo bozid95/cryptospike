@@ -132,8 +132,8 @@ export function PositionsCrud() {
                       : "text-rose-500"
                   }`}
                 >
-                  {summary.totalUnrealizedPnl >= 0 ? "+" : ""}
-                  ${summary.totalUnrealizedPnl.toFixed(2)}
+                  {summary.totalUnrealizedPnl >= 0 ? "+" : ""}$
+                  {summary.totalUnrealizedPnl.toFixed(2)}
                 </span>
                 <span
                   className={`text-xs font-mono font-medium ${
@@ -174,7 +174,8 @@ export function PositionsCrud() {
                 Total Margin Dipakai
               </span>
               <div className="text-xl font-bold font-mono text-foreground">
-                ${summary.totalInitialMargin.toLocaleString(undefined, {
+                $
+                {summary.totalInitialMargin.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -197,7 +198,8 @@ export function PositionsCrud() {
                 Total Nilai Notional
               </span>
               <div className="text-xl font-bold font-mono text-foreground">
-                ${summary.totalNotional.toLocaleString(undefined, {
+                $
+                {summary.totalNotional.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -228,7 +230,8 @@ export function PositionsCrud() {
                 </span>
                 <span className="text-muted-foreground">•</span>
                 <span className="text-rose-500 font-semibold flex items-center gap-0.5">
-                  <TrendingDownIcon className="size-3" /> {summary.shortCount} Short
+                  <TrendingDownIcon className="size-3" /> {summary.shortCount}{" "}
+                  Short
                 </span>
               </div>
             </div>

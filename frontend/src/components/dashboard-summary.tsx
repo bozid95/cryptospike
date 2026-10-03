@@ -139,7 +139,10 @@ export function DashboardSummary() {
           </CardHeader>
           <CardContent>
             {(() => {
-              const totalUnrealized = positions.reduce((acc, p) => acc + (p.unRealizedProfit || 0), 0);
+              const totalUnrealized = positions.reduce(
+                (acc, p) => acc + (p.unRealizedProfit || 0),
+                0,
+              );
               const isPositive = totalUnrealized >= 0;
               return (
                 <>

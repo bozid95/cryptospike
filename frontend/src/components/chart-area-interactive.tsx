@@ -90,7 +90,8 @@ export function ChartAreaInteractive() {
             item.dailyPnl += Math.abs(estimatedUsd) > 0 ? estimatedUsd : 1.5;
             item.winCount += 1;
           } else if (sig.status === "SL_HIT") {
-            item.dailyPnl -= Math.abs(estimatedUsd) > 0 ? Math.abs(estimatedUsd) : 1.0;
+            item.dailyPnl -=
+              Math.abs(estimatedUsd) > 0 ? Math.abs(estimatedUsd) : 1.0;
             item.lossCount += 1;
           }
         }
@@ -121,11 +122,7 @@ export function ChartAreaInteractive() {
         }
         // Variasi daily gain realistis
         const dayGain = Number(
-          (
-            1.2 +
-            ((idx % 4) * 0.8) -
-            ((idx % 7 === 0) ? 1.5 : 0)
-          ).toFixed(2),
+          (1.2 + (idx % 4) * 0.8 - (idx % 7 === 0 ? 1.5 : 0)).toFixed(2),
         );
         r.dailyPnl = dayGain;
         if (dayGain >= 0) r.winCount = 2;
@@ -168,7 +165,8 @@ export function ChartAreaInteractive() {
           </div>
           <CardDescription>
             <span className="@[540px]/card:block hidden">
-              Kurva pertumbuhan modal kumulatif dan PnL harian (Realized & Floating Unrealized)
+              Kurva pertumbuhan modal kumulatif dan PnL harian (Realized &
+              Floating Unrealized)
             </span>
             <span className="@[540px]/card:hidden">Kurva Pertumbuhan PnL</span>
           </CardDescription>
@@ -252,13 +250,17 @@ export function ChartAreaInteractive() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              domain={['auto', 'auto']}
+              domain={["auto", "auto"]}
               tickFormatter={(val) => `$${val}`}
               orientation="right"
               className="font-mono text-[10px]"
             />
             <ChartTooltip
-              cursor={{ stroke: "#6366f1", strokeWidth: 1, strokeDasharray: "2 2" }}
+              cursor={{
+                stroke: "#6366f1",
+                strokeWidth: 1,
+                strokeDasharray: "2 2",
+              }}
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
