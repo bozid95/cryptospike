@@ -11,6 +11,7 @@ import {
   XIcon,
   LockIcon,
   FlameIcon,
+  FilterIcon,
 } from "lucide-react";
 import { useCryptoSpike } from "@/context/trading-context";
 import { NotificationBell } from "@/components/notification-bell";
@@ -18,6 +19,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TablePagination } from "@/components/ui/table-pagination";
 
 function formatCryptoPrice(val: number): string {
@@ -49,9 +57,19 @@ function formatCryptoPrice(val: number): string {
 export function PublicSignalsView() {
   const { signals } = useCryptoSpike();
   const [filter, setFilter] = useState<"ALL" | "RUNNING" | "CLOSED">("ALL");
+  const [selectedStrategy, setSelectedStrategy] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+
+  // Daftar unik strategi yang ada di daftar sinyal
+  const availableStrategies = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of signals) {
+      if (s.strategy) set.add(s.strategy);
+    }
+    return Array.from(set).sort();
+  }, [signals]);
 
   // Summary Metrics
   const summary = useMemo(() => {
@@ -129,6 +147,12 @@ export function PublicSignalsView() {
 
       if (filter === "RUNNING" && !isSignalRunning) return false;
       if (filter === "CLOSED" && isSignalRunning) return false;
+
+      // Filter by Strategy
+      if (selectedStrategy !== "ALL" && sig.strategy !== selectedStrategy) {
+        return false;
+      }
+
       if (!searchTerm.trim()) return true;
 
       const q = searchTerm.toLowerCase();
@@ -138,7 +162,7 @@ export function PublicSignalsView() {
         (sig.strategy && sig.strategy.toLowerCase().includes(q))
       );
     });
-  }, [signals, filter, searchTerm]);
+  }, [signals, filter, selectedStrategy, searchTerm]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSignals.length / pageSize));
   const validCurrentPage = Math.min(currentPage, totalPages);
@@ -356,18 +380,51 @@ export function PublicSignalsView() {
             </button>
           </div>
 
-          {/* Search Box */}
-          <div className="relative w-full sm:w-64">
-            <SearchIcon className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder="Filter pair (e.g. BTC, ETH)..."
-              className="pl-9 h-9 text-xs rounded-xl bg-card"
-            />
+          {/* Right Toolbar: Strategy Filter & Search Box */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            {/* Strategy Filter Dropdown */}
+            {availableStrategies.length > 0 && (
+              <div className="w-full sm:w-48">
+                <Select
+                  value={selectedStrategy}
+                  onValueChange={(val) => {
+                    setSelectedStrategy(val);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs rounded-xl bg-card border-border/80">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <FilterIcon className="size-3 text-muted-foreground shrink-0" />
+                      <SelectValue placeholder="All Strategies" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border">
+                    <SelectItem value="ALL" className="text-xs">
+                      All Strategies
+                    </SelectItem>
+                    {availableStrategies.map((strat) => (
+                      <SelectItem key={strat} value={strat} className="text-xs font-mono">
+                        {strat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Search Box */}
+            <div className="relative w-full sm:w-56">
+              <SearchIcon className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Filter pair (e.g. BTC, ETH)..."
+                className="pl-9 h-9 text-xs rounded-xl bg-card"
+              />
+            </div>
           </div>
         </div>
 
