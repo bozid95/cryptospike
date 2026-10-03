@@ -44,7 +44,11 @@ export function NotificationBell() {
   const formatTime = (isoString: string) => {
     try {
       const d = new Date(isoString);
-      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      return d.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
     } catch {
       return "";
     }
@@ -71,13 +75,16 @@ export function NotificationBell() {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-80 sm:w-96 p-0 border shadow-xl bg-popover text-popover-foreground rounded-xl overflow-hidden"
+        className="w-80 sm:w-96 p-0 border border-border shadow-2xl bg-card text-card-foreground rounded-xl overflow-hidden z-50 backdrop-blur-none"
       >
         {/* Header Notification */}
-        <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/40">
+        <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/60">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-sm">Notifikasi</h3>
-            <Badge variant="secondary" className="text-[11px] font-mono px-1.5 py-0">
+            <Badge
+              variant="secondary"
+              className="text-[11px] font-mono px-1.5 py-0"
+            >
               {notifications.length}/100
             </Badge>
           </div>
