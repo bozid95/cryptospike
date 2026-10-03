@@ -129,10 +129,12 @@ export function PublicSignalsView() {
         const evaluated = st.hits + st.losses;
         const winrate =
           evaluated > 0 ? ((st.hits / evaluated) * 100).toFixed(1) : "0.0";
+        const simulatedPnlUsd = (1000 * st.totalPnl) / 100;
         return {
           ...st,
           winrate: parseFloat(winrate),
           totalPnl: parseFloat(st.totalPnl.toFixed(2)),
+          simulatedPnlUsd: parseFloat(simulatedPnlUsd.toFixed(2)),
           evaluated,
         };
       })
@@ -196,6 +198,11 @@ export function PublicSignalsView() {
         ? ((hitCount / evaluatedCount) * 100).toFixed(1)
         : "0.0";
 
+    // Simulasi Modal $1,000 USD (Sample Portfolio Benchmark)
+    const SIMULATED_CAPITAL = 1000;
+    const simulatedProfitUsd = (SIMULATED_CAPITAL * totalRealizedProfitPct) / 100;
+    const simulatedBalanceUsd = SIMULATED_CAPITAL + simulatedProfitUsd;
+
     return {
       totalSignals: signals.length,
       runningCount,
@@ -204,6 +211,9 @@ export function PublicSignalsView() {
       lossCount,
       winrate,
       totalRealizedProfitPct: parseFloat(totalRealizedProfitPct.toFixed(2)),
+      simulatedCapital: SIMULATED_CAPITAL,
+      simulatedProfitUsd: parseFloat(simulatedProfitUsd.toFixed(2)),
+      simulatedBalanceUsd: parseFloat(simulatedBalanceUsd.toFixed(2)),
       longCount,
       shortCount,
     };
@@ -370,25 +380,34 @@ export function PublicSignalsView() {
               </CardContent>
             </Card>
 
-            {/* Stat 3: Realized PnL */}
+            {/* Stat 3: Realized PnL ($1,000 Simulation) */}
             <Card className="border-border/80 shadow-xs bg-card">
               <CardContent className="p-3 sm:p-4 space-y-1">
                 <span className="text-[11px] sm:text-xs text-muted-foreground font-medium flex items-center justify-between">
-                  Realized PnL
+                  Realized PnL ($1K Test)
                   <FlameIcon className="size-3 sm:size-3.5 text-amber-500" />
                 </span>
                 <div
                   className={`text-xl sm:text-2xl font-bold font-mono ${
-                    summary.totalRealizedProfitPct >= 0
+                    summary.simulatedProfitUsd >= 0
                       ? "text-emerald-500"
                       : "text-rose-500"
                   }`}
                 >
-                  {summary.totalRealizedProfitPct >= 0 ? "+" : ""}
-                  {summary.totalRealizedProfitPct.toFixed(2)}%
+                  {summary.simulatedProfitUsd >= 0 ? "+" : ""}${summary.simulatedProfitUsd.toFixed(2)}
                 </div>
-                <div className="text-[10px] sm:text-[11px] text-muted-foreground">
-                  Cumulative Closed Return
+                <div className="text-[10px] sm:text-[11px] font-mono text-muted-foreground flex items-center justify-between">
+                  <span
+                    className={
+                      summary.totalRealizedProfitPct >= 0
+                        ? "text-emerald-500 font-semibold"
+                        : "text-rose-500 font-semibold"
+                    }
+                  >
+                    {summary.totalRealizedProfitPct >= 0 ? "+" : ""}
+                    {summary.totalRealizedProfitPct.toFixed(1)}%
+                  </span>
+                  <span>Bal: ${summary.simulatedBalanceUsd.toFixed(0)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -458,6 +477,15 @@ export function PublicSignalsView() {
                         }`}
                       >
                         {st.winrate}%
+                      </span>
+                      <span
+                        className={`text-[10px] font-semibold ${
+                          st.simulatedPnlUsd >= 0
+                            ? "text-emerald-500"
+                            : "text-rose-500"
+                        }`}
+                      >
+                        ({st.simulatedPnlUsd >= 0 ? "+" : ""}${st.simulatedPnlUsd.toFixed(0)})
                       </span>
                       <span className="text-[10px] text-muted-foreground/75 font-sans">
                         • {st.hits}W/{st.losses}L
@@ -925,14 +953,21 @@ export function PublicSignalsView() {
                     <div className="flex items-center gap-2">
                       {typeof displayProfitPct === "number" && (
                         <span
-                          className={`font-mono font-bold text-xs ${
+                          className={`font-mono font-bold text-xs flex items-center gap-1 ${
                             isProfitPositive
                               ? "text-emerald-500"
                               : "text-rose-500"
                           }`}
+                          title={`Simulated from $1,000 test position: ${isProfitPositive ? "+" : ""}$${((1000 * displayProfitPct) / 100).toFixed(2)}`}
                         >
-                          {isProfitPositive ? "+" : ""}
-                          {displayProfitPct.toFixed(2)}%
+                          <span>
+                            {isProfitPositive ? "+" : ""}
+                            {displayProfitPct.toFixed(2)}%
+                          </span>
+                          <span className="text-[10px] font-semibold opacity-90">
+                            ({isProfitPositive ? "+" : ""}$
+                            {((1000 * displayProfitPct) / 100).toFixed(1)})
+                          </span>
                         </span>
                       )}
 
