@@ -14,10 +14,8 @@ export interface TradingConfigDto {
 }
 
 const DEFAULT_CONFIG: TradingConfigDto = {
-  apiKey:
-    'dhA11NTt2uFViDGybKvJv9g0IQc8PJilepPHV7uqgWH5H2opcwaJjGto1CgWiz13',
-  apiSecret:
-    'wVVzZaysTZ3Pz4XhGDkPPRJAgvwIjw0sYJkxTlAsVHu6Q3tSP9TBpJmhCRdPBlIm',
+  apiKey: 'dhA11NTt2uFViDGybKvJv9g0IQc8PJilepPHV7uqgWH5H2opcwaJjGto1CgWiz13',
+  apiSecret: 'wVVzZaysTZ3Pz4XhGDkPPRJAgvwIjw0sYJkxTlAsVHu6Q3tSP9TBpJmhCRdPBlIm',
   environment: 'TESTNET',
   leverage: 10,
   marginType: 'ISOLATED',
@@ -39,8 +37,11 @@ export class ConfigService implements OnModuleInit {
       const conf = await this.getConfig();
       if (conf.apiKey) process.env.BINANCE_API_KEY = conf.apiKey;
       if (conf.apiSecret) process.env.BINANCE_SECRET_KEY = conf.apiSecret;
-      process.env.BINANCE_TESTNET = conf.environment === 'TESTNET' ? 'true' : 'false';
-      this.logger.log(`Initialized Binance API credentials for ${conf.environment}`);
+      process.env.BINANCE_TESTNET =
+        conf.environment === 'TESTNET' ? 'true' : 'false';
+      this.logger.log(
+        `Initialized Binance API credentials for ${conf.environment}`,
+      );
     } catch (e: any) {
       this.logger.warn(`Could not initialize config on startup: ${e.message}`);
     }

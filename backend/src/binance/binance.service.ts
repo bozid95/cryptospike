@@ -316,30 +316,30 @@ export class BinanceService {
       const baseUrl = this.getFuturesBaseUrl();
       const timestamp = Date.now();
 
-      const queryParts: string[] = [
-        `symbol=${params.symbol}`,
-        `side=${params.side}`,
-        `type=${params.type}`,
-      ];
+      const queryParams: Record<string, string> = {
+        symbol: params.symbol,
+        side: params.side,
+        type: params.type,
+      };
 
       if (params.quantity !== undefined) {
-        queryParts.push(`quantity=${params.quantity}`);
+        queryParams.quantity = String(params.quantity);
       }
       if (params.price !== undefined) {
-        queryParts.push(`price=${params.price}`);
+        queryParams.price = String(params.price);
       }
       if (params.stopPrice !== undefined) {
-        queryParts.push(`stopPrice=${params.stopPrice}`);
+        queryParams.stopPrice = String(params.stopPrice);
       }
       if (params.reduceOnly) {
-        queryParts.push(`reduceOnly=true`);
+        queryParams.reduceOnly = 'true';
       }
       if (params.timeInForce) {
-        queryParts.push(`timeInForce=${params.timeInForce}`);
+        queryParams.timeInForce = params.timeInForce;
       }
-      queryParts.push(`timestamp=${timestamp}`);
+      queryParams.timestamp = String(timestamp);
 
-      const query = queryParts.join('&');
+      const query = new URLSearchParams(queryParams).toString();
       const signature = crypto
         .createHmac('sha256', apiSecret)
         .update(query)
@@ -347,7 +347,7 @@ export class BinanceService {
 
       const response = await axios.post(
         `${baseUrl}/fapi/v1/order?${query}&signature=${signature}`,
-        {},
+        null,
         {
           headers: { 'X-MBX-APIKEY': apiKey },
           timeout: 10000,
