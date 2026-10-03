@@ -529,37 +529,47 @@ export function PositionsCrud() {
                       {/* Target Orders TP & SL Info */}
                       {(pos.orders && pos.orders.length > 0) || pos.sl || pos.tp1 ? (
                         <div className="p-2.5 rounded-lg bg-muted/30 border border-border/40 space-y-1.5 text-xs font-mono">
-                          <span className="text-[10px] text-muted-foreground block font-sans font-medium">
-                            Target Orders (TP & SL)
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-muted-foreground font-sans font-medium">
+                              Target Orders (TP & SL)
+                            </span>
+                            <span className="text-[9px] text-muted-foreground/80 font-sans">
+                              {pos.leverage}x Lev. ROE
+                            </span>
+                          </div>
                           <div className="flex flex-wrap gap-1.5">
                             {pos.orders && pos.orders.length > 0
-                              ? pos.orders.map((ord, idx) => {
-                                  const diffPct =
-                                    pos.entryPrice > 0
-                                      ? (isLong
-                                          ? (ord.price - pos.entryPrice) /
-                                            pos.entryPrice
-                                          : (pos.entryPrice - ord.price) /
-                                            pos.entryPrice) * 100
-                                      : 0;
-                                  return (
-                                    <div
-                                      key={ord.orderId}
-                                      className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]"
-                                    >
-                                      <span className="text-[10px] font-bold text-emerald-600">
-                                        TP{idx + 1}
-                                      </span>
-                                      <span className="font-semibold text-foreground">
-                                        ${formatCryptoPrice(ord.price)}
-                                      </span>
-                                      <span className="text-[10px] text-emerald-600">
-                                        ({diffPct >= 0 ? `+${diffPct.toFixed(1)}%` : `${diffPct.toFixed(1)}%`})
-                                      </span>
-                                    </div>
-                                  );
-                                })
+                              ? [...pos.orders]
+                                  .sort((a, b) =>
+                                    isLong ? a.price - b.price : b.price - a.price,
+                                  )
+                                  .map((ord, idx) => {
+                                    const diffPct =
+                                      pos.entryPrice > 0
+                                        ? (isLong
+                                            ? (ord.price - pos.entryPrice) /
+                                              pos.entryPrice
+                                            : (pos.entryPrice - ord.price) /
+                                              pos.entryPrice) * 100
+                                        : 0;
+                                    const roePct = diffPct * (pos.leverage || 1);
+                                    return (
+                                      <div
+                                        key={ord.orderId}
+                                        className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]"
+                                      >
+                                        <span className="text-[10px] font-bold text-emerald-600">
+                                          TP{idx + 1}
+                                        </span>
+                                        <span className="font-semibold text-foreground">
+                                          ${formatCryptoPrice(ord.price)}
+                                        </span>
+                                        <span className="text-[10px] text-emerald-600">
+                                          ({diffPct >= 0 ? `+${diffPct.toFixed(1)}%` : `${diffPct.toFixed(1)}%`} • ROE {roePct >= 0 ? `+${roePct.toFixed(1)}%` : `${roePct.toFixed(1)}%`})
+                                        </span>
+                                      </div>
+                                    );
+                                  })
                               : (
                                 <>
                                   {pos.tp1 && (
@@ -576,21 +586,26 @@ export function PositionsCrud() {
                                   )}
                                 </>
                               )}
-                            {pos.sl && (
-                              <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-1.5 py-0.5 rounded text-[11px]">
-                                <span className="text-[10px] font-bold text-destructive">
-                                  SL
-                                </span>
-                                <span className="font-semibold text-destructive">
-                                  ${formatCryptoPrice(pos.sl)}
-                                </span>
-                                <span className="text-[10px] text-destructive">
-                                  ({pos.entryPrice > 0
-                                    ? `-${Math.abs(((pos.entryPrice - pos.sl) / pos.entryPrice) * 100).toFixed(1)}%`
-                                    : "0%"})
-                                </span>
-                              </div>
-                            )}
+                            {pos.sl && (() => {
+                              const slDiffPct =
+                                pos.entryPrice > 0
+                                  ? Math.abs(((pos.entryPrice - pos.sl) / pos.entryPrice) * 100)
+                                  : 0;
+                              const slRoePct = slDiffPct * (pos.leverage || 1);
+                              return (
+                                <div className="flex items-center gap-1 bg-destructive/10 border border-destructive/20 px-1.5 py-0.5 rounded text-[11px]">
+                                  <span className="text-[10px] font-bold text-destructive">
+                                    SL
+                                  </span>
+                                  <span className="font-semibold text-destructive">
+                                    ${formatCryptoPrice(pos.sl)}
+                                  </span>
+                                  <span className="text-[10px] text-destructive">
+                                    (-{slDiffPct.toFixed(1)}% • ROE -{slRoePct.toFixed(1)}%)
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </div>
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-0.5">
                             <span className="text-amber-500 font-bold">●</span>
@@ -900,55 +915,71 @@ export function PositionsCrud() {
                           <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
                             {pos.orders && pos.orders.length > 0 ? (
                               <div className="flex flex-col gap-1">
-                                {pos.orders.map((ord, idx) => {
-                                  const diffPct =
+                                {[...pos.orders]
+                                  .sort((a, b) =>
+                                    isLong ? a.price - b.price : b.price - a.price,
+                                  )
+                                  .map((ord, idx) => {
+                                    const diffPct =
+                                      pos.entryPrice > 0
+                                        ? (isLong
+                                            ? (ord.price - pos.entryPrice) /
+                                              pos.entryPrice
+                                            : (pos.entryPrice - ord.price) /
+                                              pos.entryPrice) * 100
+                                        : 0;
+                                    const roePct = diffPct * (pos.leverage || 1);
+                                    return (
+                                      <div
+                                        key={ord.orderId}
+                                        className="flex items-center gap-1.5 text-[11px]"
+                                      >
+                                        <Badge
+                                          variant="outline"
+                                          className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                                        >
+                                          TP{idx + 1}
+                                        </Badge>
+                                        <span className="font-semibold tabular-nums text-foreground">
+                                          ${formatCryptoPrice(ord.price)}
+                                        </span>
+                                        <span className="font-bold text-[10px] bg-emerald-500/10 text-emerald-600 px-1 py-0.5 rounded border border-emerald-500/20 leading-none">
+                                          {diffPct >= 0
+                                            ? `+${diffPct.toFixed(2)}%`
+                                            : `${diffPct.toFixed(2)}%`}
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground/80 font-mono">
+                                          ROE {roePct >= 0 ? `+${roePct.toFixed(1)}%` : `${roePct.toFixed(1)}%`}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                {pos.sl && (() => {
+                                  const slDiffPct =
                                     pos.entryPrice > 0
-                                      ? (isLong
-                                          ? (ord.price - pos.entryPrice) /
-                                            pos.entryPrice
-                                          : (pos.entryPrice - ord.price) /
-                                            pos.entryPrice) * 100
+                                      ? Math.abs(((pos.entryPrice - pos.sl) / pos.entryPrice) * 100)
                                       : 0;
+                                  const slRoePct = slDiffPct * (pos.leverage || 1);
                                   return (
-                                    <div
-                                      key={ord.orderId}
-                                      className="flex items-center gap-1.5 text-[11px]"
-                                    >
+                                    <div className="flex items-center gap-1.5 text-[11px] text-destructive">
                                       <Badge
                                         variant="outline"
-                                        className="px-1 py-0 h-4 text-[9px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5"
+                                        className="px-1 py-0 h-4 text-[9px] font-bold border-destructive/40 text-destructive bg-destructive/5"
                                       >
-                                        TP{idx + 1}
+                                        SL
                                       </Badge>
-                                      <span className="font-semibold tabular-nums text-foreground">
-                                        ${formatCryptoPrice(ord.price)}
+                                      <span className="font-semibold tabular-nums">
+                                        ${formatCryptoPrice(pos.sl)}
                                       </span>
-                                      <span className="font-bold text-[10px] bg-emerald-500/10 text-emerald-600 px-1 py-0.5 rounded border border-emerald-500/20 leading-none">
-                                        {diffPct >= 0
-                                          ? `+${diffPct.toFixed(2)}%`
-                                          : `${diffPct.toFixed(2)}%`}
+                                      <span className="font-bold text-[10px] bg-destructive/10 text-destructive px-1 py-0.5 rounded border border-destructive/20 leading-none">
+                                        -{slDiffPct.toFixed(2)}%
+                                      </span>
+                                      <span className="text-[10px] text-destructive/80 font-mono">
+                                        ROE -{slRoePct.toFixed(1)}%
                                       </span>
                                     </div>
                                   );
-                                })}
-                                {pos.sl && (
-                                  <div className="flex items-center gap-1.5 text-[11px] text-destructive">
-                                    <Badge
-                                      variant="outline"
-                                      className="px-1 py-0 h-4 text-[9px] font-bold border-destructive/40 text-destructive bg-destructive/5"
-                                    >
-                                      SL
-                                    </Badge>
-                                    <span className="font-semibold tabular-nums">
-                                      ${formatCryptoPrice(pos.sl)}
-                                    </span>
-                                    <span className="font-bold text-[10px] bg-destructive/10 text-destructive px-1 py-0.5 rounded border border-destructive/20 leading-none">
-                                      {pos.entryPrice > 0
-                                        ? `-${Math.abs(((pos.entryPrice - pos.sl) / pos.entryPrice) * 100).toFixed(2)}%`
-                                        : "-0.00%"}
-                                    </span>
-                                  </div>
-                                )}
+                                })()}
                                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
                                   <span className="text-amber-500 font-bold">
                                     ●
