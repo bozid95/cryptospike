@@ -249,39 +249,60 @@ export class ScannerService implements OnModuleInit, OnModuleDestroy {
               },
             });
 
-            // Geser SL di Binance ke harga TP1
-            const filters = await this.binanceService.getSymbolFilters(
-              sig.symbol,
-            );
-            const lockedSL = this.binanceService.roundTick(
-              sig.tp1,
-              filters.tickSize,
-            );
-            const exitSide = isLong ? 'SELL' : 'BUY';
-
-            try {
-              await this.binanceService.placeOrder({
-                symbol: sig.symbol,
-                side: exitSide,
-                type: 'STOP_MARKET',
-                stopPrice: lockedSL,
-                reduceOnly: true,
-              });
-              this.logger.log(
-                `[TSL MOVED] SL locked at TP1 ${lockedSL} for ${sig.symbol}`,
-              );
-            } catch (err: any) {
-              this.logger.warn(
-                `Failed moving SL to TP1 for ${sig.symbol}: ${err.message}`,
-              );
-            }
-
             this.gateway.broadcastSignalUpdate({
               id: sig.id,
               status: 'TP2_HIT',
               profitPct: parseFloat(profitPct.toFixed(2)),
             });
           }
+        }
+
+        // 3. Cek SL HIT (Stop Loss Trigger) -> Otomatis Close Posisi di Market
+        let slThreshold = sig.sl;
+        if (sig.status === 'TP1_HIT') {
+          // Breakeven SL
+          slThreshold = sig.entryPrice;
+        } else if (sig.status === 'TP2_HIT') {
+          // Locked SL di TP1
+          slThreshold = sig.tp1;
+        }
+
+        const hitSL = isLong ? markPrice <= slThreshold : markPrice >= slThreshold;
+
+        if (hitSL) {
+          const finalProfitPct = isLong
+            ? ((markPrice - sig.entryPrice) / sig.entryPrice) * 100
+            : ((sig.entryPrice - markPrice) / sig.entryPrice) * 100;
+
+          const isBreakevenOrProfit = sig.status === 'TP1_HIT' || sig.status === 'TP2_HIT';
+          const newStatus = isBreakevenOrProfit ? 'TSL_HIT' : 'SL_HIT';
+
+          this.logger.log(
+            `[STOP LOSS HIT] ${sig.symbol} hit threshold ${slThreshold} (Mark: ${markPrice}). Closing position via Market Order. Status: ${newStatus}`,
+          );
+
+          // Tutup posisi riil di Binance
+          const positionAmt = parseFloat(livePos.positionAmt);
+          if (positionAmt !== 0) {
+            await this.binanceService.closePosition(sig.symbol, positionAmt);
+          }
+
+          // Update database
+          await this.prisma.signal.update({
+            where: { id: sig.id },
+            data: {
+              status: newStatus,
+              profitPct: parseFloat(finalProfitPct.toFixed(2)),
+              hitTime: new Date(),
+            },
+          });
+
+          // Broadcast ke frontend websocket
+          this.gateway.broadcastSignalUpdate({
+            id: sig.id,
+            status: newStatus,
+            profitPct: parseFloat(finalProfitPct.toFixed(2)),
+          });
         }
       }
     } catch (err: unknown) {

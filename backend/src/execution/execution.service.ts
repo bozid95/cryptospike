@@ -142,102 +142,69 @@ export class ExecutionService {
         filters.stepSize,
       );
 
-      // A. Pasang TP1 (50% posisi)
+      // A. Pasang TP1 (50% posisi) dengan order LIMIT Reduce-Only
       if (signal.tp1 && qtyTP1 > 0) {
-        const roundedTP1 = this.binanceService.roundTick(
-          signal.tp1,
-          filters.tickSize,
-        );
+        const roundedTP1 = this.binanceService.roundTick(signal.tp1, filters.tickSize);
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
             side: exitSide,
-            type: 'TAKE_PROFIT_MARKET',
-            stopPrice: roundedTP1,
+            type: 'LIMIT',
+            price: roundedTP1,
             quantity: qtyTP1,
+            timeInForce: 'GTC',
             reduceOnly: true,
           });
-          this.logger.log(
-            `[TP1 PLACED] ${signal.symbol} 50% (${qtyTP1}) @ ${roundedTP1}`,
-          );
+          this.logger.log(`[TP1 PLACED] ${signal.symbol} 50% (${qtyTP1}) @ ${roundedTP1}`);
         } catch (e: any) {
           this.logger.warn(`Failed TP1: ${e.message}`);
         }
       }
 
-      // B. Pasang TP2 (30% posisi)
-      const tp2Price =
-        signal.tp2 ||
-        (signal.side === 'LONG' ? signal.tp1 * 1.015 : signal.tp1 * 0.985);
+      // B. Pasang TP2 (30% posisi) dengan order LIMIT Reduce-Only
+      const tp2Price = signal.tp2 || (signal.side === 'LONG' ? signal.tp1 * 1.015 : signal.tp1 * 0.985);
       if (tp2Price && qtyTP2 > 0) {
-        const roundedTP2 = this.binanceService.roundTick(
-          tp2Price,
-          filters.tickSize,
-        );
+        const roundedTP2 = this.binanceService.roundTick(tp2Price, filters.tickSize);
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
             side: exitSide,
-            type: 'TAKE_PROFIT_MARKET',
-            stopPrice: roundedTP2,
+            type: 'LIMIT',
+            price: roundedTP2,
             quantity: qtyTP2,
+            timeInForce: 'GTC',
             reduceOnly: true,
           });
-          this.logger.log(
-            `[TP2 PLACED] ${signal.symbol} 30% (${qtyTP2}) @ ${roundedTP2}`,
-          );
+          this.logger.log(`[TP2 PLACED] ${signal.symbol} 30% (${qtyTP2}) @ ${roundedTP2}`);
         } catch (e: any) {
           this.logger.warn(`Failed TP2: ${e.message}`);
         }
       }
 
-      // C. Pasang TP3 (20% posisi)
-      const tp3Price =
-        signal.tp3 ||
-        (signal.side === 'LONG' ? tp2Price * 1.02 : tp2Price * 0.98);
+      // C. Pasang TP3 (20% posisi) dengan order LIMIT Reduce-Only
+      const tp3Price = signal.tp3 || (signal.side === 'LONG' ? tp2Price * 1.02 : tp2Price * 0.98);
       if (tp3Price && qtyTP3 > 0) {
-        const roundedTP3 = this.binanceService.roundTick(
-          tp3Price,
-          filters.tickSize,
-        );
+        const roundedTP3 = this.binanceService.roundTick(tp3Price, filters.tickSize);
         try {
           await this.binanceService.placeOrder({
             symbol: signal.symbol,
             side: exitSide,
-            type: 'TAKE_PROFIT_MARKET',
-            stopPrice: roundedTP3,
+            type: 'LIMIT',
+            price: roundedTP3,
             quantity: qtyTP3,
+            timeInForce: 'GTC',
             reduceOnly: true,
           });
-          this.logger.log(
-            `[TP3 PLACED] ${signal.symbol} 20% (${qtyTP3}) @ ${roundedTP3}`,
-          );
+          this.logger.log(`[TP3 PLACED] ${signal.symbol} 20% (${qtyTP3}) @ ${roundedTP3}`);
         } catch (e: any) {
           this.logger.warn(`Failed TP3: ${e.message}`);
         }
       }
 
-      // D. Pasang Stop Loss Penuh Awal (STOP_MARKET)
-      if (signal.sl) {
-        const roundedSL = this.binanceService.roundTick(
-          signal.sl,
-          filters.tickSize,
-        );
-        try {
-          await this.binanceService.placeOrder({
-            symbol: signal.symbol,
-            side: exitSide,
-            type: 'STOP_MARKET',
-            stopPrice: roundedSL,
-            reduceOnly: true,
-          });
-          this.logger.log(
-            `[INITIAL SL PLACED] ${signal.symbol} 100% SL @ ${roundedSL}`,
-          );
-        } catch (e: any) {
-          this.logger.warn(`Failed SL: ${e.message}`);
-        }
-      }
+      // D. Stop Loss dipantau otomatis secara realtime oleh Engine Lifecycle Monitor (Breakeven & TSL)
+      this.logger.log(
+        `[SL MONITORED] ${signal.symbol} initial SL level set at ${signal.sl} (Engine Realtime Breakeven & TSL Active)`,
+      );
 
       // 8. Catat lock posisi di database
       try {
