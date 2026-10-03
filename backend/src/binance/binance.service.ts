@@ -75,22 +75,72 @@ export class BinanceService {
     return { apiKey, apiSecret };
   }
 
+  private timeOffset = 0;
+  private lastTimeSync = 0;
+
+  private async syncServerTime(): Promise<number> {
+    const now = Date.now();
+    // Re-sync setiap 10 menit
+    if (this.lastTimeSync && now - this.lastTimeSync < 10 * 60 * 1000) {
+      return now + this.timeOffset;
+    }
+
+    try {
+      const baseUrl = this.getFuturesBaseUrl();
+      const res = await axios.get<{ serverTime: number }>(
+        `${baseUrl}/fapi/v1/time`,
+        { timeout: 5000 },
+      );
+      if (res.data?.serverTime) {
+        this.timeOffset = res.data.serverTime - now;
+        this.lastTimeSync = now;
+        this.logger.debug(
+          `Binance server time synced. Offset: ${this.timeOffset}ms`,
+        );
+      }
+    } catch (e: any) {
+      this.logger.warn(`Failed to sync Binance server time: ${e.message}`);
+    }
+
+    return Date.now() + this.timeOffset;
+  }
+
+  private async getSignedQuery(
+    params: Record<string, string | number | boolean | undefined> = {},
+  ): Promise<{ query: string; signature: string }> {
+    const { apiSecret } = this.getCredentials();
+    const timestamp = await this.syncServerTime();
+
+    const queryParts: string[] = [];
+    for (const [key, val] of Object.entries(params)) {
+      if (val !== undefined) {
+        queryParts.push(`${key}=${encodeURIComponent(String(val))}`);
+      }
+    }
+
+    queryParts.push(`timestamp=${timestamp}`);
+    queryParts.push('recvWindow=60000');
+
+    const query = queryParts.join('&');
+    const signature = crypto
+      .createHmac('sha256', apiSecret)
+      .update(query)
+      .digest('hex');
+
+    return { query, signature };
+  }
+
   async getAccountBalances(): Promise<BinanceBalanceItem[]> {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
+      const { apiKey } = this.getCredentials();
 
-      if (!apiKey || !apiSecret) {
-        this.logger.warn('Binance API key or secret is not configured.');
+      if (!apiKey) {
+        this.logger.warn('Binance API key is not configured.');
         return [];
       }
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-      const query = `timestamp=${timestamp}`;
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+      const { query, signature } = await this.getSignedQuery();
 
       const response = await axios.get<BinanceBalanceItem[]>(
         `${baseUrl}/fapi/v2/balance?${query}&signature=${signature}`,
@@ -102,9 +152,13 @@ export class BinanceService {
 
       // Ambil hanya aset yang memiliki saldo > 0
       return response.data.filter((b) => parseFloat(b.balance) > 0);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Failed to fetch Binance Futures balance: ${message}`);
+    } catch (err: any) {
+      const errMsg =
+        err.response?.data?.msg ||
+        (err.response?.data
+          ? JSON.stringify(err.response.data)
+          : err.message);
+      this.logger.error(`Failed to fetch Binance Futures balance: ${errMsg}`);
       return [];
     }
   }
@@ -120,16 +174,11 @@ export class BinanceService {
     }>;
   } | null> {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
-      if (!apiKey || !apiSecret) return null;
+      const { apiKey } = this.getCredentials();
+      if (!apiKey) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-      const query = `timestamp=${timestamp}`;
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+      const { query, signature } = await this.getSignedQuery();
 
       const response = await axios.get<{
         totalMarginBalance: string;
@@ -153,10 +202,14 @@ export class BinanceService {
           (a) => parseFloat(a.walletBalance) > 0,
         ),
       };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
+    } catch (err: any) {
+      const errMsg =
+        err.response?.data?.msg ||
+        (err.response?.data
+          ? JSON.stringify(err.response.data)
+          : err.message);
       this.logger.error(
-        `Failed to fetch Binance Futures account detail: ${message}`,
+        `Failed to fetch Binance Futures account detail: ${errMsg}`,
       );
       return null;
     }
@@ -215,16 +268,11 @@ export class BinanceService {
 
   async getPositions(): Promise<any[]> {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
-      if (!apiKey || !apiSecret) return [];
+      const { apiKey } = this.getCredentials();
+      if (!apiKey) return [];
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-      const query = `timestamp=${timestamp}`;
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+      const { query, signature } = await this.getSignedQuery();
 
       const response = await axios.get<any[]>(
         `${baseUrl}/fapi/v2/positionRisk?${query}&signature=${signature}`,
@@ -236,10 +284,14 @@ export class BinanceService {
 
       // Filter hanya posisi yang memiliki ukuran kontrak/posisi != 0
       return response.data.filter((p) => parseFloat(p.positionAmt) !== 0);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
+    } catch (err: any) {
+      const errMsg =
+        err.response?.data?.msg ||
+        (err.response?.data
+          ? JSON.stringify(err.response.data)
+          : err.message);
       this.logger.error(
-        `Failed to fetch Binance Futures positions: ${message}`,
+        `Failed to fetch Binance Futures positions: ${errMsg}`,
       );
       return [];
     }
@@ -247,19 +299,13 @@ export class BinanceService {
 
   async getOpenOrders(symbol?: string): Promise<any[]> {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
-      if (!apiKey || !apiSecret) return [];
+      const { apiKey } = this.getCredentials();
+      if (!apiKey) return [];
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-      const queryParts = [`timestamp=${timestamp}`];
-      if (symbol) queryParts.unshift(`symbol=${symbol}`);
-
-      const query = queryParts.join('&');
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+      const params: Record<string, string | undefined> = {};
+      if (symbol) params.symbol = symbol;
+      const { query, signature } = await this.getSignedQuery(params);
 
       const response = await axios.get<any[]>(
         `${baseUrl}/fapi/v1/openOrders?${query}&signature=${signature}`,
@@ -269,30 +315,27 @@ export class BinanceService {
         },
       );
       return response.data;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Failed to fetch open orders: ${message}`);
+    } catch (err: any) {
+      const errMsg =
+        err.response?.data?.msg ||
+        (err.response?.data
+          ? JSON.stringify(err.response.data)
+          : err.message);
+      this.logger.warn(`Failed to fetch open orders: ${errMsg}`);
       return [];
     }
   }
 
   async setLeverage(symbol: string, leverage: number) {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
-      if (!apiKey || !apiSecret) return null;
+      const { apiKey } = this.getCredentials();
+      if (!apiKey) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-      const query = new URLSearchParams({
+      const { query, signature } = await this.getSignedQuery({
         symbol,
-        leverage: String(leverage),
-        timestamp: String(timestamp),
-      }).toString();
-
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+        leverage,
+      });
 
       const response = await axios.post(
         `${baseUrl}/fapi/v1/leverage?${query}&signature=${signature}`,
@@ -300,30 +343,27 @@ export class BinanceService {
         { headers: { 'X-MBX-APIKEY': apiKey } },
       );
       return response.data;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Set leverage failed for ${symbol}: ${message}`);
+    } catch (err: any) {
+      const errMsg =
+        err.response?.data?.msg ||
+        (err.response?.data
+          ? JSON.stringify(err.response.data)
+          : err.message);
+      this.logger.warn(`Set leverage failed for ${symbol}: ${errMsg}`);
       return null;
     }
   }
 
   async setMarginType(symbol: string, marginType: 'ISOLATED' | 'CROSSED') {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
-      if (!apiKey || !apiSecret) return null;
+      const { apiKey } = this.getCredentials();
+      if (!apiKey) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-      const query = new URLSearchParams({
+      const { query, signature } = await this.getSignedQuery({
         symbol,
         marginType,
-        timestamp: String(timestamp),
-      }).toString();
-
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+      });
 
       const response = await axios.post(
         `${baseUrl}/fapi/v1/marginType?${query}&signature=${signature}`,
@@ -334,8 +374,12 @@ export class BinanceService {
     } catch (err: any) {
       // Error code -4046: "No need to change margin type" adalah normal jika sudah diset
       if (err.response?.data?.code === -4046) return null;
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Set margin type failed for ${symbol}: ${message}`);
+      const errMsg =
+        err.response?.data?.msg ||
+        (err.response?.data
+          ? JSON.stringify(err.response.data)
+          : err.message);
+      this.logger.warn(`Set margin type failed for ${symbol}: ${errMsg}`);
       return null;
     }
   }
@@ -351,40 +395,33 @@ export class BinanceService {
     timeInForce?: 'GTC' | 'IOC' | 'FOK';
   }) {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
-      if (!apiKey || !apiSecret) throw new Error('API key/secret missing');
+      const { apiKey } = this.getCredentials();
+      if (!apiKey) throw new Error('API key/secret missing');
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-
-      const queryParams: Record<string, string> = {
+      const queryParams: Record<string, any> = {
         symbol: params.symbol,
         side: params.side,
         type: params.type,
       };
 
       if (params.quantity !== undefined) {
-        queryParams.quantity = String(params.quantity);
+        queryParams.quantity = params.quantity;
       }
       if (params.price !== undefined) {
-        queryParams.price = String(params.price);
+        queryParams.price = params.price;
       }
       if (params.stopPrice !== undefined) {
-        queryParams.stopPrice = String(params.stopPrice);
+        queryParams.stopPrice = params.stopPrice;
       }
       if (params.reduceOnly) {
-        queryParams.reduceOnly = 'true';
+        queryParams.reduceOnly = true;
       }
       if (params.timeInForce) {
         queryParams.timeInForce = params.timeInForce;
       }
-      queryParams.timestamp = String(timestamp);
 
-      const query = new URLSearchParams(queryParams).toString();
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+      const { query, signature } = await this.getSignedQuery(queryParams);
 
       const response = await axios.post(
         `${baseUrl}/fapi/v1/order?${query}&signature=${signature}`,
@@ -487,16 +524,11 @@ export class BinanceService {
 
   async cancelAllOpenOrders(symbol: string) {
     try {
-      const { apiKey, apiSecret } = this.getCredentials();
-      if (!apiKey || !apiSecret) return null;
+      const { apiKey } = this.getCredentials();
+      if (!apiKey) return null;
 
       const baseUrl = this.getFuturesBaseUrl();
-      const timestamp = Date.now();
-      const query = `symbol=${symbol}&timestamp=${timestamp}`;
-      const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(query)
-        .digest('hex');
+      const { query, signature } = await this.getSignedQuery({ symbol });
 
       const response = await axios.delete(
         `${baseUrl}/fapi/v1/allOpenOrders?${query}&signature=${signature}`,
@@ -507,7 +539,11 @@ export class BinanceService {
       );
       return response.data;
     } catch (err: any) {
-      const errMsg = err.response?.data?.msg || err.message;
+      const errMsg =
+        err.response?.data?.msg ||
+        (err.response?.data
+          ? JSON.stringify(err.response.data)
+          : err.message);
       this.logger.warn(`Cancel all orders failed for ${symbol}: ${errMsg}`);
       return null;
     }
