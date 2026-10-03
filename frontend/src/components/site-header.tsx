@@ -3,6 +3,7 @@ import { ActivityIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { NotificationBell } from "@/components/notification-bell";
 import { useCryptoSpike } from "@/context/trading-context";
 
 export function SiteHeader() {
@@ -64,6 +65,9 @@ export function SiteHeader() {
                 : "$10,843.97 USDT"}
           </span>
         </div>
+
+        {/* 4. Notification Bell Dropdown (Max 100) */}
+        <NotificationBell />
       </div>
     </header>
   );

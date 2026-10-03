@@ -4,6 +4,15 @@ export interface AuthUser {
   role: string;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: "new_signal" | "tp" | "sl" | "info";
+  timestamp: string;
+  read: boolean;
+}
+
 export interface SignalItem {
   id: string;
   symbol: string;

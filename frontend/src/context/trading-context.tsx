@@ -5,6 +5,7 @@ import {
   INITIAL_CONFIG,
   INITIAL_SIGNALS,
   INITIAL_STRATEGIES,
+  type AppNotification,
   type AuthUser,
   type BinanceBalanceInfo,
   type PositionItem,
@@ -70,6 +71,12 @@ interface CryptoSpikeContextType {
   // Closed Positions History
   closedPositions: ClosedPositionItem[];
   clearClosedPositions: () => void;
+
+  // Realtime Push Notifications Center (Max 100)
+  notifications: AppNotification[];
+  unreadCount: number;
+  markAllNotificationsAsRead: () => void;
+  clearNotifications: () => void;
 }
 
 const CryptoSpikeContext = createContext<CryptoSpikeContextType | undefined>(
@@ -244,6 +251,39 @@ export function CryptoSpikeProvider({
       }
     },
   );
+
+  const NOTIFICATIONS_KEY = "cryptospike_notifications_history_v1";
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
+    try {
+      const saved = localStorage.getItem(NOTIFICATIONS_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      try {
+        localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    try {
+      localStorage.removeItem(NOTIFICATIONS_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const fetchClosedPositions = async () => {
     try {
@@ -474,7 +514,8 @@ export function CryptoSpikeProvider({
   // Audio notification synth using Web Audio API
   const playNotificationSound = (type: "new_signal" | "tp" | "sl" | "info") => {
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
       const osc = ctx.createOscillator();
@@ -522,6 +563,26 @@ export function CryptoSpikeProvider({
     body: string,
     type: "new_signal" | "tp" | "sl" | "info" = "info",
   ) => {
+    // 0. Simpan ke history notifikasi (maksimal 100)
+    const newNotifItem: AppNotification = {
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      title,
+      message: body,
+      type,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+
+    setNotifications((prev) => {
+      const updated = [newNotifItem, ...prev].slice(0, 100);
+      try {
+        localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+
     // 1. Play sound
     playNotificationSound(type);
 
@@ -644,7 +705,10 @@ export function CryptoSpikeProvider({
                 `Sinyal menyentuh batas risiko SL (${pPct || "Loss"}).`,
                 "sl",
               );
-            } else if ((update.status as string) === "CLOSED" || update.status === "CANCELLED") {
+            } else if (
+              (update.status as string) === "CLOSED" ||
+              update.status === "CANCELLED"
+            ) {
               sendPushNotification(
                 `ℹ️ Posisi Ditutup: ${sym}`,
                 `Sinyal telah selesai / ditutup. PnL: ${pPct}.`,
@@ -876,6 +940,10 @@ export function CryptoSpikeProvider({
         closePosition,
         closedPositions,
         clearClosedPositions,
+        notifications,
+        unreadCount,
+        markAllNotificationsAsRead,
+        clearNotifications,
       }}
     >
       {children}
