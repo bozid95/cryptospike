@@ -55,6 +55,39 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Helper presisi desimal maksimal sesuai standar Binance (hingga 8 angka di belakang koma untuk coin micin/sats)
+function formatCryptoPrice(val: number | null | undefined): string {
+  if (val === null || val === undefined || isNaN(val)) return "0.00";
+  if (val === 0) return "0.00";
+
+  // Jika harga di bawah $0.0001 (seperti SHIB, PEPE, dll) tampilkan hingga 8 digit
+  if (val < 0.0001) {
+    return val.toLocaleString("en-US", {
+      minimumFractionDigits: 6,
+      maximumFractionDigits: 8,
+    });
+  }
+  // Jika harga di bawah $1 (seperti DOGE, ADA, XRP) tampilkan hingga 6 digit
+  if (val < 1) {
+    return val.toLocaleString("en-US", {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 6,
+    });
+  }
+  // Jika harga di bawah $100 tampilkan hingga 4 digit
+  if (val < 100) {
+    return val.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    });
+  }
+  // Untuk aset besar (BTC, ETH, BNB > $100) tampilkan 2 digit
+  return val.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export function SignalsCrud() {
   const { signals, updateSignalStatus, deleteSignal } = useCryptoSpike();
   const [filter, setFilter] = useState<"ALL" | "RUNNING" | "CLOSED">("ALL");
@@ -453,12 +486,7 @@ export function SignalsCrud() {
                               Entry
                             </span>
                             <span className="font-semibold text-foreground">
-                              $
-                              {sig.entryPrice.toLocaleString(undefined, {
-                                minimumFractionDigits:
-                                  sig.entryPrice < 10 ? 4 : 2,
-                                maximumFractionDigits: 4,
-                              })}
+                              ${formatCryptoPrice(sig.entryPrice)}
                             </span>
                           </div>
                           {sig.currentPrice && (
@@ -467,18 +495,13 @@ export function SignalsCrud() {
                                 Last
                               </span>
                               <span className="font-medium text-foreground/85">
-                                $
-                                {sig.currentPrice.toLocaleString(undefined, {
-                                  minimumFractionDigits:
-                                    sig.currentPrice < 10 ? 4 : 2,
-                                  maximumFractionDigits: 4,
-                                })}
+                                ${formatCryptoPrice(sig.currentPrice)}
                               </span>
                             </div>
                           )}
                         </TableCell>
 
-                        {/* 3. Target TP1, TP2, TP3 & SL dengan % Potensi */}
+                        {/* 3. Target TP1, TP2, TP3 & SL dengan % Terhadap Entry Point */}
                         <TableCell className="align-middle py-3.5 font-mono text-xs tabular-nums">
                           <div className="space-y-1">
                             {/* TP1 */}
@@ -487,33 +510,25 @@ export function SignalsCrud() {
                                 TP1
                               </span>
                               <span>
-                                $
-                                {sig.tp1.toLocaleString(undefined, {
-                                  minimumFractionDigits: sig.tp1 < 10 ? 4 : 2,
-                                  maximumFractionDigits: 4,
-                                })}
+                                ${formatCryptoPrice(sig.tp1)}
                               </span>
-                              <span className="font-semibold text-[10px] bg-emerald-500/10 px-1 py-0.2 rounded border border-emerald-500/20 leading-none">
+                              <span className="font-bold text-[10px] bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20 leading-none">
                                 {isLong
                                   ? `+${(((sig.tp1 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
                                   : `+${(((sig.entryPrice - sig.tp1) / sig.entryPrice) * 100).toFixed(2)}%`}
                               </span>
                             </div>
 
-                            {/* TP2 (jika ada) */}
+                            {/* TP2 */}
                             {sig.tp2 && (
                               <div className="flex items-center gap-1.5 text-teal-600 font-medium leading-tight">
                                 <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
                                   TP2
                                 </span>
                                 <span>
-                                  $
-                                  {sig.tp2.toLocaleString(undefined, {
-                                    minimumFractionDigits: sig.tp2 < 10 ? 4 : 2,
-                                    maximumFractionDigits: 4,
-                                  })}
+                                  ${formatCryptoPrice(sig.tp2)}
                                 </span>
-                                <span className="font-semibold text-[10px] bg-teal-500/10 px-1 py-0.2 rounded border border-teal-500/20 leading-none">
+                                <span className="font-bold text-[10px] bg-teal-500/10 px-1 py-0.5 rounded border border-teal-500/20 leading-none">
                                   {isLong
                                     ? `+${(((sig.tp2 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
                                     : `+${(((sig.entryPrice - sig.tp2) / sig.entryPrice) * 100).toFixed(2)}%`}
@@ -521,20 +536,16 @@ export function SignalsCrud() {
                               </div>
                             )}
 
-                            {/* TP3 (jika ada) */}
+                            {/* TP3 */}
                             {sig.tp3 && (
                               <div className="flex items-center gap-1.5 text-cyan-600 font-medium leading-tight">
                                 <span className="text-[10px] text-muted-foreground font-sans font-semibold w-7">
                                   TP3
                                 </span>
                                 <span>
-                                  $
-                                  {sig.tp3.toLocaleString(undefined, {
-                                    minimumFractionDigits: sig.tp3 < 10 ? 4 : 2,
-                                    maximumFractionDigits: 4,
-                                  })}
+                                  ${formatCryptoPrice(sig.tp3)}
                                 </span>
-                                <span className="font-semibold text-[10px] bg-cyan-500/10 px-1 py-0.2 rounded border border-cyan-500/20 leading-none">
+                                <span className="font-bold text-[10px] bg-cyan-500/10 px-1 py-0.5 rounded border border-cyan-500/20 leading-none">
                                   {isLong
                                     ? `+${(((sig.tp3 - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`
                                     : `+${(((sig.entryPrice - sig.tp3) / sig.entryPrice) * 100).toFixed(2)}%`}
@@ -548,16 +559,12 @@ export function SignalsCrud() {
                                 SL
                               </span>
                               <span>
-                                $
-                                {sig.sl.toLocaleString(undefined, {
-                                  minimumFractionDigits: sig.sl < 10 ? 4 : 2,
-                                  maximumFractionDigits: 4,
-                                })}
+                                ${formatCryptoPrice(sig.sl)}
                               </span>
-                              <span className="font-semibold text-[10px] bg-destructive/10 px-1 py-0.2 rounded border border-destructive/20 leading-none">
+                              <span className="font-bold text-[10px] bg-destructive/10 px-1 py-0.5 rounded border border-destructive/20 leading-none">
                                 {isLong
-                                  ? `-${(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(2)}%`
-                                  : `-${(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`}
+                                  ? `-${Math.abs(((sig.entryPrice - sig.sl) / sig.entryPrice) * 100).toFixed(2)}%`
+                                  : `-${Math.abs(((sig.sl - sig.entryPrice) / sig.entryPrice) * 100).toFixed(2)}%`}
                               </span>
                             </div>
                           </div>

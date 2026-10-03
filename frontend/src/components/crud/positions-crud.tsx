@@ -43,6 +43,35 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+// Helper presisi desimal maksimal sesuai Binance (hingga 8 angka di belakang koma)
+function formatCryptoPrice(val: number | null | undefined): string {
+  if (val === null || val === undefined || isNaN(val)) return "0.00";
+  if (val === 0) return "0.00";
+
+  if (val < 0.0001) {
+    return val.toLocaleString("en-US", {
+      minimumFractionDigits: 6,
+      maximumFractionDigits: 8,
+    });
+  }
+  if (val < 1) {
+    return val.toLocaleString("en-US", {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 6,
+    });
+  }
+  if (val < 100) {
+    return val.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    });
+  }
+  return val.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export function PositionsCrud() {
   const { positions, isLoadingPositions, refreshPositions, closePosition } =
     useCryptoSpike();
@@ -387,11 +416,11 @@ export function PositionsCrud() {
                         </TableCell>
 
                         <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums text-foreground">
-                          ${pos.entryPrice.toLocaleString()}
+                          ${formatCryptoPrice(pos.entryPrice)}
                         </TableCell>
 
                         <TableCell className="align-middle px-4 py-3.5 font-mono text-xs tabular-nums font-semibold text-foreground">
-                          ${pos.markPrice.toLocaleString()}
+                          ${formatCryptoPrice(pos.markPrice)}
                         </TableCell>
 
                         <TableCell className="align-middle px-4 py-3.5 font-mono text-xs">
@@ -401,8 +430,8 @@ export function PositionsCrud() {
                           <div className="text-[10px] text-muted-foreground">
                             Liq: $
                             {pos.liquidationPrice > 0
-                              ? pos.liquidationPrice.toLocaleString()
-                              : "0"}
+                              ? formatCryptoPrice(pos.liquidationPrice)
+                              : "0.00"}
                           </div>
                         </TableCell>
 
